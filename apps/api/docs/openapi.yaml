@@ -22,3 +22,32 @@ paths:
                   status:
                     type: string
                     example: "ok"
+
+  /users:
+    $ref: './paths/users.yaml#/paths/~1users'
+  /users/{id}:
+    $ref: './paths/users.yaml#/paths/~1users~1{id}'
+  /organizations:
+    $ref: './paths/organizations.yaml#/paths/~1organizations'
+  /organizations/{id}:
+    $ref: './paths/organizations.yaml#/paths/~1organizations~1{id}'
+  /workspaces:
+    $ref: './paths/workspaces.yaml#/paths/~1workspaces'
+  /workspaces/{id}:
+    $ref: './paths/workspaces.yaml#/paths/~1workspaces~1{id}'
+  /permissions:
+    $ref: './paths/permissions.yaml#/paths/~1permissions'
+  /permissions/{id}:
+    $ref: './paths/permissions.yaml#/paths/~1permissions~1{id}'
+  /roles:
+    $ref: './paths/roles.yaml#/paths/~1roles'
+  /roles/{id}:
+    $ref: './paths/roles.yaml#/paths/~1roles~1{id}'
+  /api-routes:
+    $ref: './paths/api-routes.yaml#/paths/~1api-routes'
+  /api-routes/find:
+    $ref: './paths/api-routes.yaml#/paths/~1api-routes~1find'
+  /workspace-members:
+    $ref: './paths/workspace-members.yaml#/paths/~1workspace-members'
+  /workspace-members/find:
+    $ref: './paths/workspace-members.yaml#/paths/~1workspace-members~1find'

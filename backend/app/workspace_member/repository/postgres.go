@@ -5,7 +5,7 @@ import (
 	"errors"
 	"time"
 
-	"backend/app/user/domain"
+	"backend/app/workspace_member/domain"
 	basedomain "backend/domain"
 	apperrors "backend/domain/errors"
 	"backend/infra/dafi"
@@ -17,26 +17,22 @@ import (
 	"github.com/samber/oops"
 )
 
-const tableName = "auth.users"
+const tableName = "auth.workspace_members"
 
 var columns = []string{
-	"id",
-	"first_name",
-	"last_name",
-	"email",
-	"image_url",
+	"workspace_id",
+	"user_id",
+	"role_id",
 	"created_at",
 	"updated_at",
 }
 
 var sqlColumnByDomainField = map[string]string{
-	"id":        "id",
-	"firstName": "first_name",
-	"lastName":  "last_name",
-	"email":     "email",
-	"imageUrl":  "image_url",
-	"createdAt": "created_at",
-	"updatedAt": "updated_at",
+	"workspaceId": "workspace_id",
+	"userId":      "user_id",
+	"roleId":      "role_id",
+	"createdAt":   "created_at",
+	"updatedAt":   "updated_at",
 }
 
 type postgres struct {
@@ -47,11 +43,11 @@ type postgres struct {
 func NewPostgres(db database.PoolInterface, logger basedomain.Logger) domain.Repository {
 	return postgres{
 		db:     db,
-		logger: logger.With("component", "user.repository"),
+		logger: logger.With("component", "workspace_member.repository"),
 	}
 }
 
-func (r postgres) FindOne(ctx context.Context, criteria dafi.Criteria) (domain.User, error) {
+func (r postgres) FindOne(ctx context.Context, criteria dafi.Criteria) (domain.WorkspaceMember, error) {
 	query := sqlcraft.Select(columns...).
 		From(tableName).
 		Where(criteria.Filters...).
@@ -60,34 +56,32 @@ func (r postgres) FindOne(ctx context.Context, criteria dafi.Criteria) (domain.U
 
 	result, err := query.ToSQL()
 	if err != nil {
-		return domain.User{}, oops.WithContext(ctx).In(apperrors.LayerRepository).Wrap(err)
+		return domain.WorkspaceMember{}, oops.WithContext(ctx).In(apperrors.LayerRepository).Wrap(err)
 	}
 
 	r.logger.WithContext(ctx).Debug("executing query", "sql", result.SQL)
 
 	row := r.db.QueryRow(ctx, result.SQL, result.Args...)
 
-	var user domain.User
+	var item domain.WorkspaceMember
 	err = row.Scan(
-		&user.ID,
-		&user.FirstName,
-		&user.LastName,
-		&user.Email,
-		&user.ImageURL,
-		&user.CreatedAt,
-		&user.UpdatedAt,
+		&item.WorkspaceID,
+		&item.UserID,
+		&item.RoleID,
+		&item.CreatedAt,
+		&item.UpdatedAt,
 	)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return domain.User{}, oops.WithContext(ctx).In(apperrors.LayerRepository).Code(apperrors.CodeNotFound).Wrap(err)
+			return domain.WorkspaceMember{}, oops.WithContext(ctx).In(apperrors.LayerRepository).Code(apperrors.CodeNotFound).Wrap(err)
 		}
-		return domain.User{}, oops.WithContext(ctx).In(apperrors.LayerRepository).Wrap(err)
+		return domain.WorkspaceMember{}, oops.WithContext(ctx).In(apperrors.LayerRepository).Wrap(err)
 	}
 
-	return user, nil
+	return item, nil
 }
 
-func (r postgres) FindAll(ctx context.Context, criteria dafi.Criteria) (basedomain.List[domain.User], error) {
+func (r postgres) FindAll(ctx context.Context, criteria dafi.Criteria) (basedomain.List[domain.WorkspaceMember], error) {
 	query := sqlcraft.Select(columns...).
 		From(tableName).
 		Where(criteria.Filters...).
@@ -109,34 +103,31 @@ func (r postgres) FindAll(ctx context.Context, criteria dafi.Criteria) (basedoma
 	}
 	defer rows.Close()
 
-	var users basedomain.List[domain.User]
+	var items basedomain.List[domain.WorkspaceMember]
 	for rows.Next() {
-		var user domain.User
+		var item domain.WorkspaceMember
 		err = rows.Scan(
-			&user.ID,
-			&user.FirstName,
-			&user.LastName,
-			&user.Email,
-			&user.ImageURL,
-			&user.CreatedAt,
-			&user.UpdatedAt,
+			&item.WorkspaceID,
+			&item.UserID,
+			&item.RoleID,
+			&item.CreatedAt,
+			&item.UpdatedAt,
 		)
 		if err != nil {
 			return nil, oops.WithContext(ctx).In(apperrors.LayerRepository).Wrap(err)
 		}
-		users = append(users, user)
+		items = append(items, item)
 	}
 
-	return users, nil
+	return items, nil
 }
 
-func (r postgres) Create(ctx context.Context, input domain.CreateUser) error {
+func (r postgres) Create(ctx context.Context, input domain.CreateWorkspaceMember) error {
 	now := time.Now()
-	id := uuid.New().String()
 
 	query := sqlcraft.InsertInto(tableName).
 		WithColumns(columns...).
-		WithValues(id, input.FirstName, input.LastName, input.Email, nil, now, now)
+		WithValues(input.WorkspaceID, input.UserID, input.RoleID, now, now)
 
 	result, err := query.ToSQL()
 	if err != nil {
@@ -153,7 +144,7 @@ func (r postgres) Create(ctx context.Context, input domain.CreateUser) error {
 	return nil
 }
 
-func (r postgres) CreateBulk(ctx context.Context, inputs basedomain.List[domain.CreateUser]) error {
+func (r postgres) CreateBulk(ctx context.Context, inputs basedomain.List[domain.CreateWorkspaceMember]) error {
 	if inputs.IsEmpty() {
 		return nil
 	}
@@ -162,8 +153,7 @@ func (r postgres) CreateBulk(ctx context.Context, inputs basedomain.List[domain.
 	query := sqlcraft.InsertInto(tableName).WithColumns(columns...)
 
 	for _, input := range inputs {
-		id := uuid.New().String()
-		query = query.WithValues(id, input.FirstName, input.LastName, input.Email, nil, now, now)
+		query = query.WithValues(input.WorkspaceID, input.UserID, input.RoleID, now, now)
 	}
 
 	result, err := query.ToSQL()
@@ -181,22 +171,15 @@ func (r postgres) CreateBulk(ctx context.Context, inputs basedomain.List[domain.
 	return nil
 }
 
-func (r postgres) Update(ctx context.Context, input domain.UpdateUser, filters ...dafi.Filter) error {
+func (r postgres) Update(ctx context.Context, input domain.UpdateWorkspaceMember, filters ...dafi.Filter) error {
 	cols := []string{}
 	vals := []any{}
 
-	if input.FirstName.Valid {
-		cols = append(cols, "first_name")
-		vals = append(vals, input.FirstName.String)
+	if input.RoleID != uuid.Nil {
+		cols = append(cols, "role_id")
+		vals = append(vals, input.RoleID)
 	}
-	if input.LastName.Valid {
-		cols = append(cols, "last_name")
-		vals = append(vals, input.LastName.String)
-	}
-	if input.Email.Valid {
-		cols = append(cols, "email")
-		vals = append(vals, input.Email.String)
-	}
+
 	cols = append(cols, "updated_at")
 	vals = append(vals, time.Now())
 

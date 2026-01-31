@@ -5,7 +5,7 @@ import (
 	"errors"
 	"time"
 
-	"backend/app/user/domain"
+	"backend/app/workspace/domain"
 	basedomain "backend/domain"
 	apperrors "backend/domain/errors"
 	"backend/infra/dafi"
@@ -17,26 +17,24 @@ import (
 	"github.com/samber/oops"
 )
 
-const tableName = "auth.users"
+const tableName = "auth.workspaces"
 
 var columns = []string{
 	"id",
-	"first_name",
-	"last_name",
-	"email",
-	"image_url",
+	"organization_id",
+	"name",
+	"slug",
 	"created_at",
 	"updated_at",
 }
 
 var sqlColumnByDomainField = map[string]string{
-	"id":        "id",
-	"firstName": "first_name",
-	"lastName":  "last_name",
-	"email":     "email",
-	"imageUrl":  "image_url",
-	"createdAt": "created_at",
-	"updatedAt": "updated_at",
+	"id":             "id",
+	"organizationId": "organization_id",
+	"name":           "name",
+	"slug":           "slug",
+	"createdAt":      "created_at",
+	"updatedAt":      "updated_at",
 }
 
 type postgres struct {
@@ -47,11 +45,11 @@ type postgres struct {
 func NewPostgres(db database.PoolInterface, logger basedomain.Logger) domain.Repository {
 	return postgres{
 		db:     db,
-		logger: logger.With("component", "user.repository"),
+		logger: logger.With("component", "workspace.repository"),
 	}
 }
 
-func (r postgres) FindOne(ctx context.Context, criteria dafi.Criteria) (domain.User, error) {
+func (r postgres) FindOne(ctx context.Context, criteria dafi.Criteria) (domain.Workspace, error) {
 	query := sqlcraft.Select(columns...).
 		From(tableName).
 		Where(criteria.Filters...).
@@ -60,34 +58,25 @@ func (r postgres) FindOne(ctx context.Context, criteria dafi.Criteria) (domain.U
 
 	result, err := query.ToSQL()
 	if err != nil {
-		return domain.User{}, oops.WithContext(ctx).In(apperrors.LayerRepository).Wrap(err)
+		return domain.Workspace{}, oops.WithContext(ctx).In(apperrors.LayerRepository).Wrap(err)
 	}
 
 	r.logger.WithContext(ctx).Debug("executing query", "sql", result.SQL)
 
 	row := r.db.QueryRow(ctx, result.SQL, result.Args...)
 
-	var user domain.User
-	err = row.Scan(
-		&user.ID,
-		&user.FirstName,
-		&user.LastName,
-		&user.Email,
-		&user.ImageURL,
-		&user.CreatedAt,
-		&user.UpdatedAt,
-	)
+	var item domain.Workspace
+	err = row.Scan(&item.ID, &item.OrganizationID, &item.Name, &item.Slug, &item.CreatedAt, &item.UpdatedAt)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return domain.User{}, oops.WithContext(ctx).In(apperrors.LayerRepository).Code(apperrors.CodeNotFound).Wrap(err)
+			return domain.Workspace{}, oops.WithContext(ctx).In(apperrors.LayerRepository).Code(apperrors.CodeNotFound).Wrap(err)
 		}
-		return domain.User{}, oops.WithContext(ctx).In(apperrors.LayerRepository).Wrap(err)
+		return domain.Workspace{}, oops.WithContext(ctx).In(apperrors.LayerRepository).Wrap(err)
 	}
-
-	return user, nil
+	return item, nil
 }
 
-func (r postgres) FindAll(ctx context.Context, criteria dafi.Criteria) (basedomain.List[domain.User], error) {
+func (r postgres) FindAll(ctx context.Context, criteria dafi.Criteria) (basedomain.List[domain.Workspace], error) {
 	query := sqlcraft.Select(columns...).
 		From(tableName).
 		Where(criteria.Filters...).
@@ -109,34 +98,25 @@ func (r postgres) FindAll(ctx context.Context, criteria dafi.Criteria) (basedoma
 	}
 	defer rows.Close()
 
-	var users basedomain.List[domain.User]
+	var items basedomain.List[domain.Workspace]
 	for rows.Next() {
-		var user domain.User
-		err = rows.Scan(
-			&user.ID,
-			&user.FirstName,
-			&user.LastName,
-			&user.Email,
-			&user.ImageURL,
-			&user.CreatedAt,
-			&user.UpdatedAt,
-		)
+		var item domain.Workspace
+		err = rows.Scan(&item.ID, &item.OrganizationID, &item.Name, &item.Slug, &item.CreatedAt, &item.UpdatedAt)
 		if err != nil {
 			return nil, oops.WithContext(ctx).In(apperrors.LayerRepository).Wrap(err)
 		}
-		users = append(users, user)
+		items = append(items, item)
 	}
-
-	return users, nil
+	return items, nil
 }
 
-func (r postgres) Create(ctx context.Context, input domain.CreateUser) error {
+func (r postgres) Create(ctx context.Context, input domain.CreateWorkspace) error {
 	now := time.Now()
 	id := uuid.New().String()
 
 	query := sqlcraft.InsertInto(tableName).
 		WithColumns(columns...).
-		WithValues(id, input.FirstName, input.LastName, input.Email, nil, now, now)
+		WithValues(id, input.OrganizationID, input.Name, input.Slug, now, now)
 
 	result, err := query.ToSQL()
 	if err != nil {
@@ -149,21 +129,19 @@ func (r postgres) Create(ctx context.Context, input domain.CreateUser) error {
 	if err != nil {
 		return oops.WithContext(ctx).In(apperrors.LayerRepository).Wrap(err)
 	}
-
 	return nil
 }
 
-func (r postgres) CreateBulk(ctx context.Context, inputs basedomain.List[domain.CreateUser]) error {
+func (r postgres) CreateBulk(ctx context.Context, inputs basedomain.List[domain.CreateWorkspace]) error {
 	if inputs.IsEmpty() {
 		return nil
 	}
-
 	now := time.Now()
 	query := sqlcraft.InsertInto(tableName).WithColumns(columns...)
 
 	for _, input := range inputs {
 		id := uuid.New().String()
-		query = query.WithValues(id, input.FirstName, input.LastName, input.Email, nil, now, now)
+		query = query.WithValues(id, input.OrganizationID, input.Name, input.Slug, now, now)
 	}
 
 	result, err := query.ToSQL()
@@ -172,30 +150,23 @@ func (r postgres) CreateBulk(ctx context.Context, inputs basedomain.List[domain.
 	}
 
 	r.logger.WithContext(ctx).Debug("executing bulk insert", "sql", result.SQL, "count", len(inputs))
-
 	_, err = r.db.Exec(ctx, result.SQL, result.Args...)
 	if err != nil {
 		return oops.WithContext(ctx).In(apperrors.LayerRepository).Wrap(err)
 	}
-
 	return nil
 }
 
-func (r postgres) Update(ctx context.Context, input domain.UpdateUser, filters ...dafi.Filter) error {
+func (r postgres) Update(ctx context.Context, input domain.UpdateWorkspace, filters ...dafi.Filter) error {
 	cols := []string{}
 	vals := []any{}
-
-	if input.FirstName.Valid {
-		cols = append(cols, "first_name")
-		vals = append(vals, input.FirstName.String)
+	if input.Name.Valid {
+		cols = append(cols, "name")
+		vals = append(vals, input.Name.String)
 	}
-	if input.LastName.Valid {
-		cols = append(cols, "last_name")
-		vals = append(vals, input.LastName.String)
-	}
-	if input.Email.Valid {
-		cols = append(cols, "email")
-		vals = append(vals, input.Email.String)
+	if input.Slug.Valid {
+		cols = append(cols, "slug")
+		vals = append(vals, input.Slug.String)
 	}
 	cols = append(cols, "updated_at")
 	vals = append(vals, time.Now())
@@ -210,14 +181,11 @@ func (r postgres) Update(ctx context.Context, input domain.UpdateUser, filters .
 	if err != nil {
 		return oops.WithContext(ctx).In(apperrors.LayerRepository).Wrap(err)
 	}
-
 	r.logger.WithContext(ctx).Debug("executing query", "sql", result.SQL)
-
 	_, err = r.db.Exec(ctx, result.SQL, result.Args...)
 	if err != nil {
 		return oops.WithContext(ctx).In(apperrors.LayerRepository).Wrap(err)
 	}
-
 	return nil
 }
 
@@ -230,13 +198,10 @@ func (r postgres) Delete(ctx context.Context, filters ...dafi.Filter) error {
 	if err != nil {
 		return oops.WithContext(ctx).In(apperrors.LayerRepository).Wrap(err)
 	}
-
 	r.logger.WithContext(ctx).Debug("executing query", "sql", result.SQL)
-
 	_, err = r.db.Exec(ctx, result.SQL, result.Args...)
 	if err != nil {
 		return oops.WithContext(ctx).In(apperrors.LayerRepository).Wrap(err)
 	}
-
 	return nil
 }

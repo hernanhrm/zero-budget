@@ -9,25 +9,29 @@ import (
 )
 
 type CreateUser struct {
-	Name  string `json:"name"`
-	Email string `json:"email"`
+	FirstName string `json:"firstName"`
+	LastName  string `json:"lastName"`
+	Email     string `json:"email"`
 }
 
 func (c CreateUser) Validate(ctx context.Context) error {
 	return validation.ValidateStruct(ctx, &c,
-		validation.Field(&c.Name, validation.Required, validation.Length(2, 100)),
+		validation.Field(&c.FirstName, validation.Required, validation.Length(2, 100)),
+		validation.Field(&c.LastName, validation.Required, validation.Length(2, 100)),
 		validation.Field(&c.Email, validation.Required, validation.IsEmail),
 	)
 }
 
 type UpdateUser struct {
-	Name  null.String `json:"name"`
-	Email null.String `json:"email"`
+	FirstName null.String `json:"firstName"`
+	LastName  null.String `json:"lastName"`
+	Email     null.String `json:"email"`
 }
 
 func (u UpdateUser) Validate(ctx context.Context) error {
 	return validation.ValidateStruct(ctx, &u,
-		validation.Field(&u.Name, validation.NilOrNotEmpty, validation.Length(2, 100)),
+		validation.Field(&u.FirstName, validation.NilOrNotEmpty, validation.Length(2, 100)),
+		validation.Field(&u.LastName, validation.NilOrNotEmpty, validation.Length(2, 100)),
 		validation.Field(&u.Email, validation.NilOrNotEmpty, validation.IsEmail),
 	)
 }

@@ -7,7 +7,13 @@ import (
 	"syscall"
 
 	"api/router"
+	"backend/app/api_route"
+	"backend/app/organization"
+	"backend/app/permission"
+	"backend/app/role"
 	"backend/app/user"
+	"backend/app/workspace"
+	"backend/app/workspace_member"
 	basedomain "backend/domain"
 	"backend/infra/database"
 	"backend/infra/di"
@@ -42,6 +48,12 @@ func main() {
 
 	// Register feature modules
 	user.Module(injector)
+	organization.Module(injector)
+	workspace.Module(injector)
+	permission.Module(injector)
+	role.Module(injector)
+	api_route.Module(injector)
+	workspace_member.Module(injector)
 
 	// Build server config
 	config := server.Config{

@@ -4,7 +4,13 @@ toolchain go1.24.12
 
 use (
 	./apps/api
+	./backend/app/api_route
+	./backend/app/organization
+	./backend/app/permission
+	./backend/app/role
 	./backend/app/user
+	./backend/app/workspace
+	./backend/app/workspace_member
 	./backend/domain
 	./backend/domain/errors
 	./backend/domain/ternary
