@@ -11,9 +11,8 @@ out-tsc
 *.dll
 *.so
 *.dylib
-/api
-/apps/*/api
-apps/**/api
+# Ignore compiled Go binary in apps/api (not the folder itself)
+apps/api/api
 
 # dependencies
 node_modules
@@ -47,6 +46,10 @@ testem.log
 # System Files
 .DS_Store
 Thumbs.db
+
+# Environment files
+.env
+!.env.example
 
 .nx/cache
 .nx/workspace-data

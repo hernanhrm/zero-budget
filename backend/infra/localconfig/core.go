@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"strconv"
 
-	"backend/infra/logger"
+	"backend/domain"
 	"github.com/joho/godotenv"
 	"github.com/samber/oops"
 )
@@ -20,7 +20,7 @@ import (
 //
 // If the config file is not found, it falls back to reading from system environment variables.
 // This is useful for production environments where variables are already loaded.
-func GetConfig(log logger.Logger) (LocalConfig, error) {
+func GetConfig(log domain.Logger) (LocalConfig, error) {
 	opts := ConfigOptions{
 		EnvPath:     getEnvOrDefault("CONFIG_ENV_PATH", "."),
 		EnvFileName: getEnvOrDefault("CONFIG_ENV_FILENAME", ".env"),
@@ -32,7 +32,7 @@ func GetConfig(log logger.Logger) (LocalConfig, error) {
 // This allows programmatic control over the config file location and name.
 //
 // If the config file is not found, it falls back to reading from system environment variables.
-func GetConfigWithOptions(opts ConfigOptions, log logger.Logger) (LocalConfig, error) {
+func GetConfigWithOptions(opts ConfigOptions, log domain.Logger) (LocalConfig, error) {
 	// Construct the full path to the .env file
 	envFilePath := filepath.Join(opts.EnvPath, opts.EnvFileName)
 
@@ -59,34 +59,19 @@ func GetConfigWithOptions(opts ConfigOptions, log logger.Logger) (LocalConfig, e
 			Wrapf(err, "failed to parse SERVICE_PORT as integer")
 	}
 
-	databasePort, err := getEnvAsInt("DATABASE_PORT", log)
-	if err != nil {
-		return LocalConfig{}, oops.
-			Code("invalid_config_value").
-			With("key", "DATABASE_PORT").
-			Wrapf(err, "failed to parse DATABASE_PORT as integer")
-	}
-
 	config := LocalConfig{
 		Service: Service{
 			Port: servicePort,
 			Name: getEnvAsString("SERVICE_NAME"),
 		},
 		Database: Database{
-			Host:     getEnvAsString("DATABASE_HOST"),
-			Port:     databasePort,
-			Username: getEnvAsString("DATABASE_USERNAME"),
-			Password: getEnvAsString("DATABASE_PASSWORD"),
-			Name:     getEnvAsString("DATABASE_NAME"),
-			SSLMode:  getEnvAsString("DATABASE_SSL_MODE"),
+			URL: getEnvAsString("DATABASE_URL"),
 		},
 	}
 
 	log.Debug("configuration loaded",
 		"service_name", config.Service.Name,
 		"service_port", config.Service.Port,
-		"database_host", config.Database.Host,
-		"database_port", config.Database.Port,
 	)
 
 	return config, nil
@@ -108,7 +93,7 @@ func getEnvAsString(key string) string {
 // getEnvAsInt returns the environment variable value as an int.
 // Returns 0 if the environment variable is not set (default value).
 // Returns error if the value exists but is not a valid integer.
-func getEnvAsInt(key string, log logger.Logger) (int, error) {
+func getEnvAsInt(key string, log domain.Logger) (int, error) {
 	valueStr := os.Getenv(key)
 	if valueStr == "" {
 		log.Debug("environment variable not set, using default value 0",

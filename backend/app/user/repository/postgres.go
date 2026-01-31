@@ -17,7 +17,7 @@ import (
 	"github.com/samber/oops"
 )
 
-const tableName = "users"
+const tableName = "auth.users"
 
 var columns = []string{
 	"id",

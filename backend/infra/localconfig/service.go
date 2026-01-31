@@ -1,19 +1,15 @@
 package localconfig
 
-import (
-	"fmt"
-
-	"backend/infra/logger"
-)
+import "backend/domain"
 
 // ConfigService wraps LocalConfig and provides convenient access methods.
 type ConfigService struct {
 	config LocalConfig
-	logger logger.Logger
+	logger domain.Logger
 }
 
 // NewConfigService creates a new config service by loading configuration.
-func NewConfigService(log logger.Logger) (*ConfigService, error) {
+func NewConfigService(log domain.Logger) (*ConfigService, error) {
 	config, err := GetConfig(log)
 	if err != nil {
 		return nil, err
@@ -30,18 +26,9 @@ func (s *ConfigService) Get() LocalConfig {
 	return s.config
 }
 
-// GetConnectionString builds and returns the database connection string.
+// GetConnectionString returns the database connection string.
 func (s *ConfigService) GetConnectionString() string {
-	db := s.config.Database
-	return fmt.Sprintf(
-		"host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
-		db.Host,
-		db.Port,
-		db.Username,
-		db.Password,
-		db.Name,
-		db.SSLMode,
-	)
+	return s.config.Database.URL
 }
 
 // GetServicePort returns the HTTP server port.

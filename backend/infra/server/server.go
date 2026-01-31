@@ -42,9 +42,6 @@ func NewServer(config Config, log domain.Logger, routeSetupFunc func(*echo.Echo)
 		Echo:     echo.New(),
 	}
 
-	s.Echo.HideBanner = true
-	s.Echo.HidePort = true
-
 	s.setupMiddleware()
 	s.setupBaseRoutes()
 

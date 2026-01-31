@@ -1,12 +1,11 @@
 package handler
 
 import (
+	"backend/app/user/domain"
 	basedomain "backend/domain"
 	apperrors "backend/domain/errors"
 	"backend/infra/dafi"
 	"backend/infra/httpresponse"
-	"backend/app/user/domain"
-
 	"github.com/labstack/echo/v4"
 	"github.com/samber/oops"
 )
@@ -95,12 +94,4 @@ func (h HTTP) Delete(c echo.Context) error {
 	}
 
 	return httpresponse.NoContent(c)
-}
-
-func (h HTTP) RegisterRoutes(g *echo.Group) {
-	g.GET("", h.FindAll)
-	g.GET("/:id", h.FindOne)
-	g.POST("", h.Create)
-	g.PUT("/:id", h.Update)
-	g.DELETE("/:id", h.Delete)
 }

@@ -21,10 +21,5 @@ type Service struct {
 
 // Database holds database connection configuration.
 type Database struct {
-	Host     string
-	Port     int
-	Username string
-	Password string
-	Name     string
-	SSLMode  string
+	URL string
 }

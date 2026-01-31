@@ -6,13 +6,14 @@ import (
 	"os/signal"
 	"syscall"
 
+	"api/router"
+	"backend/app/user"
 	basedomain "backend/domain"
+	"backend/infra/database"
 	"backend/infra/di"
+	"backend/infra/localconfig"
 	"backend/infra/logger"
 	"backend/infra/server"
-	"backend/app/user"
-	"backend/app/user/handler"
-	"github.com/labstack/echo/v4"
 )
 
 func main() {
@@ -21,30 +22,38 @@ func main() {
 
 	injector := di.New()
 
-	di.ProvideValue[basedomain.Logger](injector, logger.NewProduction())
+	log := logger.NewProduction()
+	di.ProvideValue[basedomain.Logger](injector, log)
+
+	cfg, err := localconfig.GetConfig(log)
+	if err != nil {
+		log.Error("failed to load config", "error", err)
+		os.Exit(1)
+	}
+	di.ProvideValue(injector, cfg)
+
+	db, err := database.NewConnection(ctx, cfg.Database.URL, log)
+	if err != nil {
+		log.Error("failed to connect to database", "error", err)
+		os.Exit(1)
+	}
+	di.ProvideValue(injector, db)
+	di.ProvideValue[database.PoolInterface](injector, db.Pool)
 
 	// Register feature modules
 	user.Module(injector)
 
 	// Build server config
 	config := server.Config{
-		Port:        8080,
-		ServiceName: "zero-budget-api",
+		Port:        cfg.Service.Port,
+		ServiceName: cfg.Service.Name,
 	}
 
-	log := di.MustInvoke[basedomain.Logger](injector)
-
 	// Create server with route setup
-	srv := server.NewServer(config, log, func(e *echo.Echo) {
-		// Register feature routes
-		// userHandler := di.MustInvoke[handler.HTTP](injector)
-		// userHandler.RegisterRoutes(e.Group("/users"))
-		_ = handler.HTTP{} // placeholder until database is registered
-	})
+	srv := server.NewServer(config, log, router.SetupRoutes(injector))
 
 	// Register health checkers
-	// db := di.MustInvoke[*database.Database](injector)
-	// srv.RegisterHealthChecker("database", db)
+	srv.RegisterHealthChecker("database", db)
 
 	if err := srv.Start(ctx); err != nil {
 		log.Error("server error", "error", err)
