@@ -5,20 +5,22 @@ import (
 	"io"
 	"log/slog"
 	"os"
+
+	"backend/domain"
 )
 
-// SlogAdapter implements Logger interface using slog.
+// SlogAdapter implements domain.Logger interface using slog.
 type SlogAdapter struct {
 	logger *slog.Logger
 }
 
 // NewSlogAdapter creates a new slog-based logger.
-func NewSlogAdapter(config Config) Logger {
+func NewSlogAdapter(config Config) domain.Logger {
 	return newSlogAdapter(config, os.Stdout)
 }
 
 // newSlogAdapter is internal factory for testing with custom writer.
-func newSlogAdapter(config Config, writer io.Writer) Logger {
+func newSlogAdapter(config Config, writer io.Writer) domain.Logger {
 	var handler slog.Handler
 
 	opts := &slog.HandlerOptions{
@@ -34,40 +36,40 @@ func newSlogAdapter(config Config, writer io.Writer) Logger {
 		handler = slog.NewTextHandler(writer, opts)
 	}
 
-	return &SlogAdapter{
+	return SlogAdapter{
 		logger: slog.New(handler),
 	}
 }
 
 // Debug logs a debug message with optional key-value pairs.
-func (s *SlogAdapter) Debug(msg string, keysAndValues ...any) {
+func (s SlogAdapter) Debug(msg string, keysAndValues ...any) {
 	s.logger.Debug(msg, keysAndValues...)
 }
 
 // Info logs an informational message with optional key-value pairs.
-func (s *SlogAdapter) Info(msg string, keysAndValues ...any) {
+func (s SlogAdapter) Info(msg string, keysAndValues ...any) {
 	s.logger.Info(msg, keysAndValues...)
 }
 
 // Warn logs a warning message with optional key-value pairs.
-func (s *SlogAdapter) Warn(msg string, keysAndValues ...any) {
+func (s SlogAdapter) Warn(msg string, keysAndValues ...any) {
 	s.logger.Warn(msg, keysAndValues...)
 }
 
-func (s *SlogAdapter) Error(msg string, keysAndValues ...any) {
+func (s SlogAdapter) Error(msg string, keysAndValues ...any) {
 	s.logger.Error(msg, keysAndValues...)
 }
 
 // With returns a new Logger with additional context fields.
-func (s *SlogAdapter) With(keysAndValues ...any) Logger {
-	return &SlogAdapter{
+func (s SlogAdapter) With(keysAndValues ...any) domain.Logger {
+	return SlogAdapter{
 		logger: s.logger.With(keysAndValues...),
 	}
 }
 
 // WithContext returns a new Logger with context.
-func (s *SlogAdapter) WithContext(_ context.Context) Logger {
-	return &SlogAdapter{
+func (s SlogAdapter) WithContext(_ context.Context) domain.Logger {
+	return SlogAdapter{
 		logger: s.logger.With(), // Can extract context values here if needed
 	}
 }
@@ -90,7 +92,7 @@ func convertLevel(level Level) slog.Level {
 
 // NewDevelopment creates a logger configured for development
 // Uses text format and debug level.
-func NewDevelopment() Logger {
+func NewDevelopment() domain.Logger {
 	return NewSlogAdapter(Config{
 		Level:  LevelDebug,
 		Format: FormatText,
@@ -99,7 +101,7 @@ func NewDevelopment() Logger {
 
 // NewProduction creates a logger configured for production
 // Uses JSON format and info level.
-func NewProduction() Logger {
+func NewProduction() domain.Logger {
 	return NewSlogAdapter(Config{
 		Level:  LevelInfo,
 		Format: FormatJSON,

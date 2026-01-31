@@ -1,6 +1,8 @@
 module backend/infra/logger
 
-go 1.24
+go 1.24.0
+
+toolchain go1.24.12
 
 require github.com/stretchr/testify v1.11.1
 

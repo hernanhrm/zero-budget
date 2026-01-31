@@ -15,4 +15,5 @@ use (
 	./libs/backend/infra/logger
 	./libs/backend/infra/server
 	./libs/backend/infra/sqlcraft
+	./libs/backend/infra/di
 )

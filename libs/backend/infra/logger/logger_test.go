@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"testing"
 
+	"backend/domain"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -49,13 +50,13 @@ func TestSlogAdapter_Levels(t *testing.T) {
 	tests := []struct {
 		name      string
 		level     Level
-		logFunc   func(Logger)
+		logFunc   func(domain.Logger)
 		shouldLog bool
 	}{
 		{
 			name:  "Debug level logs debug messages",
 			level: LevelDebug,
-			logFunc: func(l Logger) {
+			logFunc: func(l domain.Logger) {
 				l.Debug("debug msg")
 			},
 			shouldLog: true,
@@ -63,7 +64,7 @@ func TestSlogAdapter_Levels(t *testing.T) {
 		{
 			name:  "Info level does not log debug messages",
 			level: LevelInfo,
-			logFunc: func(l Logger) {
+			logFunc: func(l domain.Logger) {
 				l.Debug("debug msg")
 			},
 			shouldLog: false,
@@ -71,7 +72,7 @@ func TestSlogAdapter_Levels(t *testing.T) {
 		{
 			name:  "Info level logs info messages",
 			level: LevelInfo,
-			logFunc: func(l Logger) {
+			logFunc: func(l domain.Logger) {
 				l.Info("info msg")
 			},
 			shouldLog: true,
@@ -79,7 +80,7 @@ func TestSlogAdapter_Levels(t *testing.T) {
 		{
 			name:  "Error level only logs errors",
 			level: LevelError,
-			logFunc: func(l Logger) {
+			logFunc: func(l domain.Logger) {
 				l.Info("info msg")
 			},
 			shouldLog: false,
@@ -87,7 +88,7 @@ func TestSlogAdapter_Levels(t *testing.T) {
 		{
 			name:  "Error level logs error messages",
 			level: LevelError,
-			logFunc: func(l Logger) {
+			logFunc: func(l domain.Logger) {
 				l.Error("error msg")
 			},
 			shouldLog: true,
@@ -175,7 +176,7 @@ func TestNewDevelopment(t *testing.T) {
 	assert.NotNil(t, logger, "Expected NewDevelopment to return a logger")
 
 	// Verify it's a SlogAdapter
-	assert.IsType(t, &SlogAdapter{}, logger, "Expected NewDevelopment to return *SlogAdapter")
+	assert.IsType(t, SlogAdapter{}, logger, "Expected NewDevelopment to return SlogAdapter")
 }
 
 func TestNewProduction(t *testing.T) {
@@ -183,7 +184,7 @@ func TestNewProduction(t *testing.T) {
 	assert.NotNil(t, logger, "Expected NewProduction to return a logger")
 
 	// Verify it's a SlogAdapter
-	assert.IsType(t, &SlogAdapter{}, logger, "Expected NewProduction to return *SlogAdapter")
+	assert.IsType(t, SlogAdapter{}, logger, "Expected NewProduction to return SlogAdapter")
 }
 
 func TestConvertLevel(t *testing.T) {

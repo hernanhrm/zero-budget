@@ -1,48 +1,56 @@
 package main
 
 import (
-	"fmt"
-	"net/http"
+	"context"
+	"os"
+	"os/signal"
+	"syscall"
 
+	basedomain "backend/domain"
+	"backend/infra/di"
 	"backend/infra/logger"
-
+	"backend/infra/server"
 	"feature/user"
+	"feature/user/handler"
+	"github.com/labstack/echo/v4"
 )
 
 func main() {
-	log := logger.NewProduction()
+	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer cancel()
 
-	log.Info("starting api server")
+	injector := di.New()
 
-	// In production, you would inject a real database pool here
-	// db := database.New(ctx, "postgres://...")
-	// For now, we'll skip database initialization
+	di.ProvideValue[basedomain.Logger](injector, logger.NewProduction())
 
-	// Example of how to wire up the user feature:
-	// repo := user.NewRepository(db, log)
-	// svc := user.NewService(repo, log)
-	// handler := user.NewHandler(svc, log)
+	// Register feature modules
+	user.Module(injector)
 
-	// Register routes
-	// mux := http.NewServeMux()
-	// mux.HandleFunc("GET /users", handler.GetAll)
-	// mux.HandleFunc("GET /users/{id}", handler.GetByID)
-	// mux.HandleFunc("POST /users", handler.Create)
-	// mux.HandleFunc("PUT /users/{id}", handler.Update)
-	// mux.HandleFunc("DELETE /users/{id}", handler.Delete)
-
-	mux := http.NewServeMux()
-	mux.HandleFunc("GET /health", func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-		fmt.Fprintln(w, "ok")
-	})
-
-	log.Info("server listening", "port", 8080)
-	if err := http.ListenAndServe(":8080", mux); err != nil {
-		log.Error("server failed", "error", err)
+	// Build server config
+	config := server.Config{
+		Port:        8080,
+		ServiceName: "zero-budget-api",
 	}
 
-	// Demonstrate user types are accessible
-	_ = user.User{}
-	_ = user.CreateUser{}
+	log := di.MustInvoke[basedomain.Logger](injector)
+
+	// Create server with route setup
+	srv := server.NewServer(config, log, func(e *echo.Echo) {
+		// Register feature routes
+		// userHandler := di.MustInvoke[handler.HTTP](injector)
+		// userHandler.RegisterRoutes(e.Group("/users"))
+		_ = handler.HTTP{} // placeholder until database is registered
+	})
+
+	// Register health checkers
+	// db := di.MustInvoke[*database.Database](injector)
+	// srv.RegisterHealthChecker("database", db)
+
+	if err := srv.Start(ctx); err != nil {
+		log.Error("server error", "error", err)
+	}
+
+	if err := di.Shutdown(injector); err != nil {
+		log.Error("shutdown error", "error", err)
+	}
 }

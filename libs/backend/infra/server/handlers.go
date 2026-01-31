@@ -10,7 +10,9 @@ import (
 )
 
 const (
-	healthStatusHealthy = "healthy"
+	healthStatusHealthy   = "healthy"
+	healthStatusUnhealthy = "unhealthy"
+	healthStatusDegraded  = "degraded"
 )
 
 // HealthResponse represents the health check response.
@@ -27,36 +29,32 @@ type PingResponse struct {
 	Time    string `json:"time"`
 }
 
-// HandleHealth returns detailed health status of all services.
-func (s *Server) HandleHealth(c echo.Context) error {
+// handleHealth returns detailed health status of all registered services.
+func (s Server) handleHealth(c echo.Context) error {
 	ctx, cancel := context.WithTimeout(c.Request().Context(), 5*time.Second)
 	defer cancel()
 
 	services := make(map[string]string)
 
-	// Check database health
-	if err := s.db.HealthCheck(ctx); err != nil {
-		services["database"] = "unhealthy: " + err.Error()
-	} else {
-		services["database"] = healthStatusHealthy
+	for name, checker := range s.checkers {
+		if err := checker.HealthCheck(ctx); err != nil {
+			services[name] = healthStatusUnhealthy + ": " + err.Error()
+		} else {
+			services[name] = healthStatusHealthy
+		}
 	}
 
-	// Check other services from DI container
-	services["logger"] = healthStatusHealthy
-	services["config"] = healthStatusHealthy
-
-	// Determine overall status
 	status := healthStatusHealthy
 	for _, svcStatus := range services {
 		if svcStatus != healthStatusHealthy {
-			status = "degraded"
+			status = healthStatusDegraded
 			break
 		}
 	}
 
 	response := HealthResponse{
 		Status:   status,
-		Version:  "0.1.0", // TODO: Get from config or build info
+		Version:  "0.1.0",
 		Time:     time.Now().UTC().Format(time.RFC3339),
 		Services: services,
 	}
@@ -74,8 +72,8 @@ func (s *Server) HandleHealth(c echo.Context) error {
 	return nil
 }
 
-// HandlePing is a simple ping endpoint.
-func (s *Server) HandlePing(c echo.Context) error {
+// handlePing is a simple ping endpoint.
+func (s Server) handlePing(c echo.Context) error {
 	response := PingResponse{
 		Message: "pong",
 		Time:    time.Now().UTC().Format(time.RFC3339),

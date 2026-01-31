@@ -1,31 +1,6 @@
 // Package logger provides structured logging functionality with multiple levels and output formats.
 package logger
 
-import "context"
-
-// Logger defines the interface for structured logging.
-// Implementations should be safe for concurrent use.
-type Logger interface {
-	// Debug logs a debug message with optional key-value pairs
-	Debug(msg string, keysAndValues ...interface{})
-
-	// Info logs an informational message with optional key-value pairs
-	Info(msg string, keysAndValues ...interface{})
-
-	// Warn logs a warning message with optional key-value pairs
-	Warn(msg string, keysAndValues ...interface{})
-
-	// Error logs an error message with optional key-value pairs
-	Error(msg string, keysAndValues ...interface{})
-
-	// With returns a new Logger with additional context fields
-	// This allows creating child loggers with pre-set fields
-	With(keysAndValues ...interface{}) Logger
-
-	// WithContext returns a new Logger with context
-	WithContext(ctx context.Context) Logger
-}
-
 // Level represents the logging level.
 type Level int
 

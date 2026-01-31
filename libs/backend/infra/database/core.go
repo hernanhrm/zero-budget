@@ -5,7 +5,7 @@ import (
 	"context"
 	"errors"
 
-	"backend/infra/logger"
+	"backend/domain"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -19,11 +19,11 @@ const (
 // Database wraps a PostgreSQL connection pool with logging functionality.
 type Database struct {
 	Pool   PoolInterface
-	logger logger.Logger
+	logger domain.Logger
 }
 
 // NewConnection creates a new database connection pool with proper error handling and logging.
-func NewConnection(ctx context.Context, connString string, log logger.Logger) (*Database, error) {
+func NewConnection(ctx context.Context, connString string, log domain.Logger) (*Database, error) {
 	pool, err := pgxpool.New(ctx, connString)
 	if err != nil {
 		return nil, oops.
