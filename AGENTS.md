@@ -2,6 +2,7 @@
 
 - Never use pointer receivers in method definitions unless explicitly requested by the user
 - Use value receivers by default for all methods
+- Always use kebab-case for endpoint variables (e.g. /users/:user-id instead of /users/:userId)
 
 <!-- nx configuration start-->
 <!-- Leave the start & end comments to automatically receive updates. -->
