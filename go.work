@@ -1,0 +1,18 @@
+go 1.24.0
+
+toolchain go1.24.12
+
+use (
+	./apps/api
+	./libs/backend/domain
+	./libs/backend/domain/errors
+	./libs/backend/domain/ternary
+	./libs/backend/feature/user
+	./libs/backend/infra/dafi
+	./libs/backend/infra/database
+	./libs/backend/infra/httpresponse
+	./libs/backend/infra/localconfig
+	./libs/backend/infra/logger
+	./libs/backend/infra/server
+	./libs/backend/infra/sqlcraft
+)
