@@ -5,6 +5,7 @@ go 1.24.0
 toolchain go1.24.12
 
 require (
+	github.com/bdpiprava/scalar-go v0.13.0
 	github.com/labstack/echo/v4 v4.15.0
 	github.com/samber/do/v2 v2.0.0
 )
@@ -22,4 +23,5 @@ require (
 	golang.org/x/net v0.48.0 // indirect
 	golang.org/x/sys v0.39.0 // indirect
 	golang.org/x/text v0.32.0 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
