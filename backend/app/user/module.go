@@ -4,10 +4,10 @@ import (
 	basedomain "backend/domain"
 	"backend/infra/database"
 	"backend/infra/di"
-	"feature/user/domain"
-	"feature/user/handler"
-	"feature/user/repository"
-	"feature/user/service"
+	"backend/app/user/domain"
+	"backend/app/user/handler"
+	"backend/app/user/repository"
+	"backend/app/user/service"
 	"github.com/samber/do/v2"
 )
 

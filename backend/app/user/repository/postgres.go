@@ -10,7 +10,7 @@ import (
 	"backend/infra/dafi"
 	"backend/infra/database"
 	"backend/infra/sqlcraft"
-	"feature/user/domain"
+	"backend/app/user/domain"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -59,7 +59,7 @@ func (r postgres) FindOne(ctx context.Context, criteria dafi.Criteria) (domain.U
 		return domain.User{}, oops.WithContext(ctx).In(apperrors.LayerRepository).Wrap(err)
 	}
 
-	r.logger.Debug("executing query", "sql", result.SQL)
+	r.logger.WithContext(ctx).Debug("executing query", "sql", result.SQL)
 
 	row := r.db.QueryRow(ctx, result.SQL, result.Args...)
 
@@ -95,7 +95,7 @@ func (r postgres) FindAll(ctx context.Context, criteria dafi.Criteria) (basedoma
 		return nil, oops.WithContext(ctx).In(apperrors.LayerRepository).Wrap(err)
 	}
 
-	r.logger.Debug("executing query", "sql", result.SQL)
+	r.logger.WithContext(ctx).Debug("executing query", "sql", result.SQL)
 
 	rows, err := r.db.Query(ctx, result.SQL, result.Args...)
 	if err != nil {
@@ -135,7 +135,7 @@ func (r postgres) Create(ctx context.Context, input domain.CreateUser) error {
 		return oops.WithContext(ctx).In(apperrors.LayerRepository).Wrap(err)
 	}
 
-	r.logger.Debug("executing query", "sql", result.SQL)
+	r.logger.WithContext(ctx).Debug("executing query", "sql", result.SQL)
 
 	_, err = r.db.Exec(ctx, result.SQL, result.Args...)
 	if err != nil {
@@ -163,7 +163,7 @@ func (r postgres) CreateBulk(ctx context.Context, inputs basedomain.List[domain.
 		return oops.WithContext(ctx).In(apperrors.LayerRepository).Wrap(err)
 	}
 
-	r.logger.Debug("executing bulk insert", "sql", result.SQL, "count", len(inputs))
+	r.logger.WithContext(ctx).Debug("executing bulk insert", "sql", result.SQL, "count", len(inputs))
 
 	_, err = r.db.Exec(ctx, result.SQL, result.Args...)
 	if err != nil {
@@ -199,7 +199,7 @@ func (r postgres) Update(ctx context.Context, input domain.UpdateUser, filters .
 		return oops.WithContext(ctx).In(apperrors.LayerRepository).Wrap(err)
 	}
 
-	r.logger.Debug("executing query", "sql", result.SQL)
+	r.logger.WithContext(ctx).Debug("executing query", "sql", result.SQL)
 
 	_, err = r.db.Exec(ctx, result.SQL, result.Args...)
 	if err != nil {
@@ -219,7 +219,7 @@ func (r postgres) Delete(ctx context.Context, filters ...dafi.Filter) error {
 		return oops.WithContext(ctx).In(apperrors.LayerRepository).Wrap(err)
 	}
 
-	r.logger.Debug("executing query", "sql", result.SQL)
+	r.logger.WithContext(ctx).Debug("executing query", "sql", result.SQL)
 
 	_, err = r.db.Exec(ctx, result.SQL, result.Args...)
 	if err != nil {

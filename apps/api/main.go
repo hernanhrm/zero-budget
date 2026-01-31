@@ -10,8 +10,8 @@ import (
 	"backend/infra/di"
 	"backend/infra/logger"
 	"backend/infra/server"
-	"feature/user"
-	"feature/user/handler"
+	"backend/app/user"
+	"backend/app/user/handler"
 	"github.com/labstack/echo/v4"
 )
 

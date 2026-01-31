@@ -6,7 +6,6 @@ toolchain go1.24.12
 
 require (
 	github.com/labstack/echo/v4 v4.15.0
-	github.com/samber/do/v2 v2.0.0
 	github.com/samber/oops v1.21.0
 	github.com/stretchr/testify v1.11.1
 )
@@ -20,7 +19,6 @@ require (
 	github.com/oklog/ulid/v2 v2.1.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/rogpeppe/go-internal v1.14.1 // indirect
-	github.com/samber/go-type-to-string v1.8.0 // indirect
 	github.com/samber/lo v1.52.0 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.2 // indirect

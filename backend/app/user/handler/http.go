@@ -5,7 +5,7 @@ import (
 	apperrors "backend/domain/errors"
 	"backend/infra/dafi"
 	"backend/infra/httpresponse"
-	"feature/user/domain"
+	"backend/app/user/domain"
 
 	"github.com/labstack/echo/v4"
 	"github.com/samber/oops"

@@ -110,20 +110,20 @@ func (s Server) setupBaseRoutes() {
 func (s Server) Start(ctx context.Context) error {
 	addr := fmt.Sprintf(":%d", s.config.Port)
 
-	s.logger.Info("starting HTTP server",
+	s.logger.WithContext(ctx).Info("starting HTTP server",
 		"address", addr,
 		"service", s.config.ServiceName,
 	)
 
 	go func() {
 		if err := s.Echo.Start(addr); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			s.logger.Error("server error", "error", err)
+			s.logger.WithContext(ctx).Error("server error", "error", err)
 		}
 	}()
 
 	<-ctx.Done()
 
-	s.logger.Info("shutting down HTTP server")
+	s.logger.WithContext(ctx).Info("shutting down HTTP server")
 
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
@@ -139,7 +139,7 @@ func (s Server) Start(ctx context.Context) error {
 
 // Shutdown gracefully shuts down the HTTP server.
 func (s Server) Shutdown(ctx context.Context) error {
-	s.logger.Info("shutting down HTTP server")
+	s.logger.WithContext(ctx).Info("shutting down HTTP server")
 
 	if err := s.Echo.Shutdown(ctx); err != nil {
 		return oops.

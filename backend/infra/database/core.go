@@ -47,7 +47,7 @@ func NewConnection(ctx context.Context, connString string, log domain.Logger) (*
 
 	// Log successful connection with pool configuration
 	poolConfig := pool.Config()
-	db.logger.Info("database connection established",
+	db.logger.WithContext(ctx).Info("database connection established",
 		"max_connections", poolConfig.MaxConns,
 		"min_connections", poolConfig.MinConns,
 	)
@@ -72,7 +72,7 @@ func (db *Database) GetPool() PoolInterface {
 func (db *Database) Query(ctx context.Context, sql string, args ...any) (pgx.Rows, error) {
 	rows, err := db.Pool.Query(ctx, sql, args...)
 	if err != nil {
-		db.logger.Error("query execution failed",
+		db.logger.WithContext(ctx).Error("query execution failed",
 			"error", err,
 			"sql_preview", truncateSQL(sql),
 		)
@@ -94,7 +94,7 @@ func (db *Database) QueryRow(ctx context.Context, sql string, args ...any) pgx.R
 func (db *Database) QueryRowScan(ctx context.Context, scanFunc func(row pgx.Row) error, sql string, args ...any) error {
 	row := db.Pool.QueryRow(ctx, sql, args...)
 	if err := scanFunc(row); err != nil {
-		db.logger.Error("query row scan failed",
+		db.logger.WithContext(ctx).Error("query row scan failed",
 			"error", err,
 			"sql_preview", truncateSQL(sql),
 		)
@@ -113,7 +113,7 @@ func (db *Database) QueryRowScan(ctx context.Context, scanFunc func(row pgx.Row)
 func (db *Database) Exec(ctx context.Context, sql string, args ...any) (pgconn.CommandTag, error) {
 	tag, err := db.Pool.Exec(ctx, sql, args...)
 	if err != nil {
-		db.logger.Error("exec operation failed",
+		db.logger.WithContext(ctx).Error("exec operation failed",
 			"error", err,
 			"sql_preview", truncateSQL(sql),
 		)
@@ -124,7 +124,7 @@ func (db *Database) Exec(ctx context.Context, sql string, args ...any) (pgconn.C
 			Wrapf(err, "database exec failed")
 	}
 
-	db.logger.Debug("exec operation completed",
+	db.logger.WithContext(ctx).Debug("exec operation completed",
 		"rows_affected", tag.RowsAffected(),
 	)
 
@@ -148,8 +148,8 @@ func (db *Database) HealthCheck(ctx context.Context) error {
 }
 
 // Shutdown gracefully closes the database connection pool.
-func (db *Database) Shutdown(_ context.Context) error {
-	db.logger.Info("shutting down database connection")
+func (db *Database) Shutdown(ctx context.Context) error {
+	db.logger.WithContext(ctx).Info("shutting down database connection")
 	if db.Pool != nil {
 		db.Pool.Close()
 	}

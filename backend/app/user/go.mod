@@ -1,4 +1,4 @@
-module feature/user
+module backend/app/user
 
 go 1.24.0
 

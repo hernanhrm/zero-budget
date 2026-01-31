@@ -3,11 +3,10 @@ package service
 import (
 	"context"
 
+	"backend/app/user/domain"
 	basedomain "backend/domain"
 	apperrors "backend/domain/errors"
 	"backend/infra/dafi"
-	"feature/user/domain"
-
 	"github.com/samber/oops"
 )
 
@@ -42,11 +41,15 @@ func (s service) FindAll(ctx context.Context, criteria dafi.Criteria) (basedomai
 }
 
 func (s service) Create(ctx context.Context, input domain.CreateUser) error {
+	if err := input.Validate(ctx); err != nil {
+		return oops.WithContext(ctx).In(apperrors.LayerService).Code(apperrors.CodeValidation).Wrap(err)
+	}
+
 	if err := s.repo.Create(ctx, input); err != nil {
 		return oops.WithContext(ctx).In(apperrors.LayerService).Wrap(err)
 	}
 
-	s.logger.Info("user created", "email", input.Email)
+	s.logger.WithContext(ctx).Info("user created", "email", input.Email)
 
 	return nil
 }
@@ -56,17 +59,21 @@ func (s service) CreateBulk(ctx context.Context, inputs basedomain.List[domain.C
 		return oops.WithContext(ctx).In(apperrors.LayerService).Wrap(err)
 	}
 
-	s.logger.Info("users created", "count", len(inputs))
+	s.logger.WithContext(ctx).Info("users created", "count", len(inputs))
 
 	return nil
 }
 
 func (s service) Update(ctx context.Context, input domain.UpdateUser, filters ...dafi.Filter) error {
+	if err := input.Validate(ctx); err != nil {
+		return oops.WithContext(ctx).In(apperrors.LayerService).Code(apperrors.CodeValidation).Wrap(err)
+	}
+
 	if err := s.repo.Update(ctx, input, filters...); err != nil {
 		return oops.WithContext(ctx).In(apperrors.LayerService).Wrap(err)
 	}
 
-	s.logger.Info("user updated")
+	s.logger.WithContext(ctx).Info("user updated")
 
 	return nil
 }
@@ -76,7 +83,7 @@ func (s service) Delete(ctx context.Context, filters ...dafi.Filter) error {
 		return oops.WithContext(ctx).In(apperrors.LayerService).Wrap(err)
 	}
 
-	s.logger.Info("user deleted")
+	s.logger.WithContext(ctx).Info("user deleted")
 
 	return nil
 }
