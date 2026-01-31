@@ -89,7 +89,8 @@ INSERT INTO auth.permissions (slug, description) VALUES
     ('workspace.update', 'Update workspace settings'),
     ('workspace.delete', 'Delete workspace'),
     ('members.read', 'View members list'),
-    ('members.manage', 'Invite or remove members');
+    ('members.manage', 'Invite or remove members'),
+    ('roles.manage', 'Create, update, and delete custom roles');
 
 -- Seed API Routes Mapping
 DO $$
@@ -100,6 +101,7 @@ DECLARE
     p_delete UUID;
     p_mem_read UUID;
     p_mem_manage UUID;
+    p_roles_manage UUID;
 BEGIN
     SELECT id INTO p_read FROM auth.permissions WHERE slug = 'workspace.read';
     SELECT id INTO p_create FROM auth.permissions WHERE slug = 'workspace.create';
@@ -107,6 +109,7 @@ BEGIN
     SELECT id INTO p_delete FROM auth.permissions WHERE slug = 'workspace.delete';
     SELECT id INTO p_mem_read FROM auth.permissions WHERE slug = 'members.read';
     SELECT id INTO p_mem_manage FROM auth.permissions WHERE slug = 'members.manage';
+    SELECT id INTO p_roles_manage FROM auth.permissions WHERE slug = 'roles.manage';
 
     INSERT INTO auth.api_routes (method, path, permission_id) VALUES
     ('GET', '/workspaces', p_read),
@@ -116,7 +119,10 @@ BEGIN
     ('DELETE', '/workspaces/:slug', p_delete),
     ('GET', '/workspaces/:slug/members', p_mem_read),
     ('POST', '/workspaces/:slug/members', p_mem_manage),
-    ('DELETE', '/workspaces/:slug/members/:user-id', p_mem_manage);
+    ('DELETE', '/workspaces/:slug/members/:user-id', p_mem_manage),
+    ('POST', '/workspaces/:slug/roles', p_roles_manage),
+    ('PUT', '/workspaces/:slug/roles/:role-id', p_roles_manage),
+    ('DELETE', '/workspaces/:slug/roles/:role-id', p_roles_manage);
 END $$;
 
 -- Seed System Roles (Templates)
@@ -128,6 +134,7 @@ DECLARE
     p_delete UUID;
     p_mem_read UUID;
     p_mem_manage UUID;
+    p_roles_manage UUID;
     r_admin UUID;
     r_viewer UUID;
 BEGIN
@@ -138,13 +145,15 @@ BEGIN
     SELECT id INTO p_delete FROM auth.permissions WHERE slug = 'workspace.delete';
     SELECT id INTO p_mem_read FROM auth.permissions WHERE slug = 'members.read';
     SELECT id INTO p_mem_manage FROM auth.permissions WHERE slug = 'members.manage';
+    SELECT id INTO p_roles_manage FROM auth.permissions WHERE slug = 'roles.manage';
 
     -- Create 'Admin' Role (System level)
     INSERT INTO auth.roles (name, description, workspace_id) 
     VALUES ('Admin', 'Full access', NULL) RETURNING id INTO r_admin;
 
     INSERT INTO auth.role_permissions (role_id, permission_id) VALUES 
-    (r_admin, p_read), (r_admin, p_create), (r_admin, p_update), (r_admin, p_delete), (r_admin, p_mem_read), (r_admin, p_mem_manage);
+    (r_admin, p_read), (r_admin, p_create), (r_admin, p_update), (r_admin, p_delete), 
+    (r_admin, p_mem_read), (r_admin, p_mem_manage), (r_admin, p_roles_manage);
 
     -- Create 'Viewer' Role (System level)
     INSERT INTO auth.roles (name, description, workspace_id) 
@@ -161,6 +170,8 @@ ALTER TABLE auth.organizations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE auth.workspaces ENABLE ROW LEVEL SECURITY;
 ALTER TABLE auth.workspace_members ENABLE ROW LEVEL SECURITY;
 ALTER TABLE auth.roles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE auth.role_permissions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE auth.permissions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE auth.api_routes ENABLE ROW LEVEL SECURITY;
 
 -- Helper function to check permission by ID
@@ -210,6 +221,15 @@ CREATE POLICY workspaces_org_owner_all ON auth.workspaces USING (
 CREATE POLICY workspaces_member_read ON auth.workspaces FOR SELECT USING (
     auth.check_permission(current_setting('app.current_user_id', true)::UUID, id, 'workspace.read')
 );
+-- Workspaces: Update Access (Requires 'workspace.update' permission)
+CREATE POLICY workspaces_member_update ON auth.workspaces FOR UPDATE USING (
+    auth.check_permission(current_setting('app.current_user_id', true)::UUID, id, 'workspace.update')
+);
+-- Workspaces: Delete Access (Requires 'workspace.delete' permission)
+CREATE POLICY workspaces_member_delete ON auth.workspaces FOR DELETE USING (
+    auth.check_permission(current_setting('app.current_user_id', true)::UUID, id, 'workspace.delete')
+);
+
 
 -- Members: Read Self
 CREATE POLICY workspace_members_read_self ON auth.workspace_members FOR SELECT USING (user_id = current_setting('app.current_user_id', true)::UUID);
@@ -236,6 +256,41 @@ CREATE POLICY roles_read ON auth.roles FOR SELECT USING (
         AND wm.user_id = current_setting('app.current_user_id', true)::UUID
     )
 );
+-- Roles: Manage Custom Roles (Requires 'roles.manage')
+CREATE POLICY roles_manage ON auth.roles USING (
+    workspace_id IS NOT NULL AND -- Only custom roles
+    auth.check_permission(current_setting('app.current_user_id', true)::UUID, workspace_id, 'roles.manage')
+);
 
--- API Routes: Publicly readable
+
+-- Role Permissions: Read Access (If user can see the Role, they can see its perms)
+CREATE POLICY role_permissions_read ON auth.role_permissions FOR SELECT USING (
+    EXISTS (
+        SELECT 1 FROM auth.roles r
+        WHERE r.id = auth.role_permissions.role_id
+        AND (
+            r.workspace_id IS NULL OR
+            EXISTS (
+                SELECT 1 FROM auth.workspace_members wm
+                WHERE wm.workspace_id = r.workspace_id
+                AND wm.user_id = current_setting('app.current_user_id', true)::UUID
+            )
+        )
+    )
+);
+-- Role Permissions: Manage (Requires 'roles.manage' on the role's workspace)
+CREATE POLICY role_permissions_manage ON auth.role_permissions USING (
+    EXISTS (
+        SELECT 1 FROM auth.roles r
+        WHERE r.id = auth.role_permissions.role_id
+        AND r.workspace_id IS NOT NULL -- Only custom roles
+        AND auth.check_permission(current_setting('app.current_user_id', true)::UUID, r.workspace_id, 'roles.manage')
+    )
+);
+
+
+-- Permissions: Public Read (Required for system to function)
+CREATE POLICY permissions_read_all ON auth.permissions FOR SELECT USING (true);
+
+-- API Routes: Public Read
 CREATE POLICY api_routes_read_all ON auth.api_routes FOR SELECT USING (true);
