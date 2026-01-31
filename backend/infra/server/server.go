@@ -8,6 +8,8 @@ import (
 	"time"
 
 	"backend/domain"
+	"backend/infra/httpresponse"
+
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/samber/oops"
@@ -17,6 +19,7 @@ import (
 type Config struct {
 	Port        int
 	ServiceName string
+	Debug       bool
 }
 
 // HealthChecker is an interface for services that can report their health.
@@ -41,6 +44,12 @@ func NewServer(config Config, log domain.Logger, routeSetupFunc func(*echo.Echo)
 		checkers: make(map[string]HealthChecker),
 		Echo:     echo.New(),
 	}
+
+	s.Echo.Debug = config.Debug
+	s.Echo.HTTPErrorHandler = httpresponse.HTTPErrorHandler(httpresponse.HTTPErrorHandlerConfig{
+		Logger: s.logger,
+		Debug:  config.Debug,
+	})
 
 	s.setupMiddleware()
 	s.setupBaseRoutes()

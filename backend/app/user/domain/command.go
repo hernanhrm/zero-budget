@@ -9,8 +9,8 @@ import (
 )
 
 type CreateUser struct {
-	Name  string
-	Email string
+	Name  string `json:"name"`
+	Email string `json:"email"`
 }
 
 func (c CreateUser) Validate(ctx context.Context) error {
@@ -21,8 +21,8 @@ func (c CreateUser) Validate(ctx context.Context) error {
 }
 
 type UpdateUser struct {
-	Name  null.String
-	Email null.String
+	Name  null.String `json:"name"`
+	Email null.String `json:"email"`
 }
 
 func (u UpdateUser) Validate(ctx context.Context) error {
