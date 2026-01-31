@@ -5,6 +5,16 @@ dist
 tmp
 out-tsc
 
+# Go binaries
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+/api
+/apps/*/api
+apps/**/api
+
 # dependencies
 node_modules
 
