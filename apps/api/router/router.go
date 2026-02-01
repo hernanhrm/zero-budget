@@ -14,7 +14,6 @@ func SetupRoutes(injector do.Injector) func(e *echo.Echo) {
 		RegisterOrganizationRoutes(injector, e)
 		RegisterWorkspaceRoutes(injector, e)
 		RegisterPermissionRoutes(injector, e)
-		RegisterRoleRoutes(injector, e)
 		RegisterApiRouteRoutes(injector, e)
 
 		e.GET("/docs", func(c echo.Context) error {

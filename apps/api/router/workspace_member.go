@@ -10,7 +10,7 @@ import (
 func RegisterWorkspaceMemberRoutes(injector do.Injector, g *echo.Group) {
 	h := di.MustInvoke[handler.HTTP](injector)
 
-	membersGroup := g.Group("/members")
+	membersGroup := g.Group("/:slug/members")
 
 	membersGroup.GET("", h.FindAll)
 	membersGroup.POST("", h.Create)
