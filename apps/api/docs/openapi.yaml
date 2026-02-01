@@ -51,3 +51,418 @@ paths:
     $ref: './paths/workspace-members.yaml#/paths/~1workspace-members'
   /workspace-members/find:
     $ref: './paths/workspace-members.yaml#/paths/~1workspace-members~1find'
+  /auth/signup:
+    $ref: './paths/auth.yaml#/paths/~1auth~1signup'
+
+components:
+  schemas:
+    # User schemas
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        firstName:
+          type: string
+          minLength: 2
+          maxLength: 100
+        lastName:
+          type: string
+          minLength: 2
+          maxLength: 100
+        email:
+          type: string
+          format: email
+        imageUrl:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    
+    CreateUser:
+      type: object
+      required:
+        - firstName
+        - lastName
+        - email
+      properties:
+        firstName:
+          type: string
+          minLength: 2
+          maxLength: 100
+        lastName:
+          type: string
+          minLength: 2
+          maxLength: 100
+        email:
+          type: string
+          format: email
+
+    UpdateUser:
+      type: object
+      properties:
+        firstName:
+          type: string
+          minLength: 2
+          maxLength: 100
+        lastName:
+          type: string
+          minLength: 2
+          maxLength: 100
+        email:
+          type: string
+          format: email
+
+    # Organization schemas
+    Organization:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          minLength: 2
+          maxLength: 255
+        slug:
+          type: string
+          pattern: '^[a-z0-9-]+$'
+        ownerId:
+          type: string
+          format: uuid
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    CreateOrganization:
+      type: object
+      required:
+        - name
+        - slug
+        - ownerId
+      properties:
+        name:
+          type: string
+          minLength: 2
+          maxLength: 255
+        slug:
+          type: string
+          pattern: '^[a-z0-9-]+$'
+        ownerId:
+          type: string
+          format: uuid
+
+    UpdateOrganization:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 2
+          maxLength: 255
+        slug:
+          type: string
+          pattern: '^[a-z0-9-]+$'
+
+    # Workspace schemas
+    Workspace:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        organizationId:
+          type: string
+          format: uuid
+        name:
+          type: string
+          minLength: 2
+          maxLength: 255
+        slug:
+          type: string
+          minLength: 2
+          maxLength: 255
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    CreateWorkspace:
+      type: object
+      required:
+        - organizationId
+        - name
+        - slug
+      properties:
+        organizationId:
+          type: string
+          format: uuid
+        name:
+          type: string
+          minLength: 2
+          maxLength: 255
+        slug:
+          type: string
+          minLength: 2
+          maxLength: 255
+
+    UpdateWorkspace:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 2
+          maxLength: 255
+        slug:
+          type: string
+          minLength: 2
+          maxLength: 255
+
+    # Permission schemas
+    Permission:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        slug:
+          type: string
+          minLength: 2
+          maxLength: 100
+        description:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    CreatePermission:
+      type: object
+      required:
+        - slug
+      properties:
+        slug:
+          type: string
+          minLength: 2
+          maxLength: 100
+        description:
+          type: string
+
+    UpdatePermission:
+      type: object
+      properties:
+        description:
+          type: string
+
+    # Role schemas
+    Role:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        workspaceId:
+          type: string
+          format: uuid
+        name:
+          type: string
+          minLength: 2
+          maxLength: 100
+        description:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    CreateRole:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          minLength: 2
+          maxLength: 100
+        description:
+          type: string
+
+    UpdateRole:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 2
+          maxLength: 100
+        description:
+          type: string
+
+    # API Route schemas
+    ApiRoute:
+      type: object
+      properties:
+        method:
+          type: string
+          enum: [GET, POST, PUT, DELETE, PATCH]
+        path:
+          type: string
+        permissionId:
+          type: string
+          format: uuid
+        createdAt:
+          type: string
+          format: date-time
+
+    CreateApiRoute:
+      type: object
+      required:
+        - method
+        - path
+        - permissionId
+      properties:
+        method:
+          type: string
+          enum: [GET, POST, PUT, DELETE, PATCH]
+        path:
+          type: string
+        permissionId:
+          type: string
+          format: uuid
+
+    UpdateApiRoute:
+      type: object
+      properties:
+        permissionId:
+          type: string
+          format: uuid
+
+    # Workspace Member schemas
+    WorkspaceMember:
+      type: object
+      properties:
+        workspaceId:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        roleId:
+          type: string
+          format: uuid
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    CreateWorkspaceMember:
+      type: object
+      required:
+        - userId
+        - roleId
+      properties:
+        userId:
+          type: string
+          format: uuid
+        roleId:
+          type: string
+          format: uuid
+
+    UpdateWorkspaceMember:
+      type: object
+      required:
+        - roleId
+      properties:
+        roleId:
+          type: string
+          format: uuid
+
+    # Auth schemas
+    SignupWithEmail:
+      type: object
+      required:
+        - email
+        - firstName
+        - lastName
+        - password
+        - organizationName
+      properties:
+        email:
+          type: string
+          format: email
+          description: User email address
+        firstName:
+          type: string
+          minLength: 2
+          maxLength: 100
+          description: User first name
+        lastName:
+          type: string
+          minLength: 2
+          maxLength: 100
+          description: User last name
+        password:
+          type: string
+          minLength: 6
+          maxLength: 255
+          description: User password (minimum 6 characters)
+        organizationName:
+          type: string
+          minLength: 2
+          maxLength: 255
+          description: Organization name (also used for workspace name)
+
+    SignupResponse:
+      type: object
+      properties:
+        accessToken:
+          type: string
+          description: JWT access token (expires in 5 minutes)
+        refreshToken:
+          type: string
+          description: JWT refresh token (expires in 7 days)
+        expiresAt:
+          type: string
+          format: date-time
+          description: Access token expiration time
+        user:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+              description: User ID
+            email:
+              type: string
+              format: email
+              description: User email
+            firstName:
+              type: string
+              description: User first name
+            lastName:
+              type: string
+              description: User last name
+        workspace:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+              description: Workspace ID
+            name:
+              type: string
+              description: Workspace name
+            slug:
+              type: string
+              description: Workspace slug

@@ -21,12 +21,14 @@ var columns = []string{
 	"method",
 	"path",
 	"permission_id",
+	"created_at",
 }
 
 var sqlColumnByDomainField = map[string]string{
 	"method":       "method",
 	"path":         "path",
 	"permissionId": "permission_id",
+	"createdAt":    "created_at",
 }
 
 type postgres struct {
@@ -58,7 +60,7 @@ func (r postgres) FindOne(ctx context.Context, criteria dafi.Criteria) (domain.A
 	row := r.db.QueryRow(ctx, result.SQL, result.Args...)
 
 	var item domain.ApiRoute
-	err = row.Scan(&item.Method, &item.Path, &item.PermissionID)
+	err = row.Scan(&item.Method, &item.Path, &item.PermissionID, &item.CreatedAt)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return domain.ApiRoute{}, oops.WithContext(ctx).In(apperrors.LayerRepository).Code(apperrors.CodeNotFound).Wrap(err)
@@ -93,7 +95,7 @@ func (r postgres) FindAll(ctx context.Context, criteria dafi.Criteria) (basedoma
 	var items basedomain.List[domain.ApiRoute]
 	for rows.Next() {
 		var item domain.ApiRoute
-		err = rows.Scan(&item.Method, &item.Path, &item.PermissionID)
+		err = rows.Scan(&item.Method, &item.Path, &item.PermissionID, &item.CreatedAt)
 		if err != nil {
 			return nil, oops.WithContext(ctx).In(apperrors.LayerRepository).Wrap(err)
 		}

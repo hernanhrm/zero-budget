@@ -95,39 +95,3 @@ paths:
       responses:
         '204':
           description: Permission deleted successfully
-
-components:
-  schemas:
-    Permission:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        slug:
-          type: string
-          minLength: 2
-          maxLength: 100
-        description:
-          type: string
-        createdAt:
-          type: string
-          format: date-time
-
-    CreatePermission:
-      type: object
-      required:
-        - slug
-      properties:
-        slug:
-          type: string
-          minLength: 2
-          maxLength: 100
-        description:
-          type: string
-
-    UpdatePermission:
-      type: object
-      properties:
-        description:
-          type: string

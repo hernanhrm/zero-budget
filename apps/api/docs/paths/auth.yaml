@@ -1,0 +1,24 @@
+paths:
+  /auth/signup:
+    post:
+      summary: Sign up with email
+      description: Creates a new user, organization, workspace, and assigns Admin role
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SignupWithEmail'
+      responses:
+        '201':
+          description: User signed up successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SignupResponse'
+        '400':
+          description: Invalid input
+        '409':
+          description: Email already exists

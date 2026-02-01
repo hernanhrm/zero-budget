@@ -12,6 +12,7 @@ type CreateUser struct {
 	FirstName string `json:"firstName"`
 	LastName  string `json:"lastName"`
 	Email     string `json:"email"`
+	Password  string `json:"password"`
 }
 
 func (c CreateUser) Validate(ctx context.Context) error {
@@ -19,6 +20,7 @@ func (c CreateUser) Validate(ctx context.Context) error {
 		validation.Field(&c.FirstName, validation.Required, validation.Length(2, 100)),
 		validation.Field(&c.LastName, validation.Required, validation.Length(2, 100)),
 		validation.Field(&c.Email, validation.Required, validation.IsEmail),
+		validation.Field(&c.Password, validation.Required, validation.Length(6, 255)),
 	)
 }
 

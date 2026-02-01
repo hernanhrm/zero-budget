@@ -24,19 +24,21 @@ var columns = []string{
 	"first_name",
 	"last_name",
 	"email",
+	"password_hash",
 	"image_url",
 	"created_at",
 	"updated_at",
 }
 
 var sqlColumnByDomainField = map[string]string{
-	"id":        "id",
-	"firstName": "first_name",
-	"lastName":  "last_name",
-	"email":     "email",
-	"imageUrl":  "image_url",
-	"createdAt": "created_at",
-	"updatedAt": "updated_at",
+	"id":           "id",
+	"firstName":    "first_name",
+	"lastName":     "last_name",
+	"email":        "email",
+	"passwordHash": "password_hash",
+	"imageUrl":     "image_url",
+	"createdAt":    "created_at",
+	"updatedAt":    "updated_at",
 }
 
 type postgres struct {
@@ -73,6 +75,7 @@ func (r postgres) FindOne(ctx context.Context, criteria dafi.Criteria) (domain.U
 		&user.FirstName,
 		&user.LastName,
 		&user.Email,
+		&user.PasswordHash,
 		&user.ImageURL,
 		&user.CreatedAt,
 		&user.UpdatedAt,
@@ -117,6 +120,7 @@ func (r postgres) FindAll(ctx context.Context, criteria dafi.Criteria) (basedoma
 			&user.FirstName,
 			&user.LastName,
 			&user.Email,
+			&user.PasswordHash,
 			&user.ImageURL,
 			&user.CreatedAt,
 			&user.UpdatedAt,
@@ -136,7 +140,7 @@ func (r postgres) Create(ctx context.Context, input domain.CreateUser) error {
 
 	query := sqlcraft.InsertInto(tableName).
 		WithColumns(columns...).
-		WithValues(id, input.FirstName, input.LastName, input.Email, nil, now, now)
+		WithValues(id, input.FirstName, input.LastName, input.Email, input.Password, nil, now, now)
 
 	result, err := query.ToSQL()
 	if err != nil {
@@ -163,7 +167,7 @@ func (r postgres) CreateBulk(ctx context.Context, inputs basedomain.List[domain.
 
 	for _, input := range inputs {
 		id := uuid.New().String()
-		query = query.WithValues(id, input.FirstName, input.LastName, input.Email, nil, now, now)
+		query = query.WithValues(id, input.FirstName, input.LastName, input.Email, input.Password, nil, now, now)
 	}
 
 	result, err := query.ToSQL()
