@@ -152,10 +152,8 @@ func (r postgres) CreateBulk(ctx context.Context, inputs basedomain.List[domain.
 func (r postgres) Update(ctx context.Context, input domain.UpdatePermission, filters ...dafi.Filter) error {
 	cols := []string{}
 	vals := []any{}
-	if input.Description.Valid {
-		cols = append(cols, "description")
-		vals = append(vals, input.Description.String)
-	}
+	cols = append(cols, "description")
+	vals = append(vals, input.Description)
 
 	query := sqlcraft.Update(tableName).
 		WithColumns(cols...).

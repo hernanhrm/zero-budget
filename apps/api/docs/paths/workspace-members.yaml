@@ -1,10 +1,15 @@
 paths:
-  /workspace-members:
+  /workspaces/{slug}/members:
     get:
-      summary: Find all workspace members
+      summary: Find all members in a workspace
       tags:
         - Workspace Members
       parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
         - name: limit
           in: query
           schema:
@@ -15,11 +20,6 @@ paths:
           schema:
             type: integer
             default: 0
-        - name: workspaceId
-          in: query
-          schema:
-            type: string
-            format: uuid
         - name: userId
           in: query
           schema:
@@ -38,6 +38,12 @@ paths:
       summary: Add a member to a workspace
       tags:
         - Workspace Members
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
       requestBody:
         required: true
         content:
@@ -48,18 +54,17 @@ paths:
         '201':
           description: Member added successfully
 
-  /workspace-members/find:
+  /workspaces/{slug}/members/find:
     get:
-      summary: Find workspace member by workspace ID and user ID
+      summary: Find workspace member by user ID
       tags:
         - Workspace Members
       parameters:
-        - name: workspaceId
-          in: query
+        - name: slug
+          in: path
           required: true
           schema:
             type: string
-            format: uuid
         - name: userId
           in: query
           required: true
@@ -81,12 +86,11 @@ paths:
       tags:
         - Workspace Members
       parameters:
-        - name: workspaceId
-          in: query
+        - name: slug
+          in: path
           required: true
           schema:
             type: string
-            format: uuid
         - name: userId
           in: query
           required: true
@@ -108,12 +112,11 @@ paths:
       tags:
         - Workspace Members
       parameters:
-        - name: workspaceId
-          in: query
+        - name: slug
+          in: path
           required: true
           schema:
             type: string
-            format: uuid
         - name: userId
           in: query
           required: true
@@ -148,13 +151,9 @@ components:
     CreateWorkspaceMember:
       type: object
       required:
-        - workspaceId
         - userId
         - roleId
       properties:
-        workspaceId:
-          type: string
-          format: uuid
         userId:
           type: string
           format: uuid

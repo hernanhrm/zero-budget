@@ -160,14 +160,8 @@ func (r postgres) CreateBulk(ctx context.Context, inputs basedomain.List[domain.
 func (r postgres) Update(ctx context.Context, input domain.UpdateWorkspace, filters ...dafi.Filter) error {
 	cols := []string{}
 	vals := []any{}
-	if input.Name.Valid {
-		cols = append(cols, "name")
-		vals = append(vals, input.Name.String)
-	}
-	if input.Slug.Valid {
-		cols = append(cols, "slug")
-		vals = append(vals, input.Slug.String)
-	}
+	cols = append(cols, "name", "slug")
+	vals = append(vals, input.Name, input.Slug)
 	cols = append(cols, "updated_at")
 	vals = append(vals, time.Now())
 

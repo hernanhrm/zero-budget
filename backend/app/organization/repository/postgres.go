@@ -181,18 +181,8 @@ func (r postgres) Update(ctx context.Context, input domain.UpdateOrganization, f
 	cols := []string{}
 	vals := []any{}
 
-	if input.Name.Valid {
-		cols = append(cols, "name")
-		vals = append(vals, input.Name.String)
-	}
-	if input.Slug.Valid {
-		cols = append(cols, "slug")
-		vals = append(vals, input.Slug.String)
-	}
-	if input.OwnerID.Valid {
-		cols = append(cols, "owner_id")
-		vals = append(vals, input.OwnerID.String)
-	}
+	cols = append(cols, "name", "slug")
+	vals = append(vals, input.Name, input.Slug)
 	cols = append(cols, "updated_at")
 	vals = append(vals, time.Now())
 

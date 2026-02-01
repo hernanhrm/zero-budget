@@ -24,15 +24,13 @@ func NewHTTP(svc domain.Service, logger basedomain.Logger) HTTP {
 
 func (h HTTP) FindOne(c echo.Context) error {
 	ctx := c.Request().Context()
-	workspaceID := c.Param("workspaceId")
-	userID := c.Param("userId")
+	userID := c.QueryParam("userId")
 
-	criteria := dafi.Criteria{
-		Filters: []dafi.Filter{
-			{Field: "workspaceId", Operator: dafi.Equal, Value: workspaceID},
-			{Field: "userId", Operator: dafi.Equal, Value: userID},
-		},
+	if userID == "" {
+		return oops.WithContext(ctx).In(apperrors.LayerHandler).Code(apperrors.CodeBadRequest).Errorf("userId is required")
 	}
+
+	criteria := dafi.Where("userId", dafi.Equal, userID)
 	item, err := h.svc.FindOne(ctx, criteria)
 	if err != nil {
 		return oops.WithContext(ctx).In(apperrors.LayerHandler).Wrap(err)
@@ -75,8 +73,11 @@ func (h HTTP) Create(c echo.Context) error {
 
 func (h HTTP) Update(c echo.Context) error {
 	ctx := c.Request().Context()
-	workspaceID := c.Param("workspaceId")
-	userID := c.Param("userId")
+	userID := c.QueryParam("userId")
+
+	if userID == "" {
+		return oops.WithContext(ctx).In(apperrors.LayerHandler).Code(apperrors.CodeBadRequest).Errorf("userId is required")
+	}
 
 	var input domain.UpdateWorkspaceMember
 	if err := c.Bind(&input); err != nil {
@@ -84,10 +85,8 @@ func (h HTTP) Update(c echo.Context) error {
 	}
 
 	filters := []dafi.Filter{
-		{Field: "workspaceId", Operator: dafi.Equal, Value: workspaceID},
 		{Field: "userId", Operator: dafi.Equal, Value: userID},
 	}
-
 	if err := h.svc.Update(ctx, input, filters...); err != nil {
 		return oops.WithContext(ctx).In(apperrors.LayerHandler).Wrap(err)
 	}
@@ -97,11 +96,13 @@ func (h HTTP) Update(c echo.Context) error {
 
 func (h HTTP) Delete(c echo.Context) error {
 	ctx := c.Request().Context()
-	workspaceID := c.Param("workspaceId")
-	userID := c.Param("userId")
+	userID := c.QueryParam("userId")
+
+	if userID == "" {
+		return oops.WithContext(ctx).In(apperrors.LayerHandler).Code(apperrors.CodeBadRequest).Errorf("userId is required")
+	}
 
 	filters := []dafi.Filter{
-		{Field: "workspaceId", Operator: dafi.Equal, Value: workspaceID},
 		{Field: "userId", Operator: dafi.Equal, Value: userID},
 	}
 	if err := h.svc.Delete(ctx, filters...); err != nil {

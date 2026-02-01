@@ -7,14 +7,13 @@ import (
 	"github.com/samber/do/v2"
 )
 
-func RegisterWorkspaceMemberRoutes(injector do.Injector, e *echo.Echo) {
+func RegisterWorkspaceMemberRoutes(injector do.Injector, g *echo.Group) {
 	h := di.MustInvoke[handler.HTTP](injector)
 
-	g := e.Group("/workspace-members")
+	membersGroup := g.Group("/members")
 
-	g.POST("", h.Create)
-	g.PUT("", h.Update)
-	g.DELETE("", h.Delete)
-	g.GET("", h.FindAll)
-	g.GET("", h.FindOne)
+	membersGroup.GET("", h.FindAll)
+	membersGroup.POST("", h.Create)
+	membersGroup.PUT("", h.Update)
+	membersGroup.DELETE("", h.Delete)
 }

@@ -12,7 +12,6 @@ import (
 	"backend/infra/database"
 	"backend/infra/sqlcraft"
 
-	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/samber/oops"
 )
@@ -175,11 +174,8 @@ func (r postgres) Update(ctx context.Context, input domain.UpdateWorkspaceMember
 	cols := []string{}
 	vals := []any{}
 
-	if input.RoleID != uuid.Nil {
-		cols = append(cols, "role_id")
-		vals = append(vals, input.RoleID)
-	}
-
+	cols = append(cols, "role_id")
+	vals = append(vals, input.RoleID)
 	cols = append(cols, "updated_at")
 	vals = append(vals, time.Now())
 

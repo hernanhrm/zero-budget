@@ -16,7 +16,6 @@ func SetupRoutes(injector do.Injector) func(e *echo.Echo) {
 		RegisterPermissionRoutes(injector, e)
 		RegisterRoleRoutes(injector, e)
 		RegisterApiRouteRoutes(injector, e)
-		RegisterWorkspaceMemberRoutes(injector, e)
 
 		e.GET("/docs", func(c echo.Context) error {
 			html, err := scalargo.NewV2(

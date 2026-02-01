@@ -10,11 +10,13 @@ import (
 func RegisterWorkspaceRoutes(injector do.Injector, e *echo.Echo) {
 	h := di.MustInvoke[handler.HTTP](injector)
 
-	g := e.Group("/workspaces")
+	workspaceGroup := e.Group("/workspaces")
 
-	g.POST("", h.Create)
-	g.PUT("/:id", h.Update)
-	g.DELETE("/:id", h.Delete)
-	g.GET("", h.FindAll)
-	g.GET("/:id", h.FindOne)
+	workspaceGroup.POST("", h.Create)
+	workspaceGroup.PUT("/:slug", h.Update)
+	workspaceGroup.DELETE("/:slug", h.Delete)
+	workspaceGroup.GET("", h.FindAll)
+	workspaceGroup.GET("/:slug", h.FindOne)
+
+	RegisterWorkspaceMemberRoutes(injector, workspaceGroup)
 }
