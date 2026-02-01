@@ -50,19 +50,13 @@ func GetConfigWithOptions(opts ConfigOptions, log domain.Logger) (LocalConfig, e
 		)
 	}
 
-	// Manually parse environment variables and populate config struct
-	servicePort, err := getEnvAsInt("SERVICE_PORT", log)
-	if err != nil {
-		return LocalConfig{}, oops.
-			Code("invalid_config_value").
-			With("key", "SERVICE_PORT").
-			Wrapf(err, "failed to parse SERVICE_PORT as integer")
-	}
-
 	config := LocalConfig{
 		Service: Service{
-			Port: servicePort,
-			Name: getEnvAsString("SERVICE_NAME"),
+			Port:           getPort,
+			Name:           getEnvAsString("SERVICE_NAME"),
+			DocsPath:       getEnvAsString("DOCS_PATH"),
+			MigrationsPath: getEnvAsString("MIGRATIONS_PATH"),
+			SkipMigrations: getEnvAsBool("SKIP_MIGRATIONS"),
 		},
 		Database: Database{
 			URL: getEnvAsString("DATABASE_URL"),
@@ -72,7 +66,7 @@ func GetConfigWithOptions(opts ConfigOptions, log domain.Logger) (LocalConfig, e
 
 	log.Debug("configuration loaded",
 		"service_name", config.Service.Name,
-		"service_port", config.Service.Port,
+		"service_port", config.Service.Port(),
 	)
 
 	return config, nil
@@ -118,4 +112,9 @@ func getEnvAsInt(key string, log domain.Logger) (int, error) {
 	}
 
 	return value, nil
+}
+
+func getEnvAsBool(key string) bool {
+	val := os.Getenv(key)
+	return val == "true" || val == "1" || val == "yes"
 }

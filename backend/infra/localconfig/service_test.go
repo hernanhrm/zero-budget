@@ -26,12 +26,7 @@ func TestConfigService_Get(t *testing.T) {
 			Name: "test-service",
 		},
 		Database: Database{
-			Host:     "localhost",
-			Port:     5432,
-			Username: "testuser",
-			Password: "testpass",
-			Name:     "testdb",
-			SSLMode:  "disable",
+			URL: "postgres://testuser:testpass@localhost:5432/testdb?sslmode=disable",
 		},
 	}
 
@@ -53,26 +48,16 @@ func TestConfigService_GetConnectionString(t *testing.T) {
 		{
 			name: "basic connection string",
 			config: Database{
-				Host:     "localhost",
-				Port:     5432,
-				Username: "user",
-				Password: "pass",
-				Name:     "dbname",
-				SSLMode:  "disable",
+				URL: "postgres://user:pass@localhost:5432/dbname?sslmode=disable",
 			},
-			expected: "host=localhost port=5432 user=user password=pass dbname=dbname sslmode=disable",
+			expected: "postgres://user:pass@localhost:5432/dbname?sslmode=disable",
 		},
 		{
 			name: "connection with SSL require",
 			config: Database{
-				Host:     "db.example.com",
-				Port:     5432,
-				Username: "myuser",
-				Password: "mypass",
-				Name:     "mydb",
-				SSLMode:  "require",
+				URL: "postgres://myuser:mypass@db.example.com:5432/mydb?sslmode=require",
 			},
-			expected: "host=db.example.com port=5432 user=myuser password=mypass dbname=mydb sslmode=require",
+			expected: "postgres://myuser:mypass@db.example.com:5432/mydb?sslmode=require",
 		},
 	}
 

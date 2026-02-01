@@ -3,6 +3,7 @@ package router
 import (
 	"net/http"
 
+	"backend/infra/localconfig"
 	scalargo "github.com/bdpiprava/scalar-go"
 	"github.com/labstack/echo/v4"
 	"github.com/samber/do/v2"
@@ -18,8 +19,13 @@ func SetupRoutes(injector do.Injector) func(e *echo.Echo) {
 		RegisterApiRouteRoutes(injector, e)
 
 		e.GET("/docs", func(c echo.Context) error {
+			configService := do.MustInvoke[*localconfig.ConfigService](injector)
+			docsPath := configService.GetDocsPath()
+			if docsPath == "" {
+				docsPath = "docs"
+			}
 			html, err := scalargo.NewV2(
-				scalargo.WithSpecDir("docs"),
+				scalargo.WithSpecDir(docsPath),
 				scalargo.WithBaseFileName("openapi.yaml"),
 			)
 			if err != nil {
