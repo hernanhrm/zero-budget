@@ -23,7 +23,6 @@ var columns = []string{
 	"user_id",
 	"role_id",
 	"created_at",
-	"updated_at",
 }
 
 var sqlColumnByDomainField = map[string]string{
@@ -31,7 +30,6 @@ var sqlColumnByDomainField = map[string]string{
 	"userId":      "user_id",
 	"roleId":      "role_id",
 	"createdAt":   "created_at",
-	"updatedAt":   "updated_at",
 }
 
 type postgres struct {
@@ -68,7 +66,6 @@ func (r postgres) FindOne(ctx context.Context, criteria dafi.Criteria) (domain.W
 		&item.UserID,
 		&item.RoleID,
 		&item.CreatedAt,
-		&item.UpdatedAt,
 	)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -110,7 +107,6 @@ func (r postgres) FindAll(ctx context.Context, criteria dafi.Criteria) (basedoma
 			&item.UserID,
 			&item.RoleID,
 			&item.CreatedAt,
-			&item.UpdatedAt,
 		)
 		if err != nil {
 			return nil, oops.WithContext(ctx).In(apperrors.LayerRepository).Wrap(err)
@@ -126,7 +122,7 @@ func (r postgres) Create(ctx context.Context, input domain.CreateWorkspaceMember
 
 	query := sqlcraft.InsertInto(tableName).
 		WithColumns(columns...).
-		WithValues(input.WorkspaceID, input.UserID, input.RoleID, now, now)
+		WithValues(input.WorkspaceID, input.UserID, input.RoleID, now)
 
 	result, err := query.ToSQL()
 	if err != nil {
@@ -152,7 +148,7 @@ func (r postgres) CreateBulk(ctx context.Context, inputs basedomain.List[domain.
 	query := sqlcraft.InsertInto(tableName).WithColumns(columns...)
 
 	for _, input := range inputs {
-		query = query.WithValues(input.WorkspaceID, input.UserID, input.RoleID, now, now)
+		query = query.WithValues(input.WorkspaceID, input.UserID, input.RoleID, now)
 	}
 
 	result, err := query.ToSQL()
@@ -172,8 +168,8 @@ func (r postgres) CreateBulk(ctx context.Context, inputs basedomain.List[domain.
 
 func (r postgres) Update(ctx context.Context, input domain.UpdateWorkspaceMember, filters ...dafi.Filter) error {
 	query := sqlcraft.Update(tableName).
-		WithColumns("role_id", "updated_at").
-		WithValues(input.RoleID, time.Now()).
+		WithColumns("role_id").
+		WithValues(input.RoleID).
 		Where(filters...).
 		SQLColumnByDomainField(sqlColumnByDomainField)
 

@@ -11,5 +11,4 @@ type WorkspaceMember struct {
 	UserID      uuid.UUID `json:"userId"`
 	RoleID      uuid.UUID `json:"roleId"`
 	CreatedAt   time.Time `json:"createdAt"`
-	UpdatedAt   time.Time `json:"updatedAt"`
 }

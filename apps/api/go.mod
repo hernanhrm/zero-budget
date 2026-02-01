@@ -5,10 +5,13 @@ go 1.24.0
 toolchain go1.24.12
 
 require (
+	backend/app/auth v0.0.0
 	github.com/bdpiprava/scalar-go v0.13.0
 	github.com/labstack/echo/v4 v4.15.0
 	github.com/samber/do/v2 v2.0.0
 )
+
+replace backend/app/auth => ../../backend/app/auth
 
 require (
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect

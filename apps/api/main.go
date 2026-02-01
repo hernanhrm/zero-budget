@@ -8,13 +8,13 @@ import (
 
 	"api/router"
 	"backend/app/api_route"
+	"backend/app/auth"
 	"backend/app/organization"
 	"backend/app/permission"
 	"backend/app/role"
 	"backend/app/user"
 	"backend/app/workspace"
 	"backend/app/workspace_member"
-	basedomain "backend/domain"
 	"backend/infra/database"
 	"backend/infra/di"
 	"backend/infra/localconfig"
@@ -29,7 +29,7 @@ func main() {
 	injector := di.New()
 
 	log := logger.NewProduction()
-	di.ProvideValue[basedomain.Logger](injector, log)
+	di.ProvideValue(injector, log)
 
 	cfg, err := localconfig.GetConfig(log)
 	if err != nil {
@@ -44,7 +44,7 @@ func main() {
 		os.Exit(1)
 	}
 	di.ProvideValue(injector, db)
-	di.ProvideValue[database.PoolInterface](injector, db.Pool)
+	di.ProvideValue(injector, db.Pool)
 
 	// Register feature modules
 	user.Module(injector)
@@ -54,6 +54,7 @@ func main() {
 	role.Module(injector)
 	api_route.Module(injector)
 	workspace_member.Module(injector)
+	auth.Module(injector, cfg.JWTSecret)
 
 	// Build server config
 	config := server.Config{

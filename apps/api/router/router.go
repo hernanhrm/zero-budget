@@ -10,6 +10,7 @@ import (
 
 func SetupRoutes(injector do.Injector) func(e *echo.Echo) {
 	return func(e *echo.Echo) {
+		RegisterAuthRoutes(injector, e)
 		RegisterUserRoutes(injector, e)
 		RegisterOrganizationRoutes(injector, e)
 		RegisterWorkspaceRoutes(injector, e)

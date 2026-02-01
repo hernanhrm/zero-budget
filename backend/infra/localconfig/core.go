@@ -67,6 +67,7 @@ func GetConfigWithOptions(opts ConfigOptions, log domain.Logger) (LocalConfig, e
 		Database: Database{
 			URL: getEnvAsString("DATABASE_URL"),
 		},
+		JWTSecret: getEnvAsString("JWT_SECRET"),
 	}
 
 	log.Debug("configuration loaded",

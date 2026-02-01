@@ -9,8 +9,9 @@ type ConfigOptions struct {
 
 // LocalConfig holds the complete application configuration.
 type LocalConfig struct {
-	Service  Service
-	Database Database
+	Service   Service
+	Database  Database
+	JWTSecret string
 }
 
 // Service holds service-specific configuration.
