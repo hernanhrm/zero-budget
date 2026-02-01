@@ -6,6 +6,8 @@ info:
 servers:
   - url: http://localhost:8080
     description: Local development server
+  - url: https://zero-budget-production.up.railway.app
+    description: Production server
 paths:
   /health:
     get:
