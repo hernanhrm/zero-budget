@@ -1,10 +1,15 @@
 paths:
-  /roles:
+  /workspaces/{slug}/roles:
     get:
-      summary: Find all roles
+      summary: Find all roles in a workspace
       tags:
         - Roles
       parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
         - name: limit
           in: query
           schema:
@@ -15,11 +20,6 @@ paths:
           schema:
             type: integer
             default: 0
-        - name: workspaceId
-          in: query
-          schema:
-            type: string
-            format: uuid
       responses:
         '200':
           description: List of roles
@@ -30,9 +30,15 @@ paths:
                 items:
                   $ref: '#/components/schemas/Role'
     post:
-      summary: Create a new role
+      summary: Create a new role in a workspace
       tags:
         - Roles
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
       requestBody:
         required: true
         content:
@@ -43,12 +49,17 @@ paths:
         '201':
           description: Role created successfully
 
-  /roles/{id}:
+  /workspaces/{slug}/roles/{id}:
     get:
-      summary: Find role by ID
+      summary: Find role by ID in a workspace
       tags:
         - Roles
       parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
         - name: id
           in: path
           required: true
@@ -66,10 +77,15 @@ paths:
           description: Role not found
 
     put:
-      summary: Update role
+      summary: Update role in a workspace
       tags:
         - Roles
       parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
         - name: id
           in: path
           required: true
@@ -87,10 +103,15 @@ paths:
           description: Role updated successfully
 
     delete:
-      summary: Delete role
+      summary: Delete role from a workspace
       tags:
         - Roles
       parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
         - name: id
           in: path
           required: true
@@ -128,12 +149,8 @@ components:
     CreateRole:
       type: object
       required:
-        - workspaceId
         - name
       properties:
-        workspaceId:
-          type: string
-          format: uuid
         name:
           type: string
           minLength: 2

@@ -145,14 +145,9 @@ func (r postgres) CreateBulk(ctx context.Context, inputs basedomain.List[domain.
 }
 
 func (r postgres) Update(ctx context.Context, input domain.UpdateApiRoute, filters ...dafi.Filter) error {
-	cols := []string{}
-	vals := []any{}
-	cols = append(cols, "permission_id")
-	vals = append(vals, input.PermissionID)
-
 	query := sqlcraft.Update(tableName).
-		WithColumns(cols...).
-		WithValues(vals...).
+		WithColumns("permission_id").
+		WithValues(input.PermissionID).
 		Where(filters...).
 		SQLColumnByDomainField(sqlColumnByDomainField)
 

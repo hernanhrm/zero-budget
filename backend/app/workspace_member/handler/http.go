@@ -84,9 +84,7 @@ func (h HTTP) Update(c echo.Context) error {
 		return oops.WithContext(ctx).In(apperrors.LayerHandler).Code(apperrors.CodeBadRequest).Wrap(err)
 	}
 
-	filters := []dafi.Filter{
-		{Field: "userId", Operator: dafi.Equal, Value: userID},
-	}
+	filters := dafi.FilterBy("userId", dafi.Equal, userID)
 	if err := h.svc.Update(ctx, input, filters...); err != nil {
 		return oops.WithContext(ctx).In(apperrors.LayerHandler).Wrap(err)
 	}
@@ -102,9 +100,7 @@ func (h HTTP) Delete(c echo.Context) error {
 		return oops.WithContext(ctx).In(apperrors.LayerHandler).Code(apperrors.CodeBadRequest).Errorf("userId is required")
 	}
 
-	filters := []dafi.Filter{
-		{Field: "userId", Operator: dafi.Equal, Value: userID},
-	}
+	filters := dafi.FilterBy("userId", dafi.Equal, userID)
 	if err := h.svc.Delete(ctx, filters...); err != nil {
 		return oops.WithContext(ctx).In(apperrors.LayerHandler).Wrap(err)
 	}

@@ -7,14 +7,14 @@ import (
 	"github.com/samber/do/v2"
 )
 
-func RegisterRoleRoutes(injector do.Injector, e *echo.Echo) {
+func RegisterRoleRoutes(injector do.Injector, g *echo.Group) {
 	h := di.MustInvoke[handler.HTTP](injector)
 
-	g := e.Group("/roles")
+	rolesGroup := g.Group("/:slug/roles")
 
-	g.POST("", h.Create)
-	g.PUT("/:id", h.Update)
-	g.DELETE("/:id", h.Delete)
-	g.GET("", h.FindAll)
-	g.GET("/:id", h.FindOne)
+	rolesGroup.POST("", h.Create)
+	rolesGroup.PUT("/:id", h.Update)
+	rolesGroup.DELETE("/:id", h.Delete)
+	rolesGroup.GET("", h.FindAll)
+	rolesGroup.GET("/:id", h.FindOne)
 }

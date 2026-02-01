@@ -19,4 +19,5 @@ func RegisterWorkspaceRoutes(injector do.Injector, e *echo.Echo) {
 	workspaceGroup.GET("/:slug", h.FindOne)
 
 	RegisterWorkspaceMemberRoutes(injector, workspaceGroup)
+	RegisterRoleRoutes(injector, workspaceGroup)
 }

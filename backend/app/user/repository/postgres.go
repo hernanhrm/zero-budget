@@ -182,17 +182,9 @@ func (r postgres) CreateBulk(ctx context.Context, inputs basedomain.List[domain.
 }
 
 func (r postgres) Update(ctx context.Context, input domain.UpdateUser, filters ...dafi.Filter) error {
-	cols := []string{}
-	vals := []any{}
-
-	cols = append(cols, "first_name", "last_name", "email")
-	vals = append(vals, input.FirstName, input.LastName, input.Email)
-	cols = append(cols, "updated_at")
-	vals = append(vals, time.Now())
-
 	query := sqlcraft.Update(tableName).
-		WithColumns(cols...).
-		WithValues(vals...).
+		WithColumns("first_name", "last_name", "email", "updated_at").
+		WithValues(input.FirstName, input.LastName, input.Email, time.Now()).
 		Where(filters...).
 		SQLColumnByDomainField(sqlColumnByDomainField)
 
