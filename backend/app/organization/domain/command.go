@@ -5,17 +5,20 @@ import (
 
 	"backend/infra/validation"
 
+	"github.com/google/uuid"
 	"github.com/guregu/null/v6"
 )
 
 type CreateOrganization struct {
-	Name    string `json:"name"`
-	Slug    string `json:"slug"`
-	OwnerID string `json:"ownerId"`
+	ID      uuid.UUID `json:"id"`
+	Name    string    `json:"name"`
+	Slug    string    `json:"slug"`
+	OwnerID uuid.UUID `json:"ownerId"`
 }
 
 func (c CreateOrganization) Validate(ctx context.Context) error {
 	return validation.ValidateStruct(ctx, &c,
+		validation.Field(&c.ID, validation.Required, validation.IsUUID),
 		validation.Field(&c.Name, validation.Required, validation.Length(2, 100)),
 		validation.Field(&c.Slug, validation.Required, validation.Length(2, 100)),
 		validation.Field(&c.OwnerID, validation.Required, validation.IsUUID),

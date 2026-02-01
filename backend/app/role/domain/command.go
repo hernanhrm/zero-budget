@@ -9,6 +9,7 @@ import (
 )
 
 type CreateRole struct {
+	ID          uuid.UUID `json:"id"`
 	WorkspaceID uuid.UUID `json:"workspaceId"`
 	Name        string    `json:"name"`
 	Description string    `json:"description"`
@@ -16,6 +17,7 @@ type CreateRole struct {
 
 func (c CreateRole) Validate(ctx context.Context) error {
 	return validation.ValidateStruct(ctx, &c,
+		validation.Field(&c.ID, validation.Required, validation.IsUUID),
 		validation.Field(&c.WorkspaceID, validation.Required),
 		validation.Field(&c.Name, validation.Required, validation.Length(2, 100)),
 		validation.Field(&c.Description, validation.Length(0, 500)),

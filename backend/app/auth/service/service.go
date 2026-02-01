@@ -15,7 +15,6 @@ import (
 	basedomain "backend/domain"
 	apperrors "backend/domain/errors"
 	"backend/infra/dafi"
-
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"github.com/samber/oops"
@@ -100,6 +99,9 @@ func (s service) SignupWithEmail(ctx context.Context, input domain.SignupWithEma
 	// Generate user ID in service
 	userID := uuid.New().String()
 
+	// Generate organization ID in service
+	orgID := uuid.New()
+
 	// Create user with generated ID
 	userInput := userDomain.CreateUser{
 		ID:        userID,
@@ -115,9 +117,10 @@ func (s service) SignupWithEmail(ctx context.Context, input domain.SignupWithEma
 
 	// Create organization
 	orgInput := organizationDomain.CreateOrganization{
+		ID:      orgID,
 		Name:    input.OrganizationName,
 		Slug:    orgSlug,
-		OwnerID: userID,
+		OwnerID: uuid.MustParse(userID),
 	}
 
 	if err := s.organizationSvc.Create(ctx, orgInput); err != nil {
@@ -147,20 +150,13 @@ func (s service) SignupWithEmail(ctx context.Context, input domain.SignupWithEma
 
 	// Create workspace
 	workspaceInput := workspaceDomain.CreateWorkspace{
+		ID:             uuid.New(),
 		OrganizationID: org.ID,
 		Name:           input.OrganizationName,
 		Slug:           workspaceSlug,
 	}
 
 	if err := s.workspaceSvc.Create(ctx, workspaceInput); err != nil {
-		return domain.SignupResponse{}, oops.WithContext(ctx).In(apperrors.LayerService).Wrap(err)
-	}
-
-	// Query back the workspace to get the generated ID
-	workspaceCriteria := dafi.Where("organizationId", dafi.Equal, org.ID).
-		And("slug", dafi.Equal, workspaceSlug)
-	workspace, err := s.workspaceSvc.FindOne(ctx, workspaceCriteria)
-	if err != nil {
 		return domain.SignupResponse{}, oops.WithContext(ctx).In(apperrors.LayerService).Wrap(err)
 	}
 
@@ -172,21 +168,19 @@ func (s service) SignupWithEmail(ctx context.Context, input domain.SignupWithEma
 		return domain.SignupResponse{}, oops.WithContext(ctx).In(apperrors.LayerService).Wrap(err)
 	}
 
-	workspaceIDParsed, _ := uuid.Parse(workspace.ID)
-	userIDParsed, _ := uuid.Parse(userID)
-	roleIDParsed, _ := uuid.Parse(adminRole.ID)
+	userIDParsed := uuid.MustParse(userID)
 
 	memberInput := workspaceMemberDomain.CreateWorkspaceMember{
-		WorkspaceID: workspaceIDParsed,
+		WorkspaceID: workspaceInput.ID,
 		UserID:      userIDParsed,
-		RoleID:      roleIDParsed,
+		RoleID:      adminRole.ID,
 	}
 
 	if err := s.workspaceMemberSvc.Create(ctx, memberInput); err != nil {
 		return domain.SignupResponse{}, oops.WithContext(ctx).In(apperrors.LayerService).Wrap(err)
 	}
 
-	tokenPair, err := s.generateTokenPair(userID, workspace.ID)
+	tokenPair, err := s.generateTokenPair(userID, workspaceInput.ID.String())
 	if err != nil {
 		return domain.SignupResponse{}, oops.WithContext(ctx).In(apperrors.LayerService).Wrap(err)
 	}
@@ -194,7 +188,7 @@ func (s service) SignupWithEmail(ctx context.Context, input domain.SignupWithEma
 	s.logger.WithContext(ctx).Info("user signed up",
 		"email", input.Email,
 		"user_id", userID,
-		"workspace_id", workspace.ID,
+		"workspace_id", workspaceInput.ID,
 	)
 
 	return domain.SignupResponse{
@@ -206,9 +200,9 @@ func (s service) SignupWithEmail(ctx context.Context, input domain.SignupWithEma
 			LastName:  input.LastName,
 		},
 		Workspace: domain.WorkspaceInfo{
-			ID:   workspace.ID,
-			Name: workspace.Name,
-			Slug: workspace.Slug,
+			ID:   workspaceInput.ID.String(),
+			Name: workspaceInput.Name,
+			Slug: workspaceInput.Slug,
 		},
 	}, nil
 }

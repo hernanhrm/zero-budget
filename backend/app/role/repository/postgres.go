@@ -12,7 +12,6 @@ import (
 	"backend/infra/database"
 	"backend/infra/sqlcraft"
 
-	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/samber/oops"
 )
@@ -128,11 +127,10 @@ func (r postgres) FindAll(ctx context.Context, criteria dafi.Criteria) (basedoma
 
 func (r postgres) Create(ctx context.Context, input domain.CreateRole) error {
 	now := time.Now()
-	id := uuid.New().String()
 
 	query := sqlcraft.InsertInto(tableName).
 		WithColumns(columns...).
-		WithValues(id, input.WorkspaceID, input.Name, input.Description, now, now)
+		WithValues(input.ID, input.WorkspaceID, input.Name, input.Description, now, now)
 
 	result, err := query.ToSQL()
 	if err != nil {
@@ -158,8 +156,7 @@ func (r postgres) CreateBulk(ctx context.Context, inputs basedomain.List[domain.
 	query := sqlcraft.InsertInto(tableName).WithColumns(columns...)
 
 	for _, input := range inputs {
-		id := uuid.New().String()
-		query = query.WithValues(id, input.WorkspaceID, input.Name, input.Description, now, now)
+		query = query.WithValues(input.ID, input.WorkspaceID, input.Name, input.Description, now, now)
 	}
 
 	result, err := query.ToSQL()

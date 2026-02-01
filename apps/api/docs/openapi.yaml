@@ -145,10 +145,15 @@ components:
     CreateOrganization:
       type: object
       required:
+        - id
         - name
         - slug
         - ownerId
       properties:
+        id:
+          type: string
+          format: uuid
+          description: Client-provided unique identifier
         name:
           type: string
           minLength: 2
@@ -199,10 +204,15 @@ components:
     CreateWorkspace:
       type: object
       required:
+        - id
         - organizationId
         - name
         - slug
       properties:
+        id:
+          type: string
+          format: uuid
+          description: Client-provided unique identifier
         organizationId:
           type: string
           format: uuid
@@ -247,8 +257,13 @@ components:
     CreatePermission:
       type: object
       required:
+        - id
         - slug
       properties:
+        id:
+          type: string
+          format: uuid
+          description: Client-provided unique identifier
         slug:
           type: string
           minLength: 2
@@ -288,8 +303,17 @@ components:
     CreateRole:
       type: object
       required:
+        - id
+        - workspaceId
         - name
       properties:
+        id:
+          type: string
+          format: uuid
+          description: Client-provided unique identifier
+        workspaceId:
+          type: string
+          format: uuid
         name:
           type: string
           minLength: 2

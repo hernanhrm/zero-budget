@@ -44,7 +44,24 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateRole'
+              type: object
+              required:
+                - id
+                - workspaceId
+                - name
+              properties:
+                id:
+                  type: string
+                  format: uuid
+                workspaceId:
+                  type: string
+                  format: uuid
+                name:
+                  type: string
+                  minLength: 2
+                  maxLength: 100
+                description:
+                  type: string
       responses:
         '201':
           description: Role created successfully
