@@ -8,6 +8,7 @@ import (
 )
 
 type Repository interface {
+	basedomain.RepositoryTx[Repository]
 	FindOne(ctx context.Context, criteria dafi.Criteria) (WorkspaceMember, error)
 	FindAll(ctx context.Context, criteria dafi.Criteria) (basedomain.List[WorkspaceMember], error)
 	Create(ctx context.Context, input CreateWorkspaceMember) error
@@ -17,6 +18,7 @@ type Repository interface {
 }
 
 type Service interface {
+	basedomain.UseCaseTx[Service]
 	FindOne(ctx context.Context, criteria dafi.Criteria) (WorkspaceMember, error)
 	FindAll(ctx context.Context, criteria dafi.Criteria) (basedomain.List[WorkspaceMember], error)
 	Create(ctx context.Context, input CreateWorkspaceMember) error

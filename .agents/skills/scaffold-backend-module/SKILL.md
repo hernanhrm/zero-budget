@@ -173,12 +173,14 @@ import basedomain "backend/domain"
 type Repository interface {
 	basedomain.RepositoryCommand[Create{{Module}}, Update{{Module}}]
 	basedomain.RepositoryQuery[{{Module}}]
+	basedomain.RepositoryTx[Repository]
 }
 
 type Service interface {
 	basedomain.UseCaseCommand[Create{{Module}}, Update{{Module}}]
 	basedomain.UseCaseQuery[{{Module}}]
 	basedomain.UseCaseQueryRelation[{{Module}}Relation]
+	basedomain.UseCaseTx[Service]
 }
 ```
 
@@ -204,6 +206,13 @@ func New(repo domain.Repository, logger basedomain.Logger) domain.Service {
 	return service{
 		repo:   repo,
 		logger: logger.With("component", "{{module}}.service"),
+	}
+}
+
+func (s service) WithTx(tx basedomain.Transaction) domain.Service {
+	return service{
+		repo:   s.repo.WithTx(tx),
+		logger: s.logger,
 	}
 }
 
@@ -291,16 +300,23 @@ import (
 	"errors"
 	"time"
 
+	"backend/app/{{module}}/domain"
 	basedomain "backend/domain"
 	apperrors "backend/domain/errors"
 	"backend/infra/dafi"
 	"backend/infra/database"
 	"backend/infra/sqlcraft"
-	"backend/app/{{module}}/domain"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/samber/oops"
 )
+
+type dbConn interface {
+	Exec(ctx context.Context, sql string, args ...any) (pgconn.CommandTag, error)
+	QueryRow(ctx context.Context, sql string, args ...any) pgx.Row
+	Query(ctx context.Context, sql string, args ...any) (pgx.Rows, error)
+}
 
 const tableName = "{{schema}}.{{module}}s"
 
@@ -319,7 +335,7 @@ var sqlColumnByDomainField = map[string]string{
 }
 
 type postgres struct {
-	db     database.PoolInterface
+	db     dbConn
 	logger basedomain.Logger
 }
 
@@ -327,6 +343,13 @@ func NewPostgres(db database.PoolInterface, logger basedomain.Logger) domain.Rep
 	return postgres{
 		db:     db,
 		logger: logger.With("component", "{{module}}.repository"),
+	}
+}
+
+func (r postgres) WithTx(tx basedomain.Transaction) domain.Repository {
+	return postgres{
+		db:     tx.GetTx(),
+		logger: r.logger,
 	}
 }
 

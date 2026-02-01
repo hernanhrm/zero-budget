@@ -13,6 +13,7 @@ import (
 	"backend/infra/sqlcraft"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/samber/oops"
 )
 
@@ -40,8 +41,14 @@ var sqlColumnByDomainField = map[string]string{
 	"updatedAt":    "updated_at",
 }
 
+type dbConn interface {
+	Exec(ctx context.Context, sql string, args ...any) (pgconn.CommandTag, error)
+	QueryRow(ctx context.Context, sql string, args ...any) pgx.Row
+	Query(ctx context.Context, sql string, args ...any) (pgx.Rows, error)
+}
+
 type postgres struct {
-	db     database.PoolInterface
+	db     dbConn
 	logger basedomain.Logger
 }
 
@@ -49,6 +56,13 @@ func NewPostgres(db database.PoolInterface, logger basedomain.Logger) domain.Rep
 	return postgres{
 		db:     db,
 		logger: logger.With("component", "user.repository"),
+	}
+}
+
+func (r postgres) WithTx(tx basedomain.Transaction) domain.Repository {
+	return postgres{
+		db:     tx.GetTx(),
+		logger: r.logger,
 	}
 }
 

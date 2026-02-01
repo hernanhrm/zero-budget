@@ -56,6 +56,18 @@ func New(
 	}
 }
 
+func (s service) WithTx(tx basedomain.Transaction) domain.Service {
+	return service{
+		userSvc:            s.userSvc.WithTx(tx),
+		organizationSvc:    s.organizationSvc.WithTx(tx),
+		workspaceSvc:       s.workspaceSvc.WithTx(tx),
+		roleSvc:            s.roleSvc.WithTx(tx),
+		workspaceMemberSvc: s.workspaceMemberSvc.WithTx(tx),
+		logger:             s.logger,
+		jwtSecret:          s.jwtSecret,
+	}
+}
+
 func (s service) SignupWithEmail(ctx context.Context, input domain.SignupWithEmail) (domain.SignupResponse, error) {
 	if err := input.Validate(ctx); err != nil {
 		return domain.SignupResponse{}, oops.WithContext(ctx).In(apperrors.LayerService).Code(apperrors.CodeValidation).Wrap(err)

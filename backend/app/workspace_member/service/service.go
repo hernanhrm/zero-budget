@@ -20,6 +20,13 @@ func New(repo domain.Repository, logger basedomain.Logger) domain.Service {
 	}
 }
 
+func (s service) WithTx(tx basedomain.Transaction) domain.Service {
+	return service{
+		repo:   s.repo.WithTx(tx),
+		logger: s.logger,
+	}
+}
+
 func (s service) FindOne(ctx context.Context, criteria dafi.Criteria) (domain.WorkspaceMember, error) {
 	return s.repo.FindOne(ctx, criteria)
 }
