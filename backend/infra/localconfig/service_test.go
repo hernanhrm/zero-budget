@@ -22,7 +22,7 @@ func TestConfigService_Get(t *testing.T) {
 	// Test with minimal config
 	config := LocalConfig{
 		Service: Service{
-			Port: 8080,
+			Port: func() int { return 8080 },
 			Name: "test-service",
 		},
 		Database: Database{
@@ -36,7 +36,9 @@ func TestConfigService_Get(t *testing.T) {
 	}
 
 	result := service.Get()
-	assert.Equal(t, config, result, "Get should return the stored config")
+	assert.Equal(t, config.Service.Name, result.Service.Name, "Service name should match")
+	assert.Equal(t, config.Service.Port(), result.Service.Port(), "Port should match")
+	assert.Equal(t, config.Database.URL, result.Database.URL, "Database URL should match")
 }
 
 func TestConfigService_GetConnectionString(t *testing.T) {
@@ -77,7 +79,7 @@ func TestConfigService_GetConnectionString(t *testing.T) {
 func TestConfigService_GetServicePort(t *testing.T) {
 	config := LocalConfig{
 		Service: Service{
-			Port: 9090,
+			Port: func() int { return 9090 },
 			Name: "test-service",
 		},
 	}
@@ -94,7 +96,7 @@ func TestConfigService_GetServicePort(t *testing.T) {
 func TestConfigService_GetServiceName(t *testing.T) {
 	config := LocalConfig{
 		Service: Service{
-			Port: 8080,
+			Port: func() int { return 8080 },
 			Name: "my-api",
 		},
 	}

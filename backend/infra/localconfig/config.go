@@ -34,7 +34,7 @@ type Database struct {
 }
 
 func getPort() int {
-	p := os.Getenv("PORT")
+	p := os.Getenv("SERVICE_PORT")
 	if p == "" {
 		return 8080
 	}

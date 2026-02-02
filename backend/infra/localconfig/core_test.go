@@ -38,7 +38,7 @@ DATABASE_URL=postgres://testuser:testpass@localhost:5432/testdb?sslmode=disable
 	assert.NoError(t, err, "GetConfig should not fail")
 
 	// Verify Service config
-	assert.Equal(t, 8080, config.Service.Port, "Service.Port should be 8080")
+	assert.Equal(t, 8080, config.Service.Port(), "Service.Port should be 8080")
 	assert.Equal(t, "test-api", config.Service.Name, "Service.Name should be 'test-api'")
 
 	// Verify Database config
@@ -68,7 +68,7 @@ DATABASE_URL=mysql://customuser:custompass@customhost:3306/customdb?sslmode=requ
 	assert.NoError(t, err, "GetConfigWithOptions should not fail")
 
 	// Verify Service config
-	assert.Equal(t, 9090, config.Service.Port, "Service.Port should be 9090")
+	assert.Equal(t, 9090, config.Service.Port(), "Service.Port should be 9090")
 	assert.Equal(t, "custom-service", config.Service.Name, "Service.Name should be 'custom-service'")
 
 	// Verify Database config
@@ -112,7 +112,7 @@ DATABASE_URL=postgres://devuser:devpass@devhost:5433/devdb?sslmode=disable
 	assert.NoError(t, err, "GetConfig should not fail")
 
 	// Verify Service config
-	assert.Equal(t, 7070, config.Service.Port, "Service.Port should be 7070")
+	assert.Equal(t, 7070, config.Service.Port(), "Service.Port should be 7070")
 	assert.Equal(t, "dev-service", config.Service.Name, "Service.Name should be 'dev-service'")
 
 	// Verify Database config
@@ -161,7 +161,7 @@ func TestGetConfigFallbackToEnvVars(t *testing.T) {
 	assert.NoError(t, err, "GetConfigWithOptions should not fail")
 
 	// Should read from system environment variables
-	assert.Equal(t, 3000, config.Service.Port, "Service.Port should be 3000")
+	assert.Equal(t, 3000, config.Service.Port(), "Service.Port should be 3000")
 	assert.Equal(t, "prod-service", config.Service.Name, "Service.Name should be 'prod-service'")
 	assert.Equal(t, "postgres://produser:prodpass@prod.example.com:5432/proddb?sslmode=verify-full", config.Database.URL, "Database.URL should be correct")
 }
