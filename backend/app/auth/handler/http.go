@@ -4,6 +4,7 @@ import (
 	"backend/app/auth/domain"
 	"backend/infra/httpresponse"
 	"github.com/labstack/echo/v4"
+	"strings"
 )
 
 type HTTP struct {
@@ -39,6 +40,28 @@ func (h HTTP) Login(c echo.Context) error {
 	}
 
 	result, err := h.svc.LoginWithEmail(ctx, input)
+	if err != nil {
+		return err
+	}
+
+	return httpresponse.OK(c, result)
+}
+
+func (h HTTP) Refresh(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	authHeader := c.Request().Header.Get("Authorization")
+	if authHeader == "" || !strings.HasPrefix(authHeader, "Bearer ") {
+		return httpresponse.Unauthorized(c, "Missing or invalid Authorization header")
+	}
+	accessToken := strings.TrimPrefix(authHeader, "Bearer ")
+
+	var input domain.RefreshTokenRequest
+	if err := c.Bind(&input); err != nil {
+		return httpresponse.Unauthorized(c, "Invalid refresh token")
+	}
+
+	result, err := h.svc.RefreshToken(ctx, accessToken, input.RefreshToken)
 	if err != nil {
 		return err
 	}

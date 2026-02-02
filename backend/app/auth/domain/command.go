@@ -72,3 +72,17 @@ type LoginResponse struct {
 	User      UserInfo      `json:"user"`
 	Workspace WorkspaceInfo `json:"workspace"`
 }
+
+type RefreshTokenRequest struct {
+	RefreshToken string `json:"refreshToken"`
+}
+
+func (r RefreshTokenRequest) Validate(ctx context.Context) error {
+	return validation.ValidateStruct(ctx, &r,
+		validation.Field(&r.RefreshToken, validation.Required),
+	)
+}
+
+type RefreshResponse struct {
+	TokenPair
+}

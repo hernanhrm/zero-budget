@@ -44,3 +44,33 @@ paths:
                 $ref: '#/components/schemas/LoginResponse'
         '401':
           description: Invalid email or password
+
+  /auth/refresh:
+    post:
+      summary: Refresh tokens
+      description: Refreshes access and refresh tokens using an expired access token and valid refresh token
+      tags:
+        - Authentication
+      parameters:
+        - in: header
+          name: Authorization
+          required: true
+          schema:
+            type: string
+            example: "Bearer <access_token>"
+          description: Bearer access token (can be expired)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshTokenRequest'
+      responses:
+        '200':
+          description: Tokens refreshed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RefreshResponse'
+        '401':
+          description: Invalid or expired refresh token

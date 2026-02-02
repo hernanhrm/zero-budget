@@ -57,6 +57,8 @@ paths:
     $ref: './paths/auth.yaml#/paths/~1auth~1signup'
   /auth/login:
     $ref: './paths/auth.yaml#/paths/~1auth~1login'
+  /auth/refresh:
+    $ref: './paths/auth.yaml#/paths/~1auth~1refresh'
 
 components:
   schemas:
@@ -553,3 +555,26 @@ components:
             slug:
               type: string
               description: Workspace slug
+
+    RefreshTokenRequest:
+      type: object
+      required:
+        - refreshToken
+      properties:
+        refreshToken:
+          type: string
+          description: Valid refresh token
+
+    RefreshResponse:
+      type: object
+      properties:
+        accessToken:
+          type: string
+          description: New JWT access token (expires in 5 minutes)
+        refreshToken:
+          type: string
+          description: New JWT refresh token (expires in 7 days)
+        expiresAt:
+          type: string
+          format: date-time
+          description: Access token expiration time

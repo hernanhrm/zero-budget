@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -327,4 +328,117 @@ func (s service) LoginWithEmail(ctx context.Context, input domain.LoginWithEmail
 			Slug: workspace.Slug,
 		},
 	}, nil
+}
+
+func (s service) RefreshToken(ctx context.Context, accessToken, refreshToken string) (domain.RefreshResponse, error) {
+	accessClaims, err := s.parseToken(accessToken, true)
+	if err != nil {
+		return domain.RefreshResponse{}, oops.WithContext(ctx).
+			In(apperrors.LayerService).
+			Code(apperrors.CodeUnauthorized).
+			Public("Invalid or expired refresh token").
+			Errorf("failed to parse access token: %w", err)
+	}
+
+	userID, ok := accessClaims["user_id"].(string)
+	if !ok || userID == "" {
+		return domain.RefreshResponse{}, oops.WithContext(ctx).
+			In(apperrors.LayerService).
+			Code(apperrors.CodeUnauthorized).
+			Public("Invalid or expired refresh token").
+			Errorf("user_id not found in access token claims")
+	}
+
+	memberCriteria := dafi.Where("userId", dafi.Equal, userID)
+	member, err := s.workspaceMemberSvc.FindOne(ctx, memberCriteria)
+	if err != nil {
+		return domain.RefreshResponse{}, oops.WithContext(ctx).
+			In(apperrors.LayerService).
+			Code(apperrors.CodeUnauthorized).
+			Public("Invalid or expired refresh token").
+			With("user_id", userID).
+			Errorf("user does not belong to any workspace: %s", userID)
+	}
+
+	refreshClaims, err := s.parseToken(refreshToken, false)
+	if err != nil {
+		return domain.RefreshResponse{}, oops.WithContext(ctx).
+			In(apperrors.LayerService).
+			Code(apperrors.CodeUnauthorized).
+			Public("Invalid or expired refresh token").
+			Errorf("failed to parse refresh token: %w", err)
+	}
+
+	tokenType, ok := refreshClaims["type"].(string)
+	if !ok || tokenType != "refresh" {
+		return domain.RefreshResponse{}, oops.WithContext(ctx).
+			In(apperrors.LayerService).
+			Code(apperrors.CodeUnauthorized).
+			Public("Invalid or expired refresh token").
+			Errorf("invalid token type: expected 'refresh', got '%s'", tokenType)
+	}
+
+	refreshUserID, ok := refreshClaims["user_id"].(string)
+	if !ok || refreshUserID == "" {
+		return domain.RefreshResponse{}, oops.WithContext(ctx).
+			In(apperrors.LayerService).
+			Code(apperrors.CodeUnauthorized).
+			Public("Invalid or expired refresh token").
+			Errorf("user_id not found in refresh token claims")
+	}
+
+	if refreshUserID != userID {
+		return domain.RefreshResponse{}, oops.WithContext(ctx).
+			In(apperrors.LayerService).
+			Code(apperrors.CodeUnauthorized).
+			Public("Invalid or expired refresh token").
+			Errorf("user_id mismatch between access and refresh tokens")
+	}
+
+	workspaceID, ok := accessClaims["workspace_id"].(string)
+	if !ok || workspaceID == "" {
+		workspaceID = member.WorkspaceID.String()
+	}
+
+	tokenPair, err := s.generateTokenPair(userID, workspaceID)
+	if err != nil {
+		return domain.RefreshResponse{}, oops.WithContext(ctx).In(apperrors.LayerService).Wrap(err)
+	}
+
+	s.logger.WithContext(ctx).Info("token refreshed",
+		"user_id", userID,
+	)
+
+	return domain.RefreshResponse{
+		TokenPair: tokenPair,
+	}, nil
+}
+
+func (s service) parseToken(tokenString string, allowExpired bool) (jwt.MapClaims, error) {
+	token, err := jwt.ParseWithClaims(tokenString, &jwt.MapClaims{}, func(token *jwt.Token) (any, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, oops.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
+		return s.jwtSecret, nil
+	})
+
+	if err != nil {
+		if allowExpired && errors.Is(err, jwt.ErrTokenExpired) {
+			token, _ = jwt.ParseWithClaims(tokenString, &jwt.MapClaims{}, func(token *jwt.Token) (any, error) {
+				if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+					return nil, oops.Errorf("unexpected signing method: %v", token.Header["alg"])
+				}
+				return s.jwtSecret, nil
+			})
+		} else {
+			return nil, err
+		}
+	}
+
+	claims, ok := token.Claims.(*jwt.MapClaims)
+	if !ok || !token.Valid {
+		return nil, oops.Errorf("invalid token claims")
+	}
+
+	return *claims, nil
 }
