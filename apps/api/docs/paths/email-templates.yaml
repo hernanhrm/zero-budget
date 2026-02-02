@@ -1,0 +1,147 @@
+paths:
+  /email-templates:
+    get:
+      summary: Find all email templates
+      tags:
+        - Email Templates
+      parameters:
+        - name: workspaceId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: event
+          in: query
+          schema:
+            type: string
+        - name: isActive
+          in: query
+          schema:
+            type: boolean
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: List of email templates
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EmailTemplate'
+    post:
+      summary: Create a new email template
+      tags:
+        - Email Templates
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateEmailTemplate'
+      responses:
+        '201':
+          description: Email template created successfully
+
+  /email-templates/{id}:
+    get:
+      summary: Find email template by ID
+      tags:
+        - Email Templates
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Email template found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmailTemplate'
+        '404':
+          description: Email template not found
+
+    put:
+      summary: Update email template
+      tags:
+        - Email Templates
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateEmailTemplate'
+      responses:
+        '204':
+          description: Email template updated successfully
+
+    delete:
+      summary: Delete email template
+      tags:
+        - Email Templates
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Email template deleted successfully
+
+  /email-templates/{id}/logs:
+    get:
+      summary: Find all logs for an email template
+      tags:
+        - Email Logs
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [pending, sent, failed, delivered]
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: List of email logs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EmailLog'

@@ -9,6 +9,8 @@ import (
 	"api/router"
 	"backend/app/api_route"
 	"backend/app/auth"
+	"backend/app/email_log"
+	"backend/app/email_template"
 	"backend/app/organization"
 	"backend/app/permission"
 	"backend/app/role"
@@ -76,6 +78,8 @@ func main() {
 
 	// Register feature modules
 	user.Module(injector)
+	email_log.Module(injector)
+	email_template.Module(injector)
 	organization.Module(injector)
 	workspace.Module(injector)
 	permission.Module(injector)

@@ -3,6 +3,8 @@ go 1.24.12
 use (
 	./apps/api
 	./backend/app/api_route
+	./backend/app/email_log
+	./backend/app/email_template
 	./backend/app/organization
 	./backend/app/permission
 	./backend/app/role

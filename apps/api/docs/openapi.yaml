@@ -59,6 +59,12 @@ paths:
     $ref: './paths/auth.yaml#/paths/~1auth~1login'
   /auth/refresh:
     $ref: './paths/auth.yaml#/paths/~1auth~1refresh'
+  /email-templates:
+    $ref: './paths/email-templates.yaml#/paths/~1email-templates'
+  /email-templates/{id}:
+    $ref: './paths/email-templates.yaml#/paths/~1email-templates~1{id}'
+  /email-templates/{id}/logs:
+    $ref: './paths/email-templates.yaml#/paths/~1email-templates~1{id}~1logs'
 
 components:
   schemas:
@@ -578,3 +584,192 @@ components:
           type: string
           format: date-time
           description: Access token expiration time
+
+    # Email Template schemas
+    EmailTemplate:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        workspaceId:
+          type: string
+          format: uuid
+          nullable: true
+        event:
+          type: string
+          minLength: 1
+          maxLength: 100
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        description:
+          type: string
+        subject:
+          type: string
+          minLength: 1
+          maxLength: 500
+        content:
+          type: string
+        isActive:
+          type: boolean
+        locale:
+          type: string
+          minLength: 2
+          maxLength: 10
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    CreateEmailTemplate:
+      type: object
+      required:
+        - id
+        - event
+        - name
+        - subject
+        - content
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Client-provided unique identifier
+        workspaceId:
+          type: string
+          format: uuid
+          nullable: true
+          description: Leave null for global templates
+        event:
+          type: string
+          minLength: 1
+          maxLength: 100
+          description: Custom event identifier (e.g., "user.welcome")
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        description:
+          type: string
+        subject:
+          type: string
+          minLength: 1
+          maxLength: 500
+        content:
+          type: string
+          description: Email body content with Go template syntax
+        isActive:
+          type: boolean
+          default: true
+        locale:
+          type: string
+          default: 'en'
+
+    UpdateEmailTemplate:
+      type: object
+      properties:
+        event:
+          type: string
+          minLength: 1
+          maxLength: 100
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        description:
+          type: string
+        subject:
+          type: string
+          minLength: 1
+          maxLength: 500
+        content:
+          type: string
+        isActive:
+          type: boolean
+        locale:
+          type: string
+          minLength: 2
+          maxLength: 10
+
+    # Email Log schemas
+    EmailLog:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        templateId:
+          type: string
+          format: uuid
+        workspaceId:
+          type: string
+          format: uuid
+        recipientEmail:
+          type: string
+          format: email
+        event:
+          type: string
+          minLength: 1
+          maxLength: 100
+        subject:
+          type: string
+        content:
+          type: string
+        status:
+          type: string
+          enum: [pending, sent, failed, delivered]
+        errorMessage:
+          type: string
+        sentAt:
+          type: string
+          format: date-time
+
+    CreateEmailLog:
+      type: object
+      required:
+        - id
+        - templateId
+        - workspaceId
+        - recipientEmail
+        - event
+        - subject
+        - content
+        - status
+      properties:
+        id:
+          type: string
+          format: uuid
+        templateId:
+          type: string
+          format: uuid
+        workspaceId:
+          type: string
+          format: uuid
+        recipientEmail:
+          type: string
+          format: email
+        event:
+          type: string
+        subject:
+          type: string
+        content:
+          type: string
+        status:
+          type: string
+          enum: [pending, sent, failed, delivered]
+        errorMessage:
+          type: string
+
+    UpdateEmailLog:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          enum: [pending, sent, failed, delivered]
+        errorMessage:
+          type: string
