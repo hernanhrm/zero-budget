@@ -29,3 +29,19 @@ func (h HTTP) Signup(c echo.Context) error {
 
 	return httpresponse.Created(c, result)
 }
+
+func (h HTTP) Login(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	var input domain.LoginWithEmail
+	if err := c.Bind(&input); err != nil {
+		return err
+	}
+
+	result, err := h.svc.LoginWithEmail(ctx, input)
+	if err != nil {
+		return err
+	}
+
+	return httpresponse.OK(c, result)
+}

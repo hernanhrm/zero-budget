@@ -55,6 +55,8 @@ paths:
     $ref: './paths/workspace-members.yaml#/paths/~1workspace-members~1find'
   /auth/signup:
     $ref: './paths/auth.yaml#/paths/~1auth~1signup'
+  /auth/login:
+    $ref: './paths/auth.yaml#/paths/~1auth~1login'
 
 components:
   schemas:
@@ -450,6 +452,65 @@ components:
           description: Organization name (also used for workspace name)
 
     SignupResponse:
+      type: object
+      properties:
+        accessToken:
+          type: string
+          description: JWT access token (expires in 5 minutes)
+        refreshToken:
+          type: string
+          description: JWT refresh token (expires in 7 days)
+        expiresAt:
+          type: string
+          format: date-time
+          description: Access token expiration time
+        user:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+              description: User ID
+            email:
+              type: string
+              format: email
+              description: User email
+            firstName:
+              type: string
+              description: User first name
+            lastName:
+              type: string
+              description: User last name
+        workspace:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+              description: Workspace ID
+            name:
+              type: string
+              description: Workspace name
+            slug:
+              type: string
+              description: Workspace slug
+
+    LoginWithEmail:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          description: User email address
+        password:
+          type: string
+          minLength: 6
+          description: User password
+
+    LoginResponse:
       type: object
       properties:
         accessToken:

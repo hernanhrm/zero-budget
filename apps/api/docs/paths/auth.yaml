@@ -22,3 +22,25 @@ paths:
           description: Invalid input
         '409':
           description: Email already exists
+
+  /auth/login:
+    post:
+      summary: Login with email
+      description: Authenticates user with email and password, returns JWT tokens
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginWithEmail'
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '401':
+          description: Invalid email or password

@@ -54,3 +54,21 @@ type JWTClaims struct {
 	UserID      string `json:"user_id"`
 	WorkspaceID string `json:"workspace_id"`
 }
+
+type LoginWithEmail struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
+func (l LoginWithEmail) Validate(ctx context.Context) error {
+	return validation.ValidateStruct(ctx, &l,
+		validation.Field(&l.Email, validation.Required, validation.IsEmail),
+		validation.Field(&l.Password, validation.Required),
+	)
+}
+
+type LoginResponse struct {
+	TokenPair
+	User      UserInfo      `json:"user"`
+	Workspace WorkspaceInfo `json:"workspace"`
+}

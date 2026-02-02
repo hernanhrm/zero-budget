@@ -12,4 +12,5 @@ func RegisterAuthRoutes(injector do.Injector, e *echo.Echo) {
 
 	authGroup := e.Group("/auth")
 	authGroup.POST("/signup", authHandler.Signup)
+	authGroup.POST("/login", authHandler.Login)
 }

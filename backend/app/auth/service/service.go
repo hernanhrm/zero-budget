@@ -15,6 +15,7 @@ import (
 	basedomain "backend/domain"
 	apperrors "backend/domain/errors"
 	"backend/infra/dafi"
+
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"github.com/samber/oops"
@@ -262,4 +263,68 @@ func generateSlug(name string) string {
 
 func generateShortSuffix() string {
 	return uuid.New().String()[:8]
+}
+
+func (s service) LoginWithEmail(ctx context.Context, input domain.LoginWithEmail) (domain.LoginResponse, error) {
+	if err := input.Validate(ctx); err != nil {
+		return domain.LoginResponse{}, oops.WithContext(ctx).In(apperrors.LayerService).Code(apperrors.CodeValidation).Wrap(err)
+	}
+
+	userCriteria := dafi.Where("email", dafi.Equal, input.Email)
+	user, err := s.userSvc.FindOne(ctx, userCriteria)
+	if err != nil {
+		return domain.LoginResponse{}, oops.WithContext(ctx).
+			In(apperrors.LayerService).
+			Code(apperrors.CodeUnauthorized).
+			With("email", input.Email).
+			Public("Invalid email or password").
+			Errorf("user not found with email: %s", input.Email)
+	}
+
+	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash.String), []byte(input.Password)); err != nil {
+		return domain.LoginResponse{}, oops.WithContext(ctx).
+			In(apperrors.LayerService).
+			Code(apperrors.CodeUnauthorized).
+			With("email", input.Email).
+			Public("Invalid email or password").
+			Errorf("invalid password for user: %s", input.Email)
+	}
+
+	memberCriteria := dafi.Where("userId", dafi.Equal, user.ID)
+	member, err := s.workspaceMemberSvc.FindOne(ctx, memberCriteria)
+	if err != nil {
+		return domain.LoginResponse{}, oops.WithContext(ctx).In(apperrors.LayerService).Wrap(err)
+	}
+
+	workspaceCriteria := dafi.Where("id", dafi.Equal, member.WorkspaceID)
+	workspace, err := s.workspaceSvc.FindOne(ctx, workspaceCriteria)
+	if err != nil {
+		return domain.LoginResponse{}, oops.WithContext(ctx).In(apperrors.LayerService).Wrap(err)
+	}
+
+	tokenPair, err := s.generateTokenPair(user.ID, member.WorkspaceID.String())
+	if err != nil {
+		return domain.LoginResponse{}, oops.WithContext(ctx).In(apperrors.LayerService).Wrap(err)
+	}
+
+	s.logger.WithContext(ctx).Info("user logged in",
+		"email", input.Email,
+		"user_id", user.ID,
+		"workspace_id", member.WorkspaceID,
+	)
+
+	return domain.LoginResponse{
+		TokenPair: tokenPair,
+		User: domain.UserInfo{
+			ID:        user.ID,
+			Email:     user.Email,
+			FirstName: user.FirstName,
+			LastName:  user.LastName,
+		},
+		Workspace: domain.WorkspaceInfo{
+			ID:   member.WorkspaceID.String(),
+			Name: workspace.Name,
+			Slug: workspace.Slug,
+		},
+	}, nil
 }

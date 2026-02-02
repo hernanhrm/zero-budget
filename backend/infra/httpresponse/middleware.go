@@ -141,7 +141,12 @@ func oopsErrorToProblem(oopsErr oops.OopsError, instance string, mappings map[st
 		WithExtension("code", code)
 
 	if config.Debug || status < 500 {
-		problem = problem.WithDetail(oopsErr.Error())
+		publicMsg := oopsErr.Public()
+		if publicMsg != "" {
+			problem = problem.WithDetail(publicMsg)
+		} else {
+			problem = problem.WithDetail(oopsErr.Error())
+		}
 	} else {
 		problem = problem.WithDetail("An unexpected error occurred")
 	}
@@ -290,7 +295,12 @@ func handleOopsError(c echo.Context, oopsErr oops.OopsError, mappings map[string
 		WithExtension("code", code)
 
 	if !config.Debug && status >= 500 {
-		problem.Detail = "An unexpected error occurred"
+		publicMsg := oopsErr.Public()
+		if publicMsg != "" {
+			problem.Detail = publicMsg
+		} else {
+			problem.Detail = "An unexpected error occurred"
+		}
 	}
 
 	return Problem(c, problem)
