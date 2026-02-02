@@ -1,5 +1,5 @@
 paths:
-  /auth/signup:
+  /v1/auth/signup:
     post:
       summary: Sign up with email
       description: Creates a new user, organization, workspace, and assigns Admin role
@@ -23,7 +23,7 @@ paths:
         '409':
           description: Email already exists
 
-  /auth/login:
+  /v1/auth/login:
     post:
       summary: Login with email
       description: Authenticates user with email and password, returns JWT tokens
@@ -45,7 +45,7 @@ paths:
         '401':
           description: Invalid email or password
 
-  /auth/refresh:
+  /v1/auth/refresh:
     post:
       summary: Refresh tokens
       description: Refreshes access and refresh tokens using an expired access token and valid refresh token

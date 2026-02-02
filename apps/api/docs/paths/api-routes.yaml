@@ -1,5 +1,5 @@
 paths:
-  /api-routes:
+  /v1/api-routes:
     get:
       summary: Find all API routes
       tags:
@@ -47,7 +47,7 @@ paths:
         '201':
           description: API route created successfully
 
-  /api-routes/find:
+  /v1/api-routes/find:
     get:
       summary: Find API route by method and path
       tags:

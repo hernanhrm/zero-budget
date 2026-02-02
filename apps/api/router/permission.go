@@ -10,7 +10,7 @@ import (
 func RegisterPermissionRoutes(injector do.Injector, e *echo.Echo) {
 	h := di.MustInvoke[handler.HTTP](injector)
 
-	g := e.Group("/permissions")
+	g := e.Group("/v1/permissions")
 
 	g.POST("", h.Create)
 	g.PUT("/:id", h.Update)

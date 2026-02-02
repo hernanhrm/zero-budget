@@ -1,5 +1,5 @@
 paths:
-  /workspaces/{slug}/members:
+  /v1/workspaces/{slug}/members:
     get:
       summary: Find all members in a workspace
       tags:
@@ -54,7 +54,7 @@ paths:
         '201':
           description: Member added successfully
 
-  /workspaces/{slug}/members/find:
+  /v1/workspaces/{slug}/members/find:
     get:
       summary: Find workspace member by user ID
       tags:

@@ -10,7 +10,7 @@ import (
 func RegisterAuthRoutes(injector do.Injector, e *echo.Echo) {
 	authHandler := di.MustInvoke[handler.HTTP](injector)
 
-	authGroup := e.Group("/auth")
+	authGroup := e.Group("/v1/auth")
 	authGroup.POST("/signup", authHandler.Signup)
 	authGroup.POST("/login", authHandler.Login)
 	authGroup.POST("/refresh", authHandler.Refresh)

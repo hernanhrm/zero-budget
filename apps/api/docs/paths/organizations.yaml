@@ -1,5 +1,5 @@
 paths:
-  /organizations:
+  /v1/organizations:
     get:
       summary: Find all organizations
       tags:
@@ -38,7 +38,7 @@ paths:
         '201':
           description: Organization created successfully
 
-  /organizations/{id}:
+  /v1/organizations/{id}:
     get:
       summary: Find organization by ID
       tags:

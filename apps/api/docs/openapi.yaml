@@ -25,46 +25,62 @@ paths:
                     type: string
                     example: "ok"
 
-  /users:
+  /v1/users:
     $ref: './paths/users.yaml#/paths/~1users'
-  /users/{id}:
+  /v1/users/{id}:
     $ref: './paths/users.yaml#/paths/~1users~1{id}'
-  /organizations:
+  /v1/organizations:
     $ref: './paths/organizations.yaml#/paths/~1organizations'
-  /organizations/{id}:
+  /v1/organizations/{id}:
     $ref: './paths/organizations.yaml#/paths/~1organizations~1{id}'
-  /workspaces:
+  /v1/workspaces:
     $ref: './paths/workspaces.yaml#/paths/~1workspaces'
-  /workspaces/{id}:
+  /v1/workspaces/{id}:
     $ref: './paths/workspaces.yaml#/paths/~1workspaces~1{id}'
-  /permissions:
+  /v1/permissions:
     $ref: './paths/permissions.yaml#/paths/~1permissions'
-  /permissions/{id}:
+  /v1/permissions/{id}:
     $ref: './paths/permissions.yaml#/paths/~1permissions~1{id}'
-  /roles:
+  /v1/roles:
     $ref: './paths/roles.yaml#/paths/~1roles'
-  /roles/{id}:
+  /v1/roles/{id}:
     $ref: './paths/roles.yaml#/paths/~1roles~1{id}'
-  /api-routes:
+  /v1/api-routes:
     $ref: './paths/api-routes.yaml#/paths/~1api-routes'
-  /api-routes/find:
+  /v1/api-routes/find:
     $ref: './paths/api-routes.yaml#/paths/~1api-routes~1find'
-  /workspace-members:
+  /v1/workspace-members:
     $ref: './paths/workspace-members.yaml#/paths/~1workspace-members'
-  /workspace-members/find:
+  /v1/workspace-members/find:
     $ref: './paths/workspace-members.yaml#/paths/~1workspace-members~1find'
-  /auth/signup:
+  /v1/auth/signup:
     $ref: './paths/auth.yaml#/paths/~1auth~1signup'
-  /auth/login:
+  /v1/auth/login:
     $ref: './paths/auth.yaml#/paths/~1auth~1login'
-  /auth/refresh:
+  /v1/auth/refresh:
     $ref: './paths/auth.yaml#/paths/~1auth~1refresh'
-  /email-templates:
+  /v1/email-templates:
     $ref: './paths/email-templates.yaml#/paths/~1email-templates'
-  /email-templates/{id}:
+  /v1/email-templates/{id}:
     $ref: './paths/email-templates.yaml#/paths/~1email-templates~1{id}'
-  /email-templates/{id}/logs:
+  /v1/email-templates/{id}/logs:
     $ref: './paths/email-templates.yaml#/paths/~1email-templates~1{id}~1logs'
+
+x-tagGroups:
+  - name: Auth
+    tags:
+      - Authentication
+      - Users
+      - Organizations
+      - Workspaces
+      - Workspace Members
+      - Roles
+      - Permissions
+      - API Routes
+  - name: Notifications
+    tags:
+      - Email Templates
+      - Email Logs
 
 components:
   schemas:

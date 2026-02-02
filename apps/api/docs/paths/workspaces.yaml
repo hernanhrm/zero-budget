@@ -1,5 +1,5 @@
 paths:
-  /workspaces:
+  /v1/workspaces:
     get:
       summary: Find all workspaces
       tags:
@@ -43,7 +43,7 @@ paths:
         '201':
           description: Workspace created successfully
 
-  /workspaces/{id}:
+  /v1/workspaces/{id}:
     get:
       summary: Find workspace by ID
       tags:

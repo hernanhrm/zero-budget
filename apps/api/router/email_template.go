@@ -10,7 +10,7 @@ import (
 func RegisterEmailTemplateRoutes(injector do.Injector, e *echo.Echo) {
 	h := di.MustInvoke[handler.HTTP](injector)
 
-	emailTemplatesGroup := e.Group("/email-templates")
+	emailTemplatesGroup := e.Group("/v1/email-templates")
 
 	emailTemplatesGroup.POST("", h.Create)
 	emailTemplatesGroup.PUT("/:id", h.Update)

@@ -10,7 +10,7 @@ import (
 func RegisterOrganizationRoutes(injector do.Injector, e *echo.Echo) {
 	organizationHandler := di.MustInvoke[handler.HTTP](injector)
 
-	organizationsGroup := e.Group("/organizations")
+	organizationsGroup := e.Group("/v1/organizations")
 
 	organizationsGroup.POST("", organizationHandler.Create)
 	organizationsGroup.PUT("/:id", organizationHandler.Update)

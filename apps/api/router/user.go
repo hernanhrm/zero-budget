@@ -10,7 +10,7 @@ import (
 func RegisterUserRoutes(injector do.Injector, e *echo.Echo) {
 	userHandler := di.MustInvoke[handler.HTTP](injector)
 
-	usersGroup := e.Group("/users")
+	usersGroup := e.Group("/v1/users")
 
 	usersGroup.POST("", userHandler.Create)
 	usersGroup.PUT("/:id", userHandler.Update)

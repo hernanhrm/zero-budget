@@ -10,7 +10,7 @@ import (
 func RegisterWorkspaceRoutes(injector do.Injector, e *echo.Echo) {
 	h := di.MustInvoke[handler.HTTP](injector)
 
-	workspaceGroup := e.Group("/workspaces")
+	workspaceGroup := e.Group("/v1/workspaces")
 
 	workspaceGroup.POST("", h.Create)
 	workspaceGroup.PUT("/:slug", h.Update)

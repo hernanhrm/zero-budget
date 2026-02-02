@@ -1,5 +1,5 @@
 paths:
-  /users:
+  /v1/users:
     get:
       summary: Find all users
       tags:
@@ -38,7 +38,7 @@ paths:
         '201':
           description: User created successfully
 
-  /users/{id}:
+  /v1/users/{id}:
     get:
       summary: Find user by ID
       tags:

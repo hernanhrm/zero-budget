@@ -1,5 +1,5 @@
 paths:
-  /permissions:
+  /v1/permissions:
     get:
       summary: Find all permissions
       tags:
@@ -38,7 +38,7 @@ paths:
         '201':
           description: Permission created successfully
 
-  /permissions/{id}:
+  /v1/permissions/{id}:
     get:
       summary: Find permission by ID
       tags:

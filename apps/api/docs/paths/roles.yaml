@@ -1,5 +1,5 @@
 paths:
-  /workspaces/{slug}/roles:
+  /v1/workspaces/{slug}/roles:
     get:
       summary: Find all roles in a workspace
       tags:
@@ -66,7 +66,7 @@ paths:
         '201':
           description: Role created successfully
 
-  /workspaces/{slug}/roles/{id}:
+  /v1/workspaces/{slug}/roles/{id}:
     get:
       summary: Find role by ID in a workspace
       tags:

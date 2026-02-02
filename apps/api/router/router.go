@@ -19,7 +19,7 @@ func SetupRoutes(injector do.Injector) func(e *echo.Echo) {
 		RegisterApiRouteRoutes(injector, e)
 		RegisterEmailTemplateRoutes(injector, e)
 
-		e.GET("/docs", func(c echo.Context) error {
+		e.GET("/v1/docs", func(c echo.Context) error {
 			configService := do.MustInvoke[*localconfig.ConfigService](injector)
 			docsPath := configService.GetDocsPath()
 			if docsPath == "" {

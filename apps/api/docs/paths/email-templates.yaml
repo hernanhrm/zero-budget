@@ -1,5 +1,5 @@
 paths:
-  /email-templates:
+  /v1/email-templates:
     get:
       summary: Find all email templates
       tags:
@@ -51,7 +51,7 @@ paths:
         '201':
           description: Email template created successfully
 
-  /email-templates/{id}:
+  /v1/email-templates/{id}:
     get:
       summary: Find email template by ID
       tags:
@@ -109,7 +109,7 @@ paths:
         '204':
           description: Email template deleted successfully
 
-  /email-templates/{id}/logs:
+  /v1/email-templates/{id}/logs:
     get:
       summary: Find all logs for an email template
       tags:

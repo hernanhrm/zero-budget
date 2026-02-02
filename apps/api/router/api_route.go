@@ -10,7 +10,7 @@ import (
 func RegisterApiRouteRoutes(injector do.Injector, e *echo.Echo) {
 	h := di.MustInvoke[handler.HTTP](injector)
 
-	g := e.Group("/api-routes")
+	g := e.Group("/v1/api-routes")
 
 	g.POST("", h.Create)
 	g.PUT("", h.Update)
