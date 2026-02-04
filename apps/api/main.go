@@ -17,7 +17,6 @@ import (
 	"backend/app/user"
 	"backend/app/workspace"
 	"backend/app/workspace_member"
-	"backend/domain"
 	"backend/infra/database"
 	"backend/infra/di"
 	"backend/infra/localconfig"
@@ -28,7 +27,7 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 )
 
-func runMigrations(dbURL, migrationsPath string, log domain.Logger) error {
+func runMigrations(dbURL, migrationsPath string) error {
 	m, err := migrate.New("file://"+migrationsPath, dbURL)
 	if err != nil {
 		return err
@@ -59,7 +58,7 @@ func main() {
 	di.ProvideValue(injector, cfg)
 
 	if !cfg.Service.SkipMigrations {
-		if err := runMigrations(cfg.Database.URL, cfg.Service.MigrationsPath, log); err != nil {
+		if err := runMigrations(cfg.Database.URL, cfg.Service.MigrationsPath); err != nil {
 			log.Error("failed to run migrations", "error", err)
 			os.Exit(1)
 		}
