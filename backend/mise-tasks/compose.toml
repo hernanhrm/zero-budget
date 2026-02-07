@@ -1,0 +1,43 @@
+# yaml-language-server: $schema=https://mise.jdx.dev/schema/mise-task.json
+
+["compose:up"]
+description = "Start services (podman by default, falls back to docker)"
+dir = "backend"
+usage = 'flag "--docker" help="Force using docker instead of podman"'
+run = '''
+#!/usr/bin/env bash
+set -euo pipefail
+if [ "${usage_docker:-false}" = "true" ] || ! command -v podman &>/dev/null; then
+  docker compose up -d
+else
+  podman compose up -d
+fi
+'''
+
+["compose:down"]
+description = "Stop services"
+dir = "backend"
+usage = 'flag "--docker" help="Force using docker instead of podman"'
+run = '''
+#!/usr/bin/env bash
+set -euo pipefail
+if [ "${usage_docker:-false}" = "true" ] || ! command -v podman &>/dev/null; then
+  docker compose down
+else
+  podman compose down
+fi
+'''
+
+["compose:logs"]
+description = "Tail service logs"
+dir = "backend"
+usage = 'flag "--docker" help="Force using docker instead of podman"'
+run = '''
+#!/usr/bin/env bash
+set -euo pipefail
+if [ "${usage_docker:-false}" = "true" ] || ! command -v podman &>/dev/null; then
+  docker compose logs -f
+else
+  podman compose logs -f
+fi
+'''

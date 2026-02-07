@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=https://mise.jdx.dev/schema/mise-task.json
+
+[build]
+description = "Build the API binary"
+dir = "backend"
+run = "go build ./cmd/api/..."
+
+[test]
+description = "Run all tests"
+dir = "backend"
+usage = '''
+arg "[package]" help="Specific package to test (e.g. ./internal/infra/logger/...)" default="./..."
+flag "-v --verbose" help="Enable verbose test output"
+'''
+run = 'go test ${usage_verbose:+-v} ${usage_package?}'
+
+[lint]
+description = "Run linters (gofmt + go vet)"
+dir = "backend"
+run = [
+  "gofmt -l .",
+  "go vet ./...",
+]

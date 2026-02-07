@@ -15,5 +15,6 @@ BEGIN
     ('GET', '/workspaces/:slug/members', p_mem_read),
     ('POST', '/workspaces/:slug/members', p_mem_manage),
     ('PUT', '/workspaces/:slug/members', p_mem_manage),
-    ('DELETE', '/workspaces/:slug/members', p_mem_manage);
+    ('DELETE', '/workspaces/:slug/members', p_mem_manage)
+    ON CONFLICT (method, path) DO NOTHING;
 END $$;

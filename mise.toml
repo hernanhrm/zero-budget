@@ -1,0 +1,14 @@
+[tools]
+go = "1.24"
+gomigrate = "latest"
+
+[env]
+_.file = "backend/cmd/api/.env"
+
+[task_config]
+includes = [
+  "backend/mise-tasks/api.toml",
+  "backend/mise-tasks/compose.toml",
+  "backend/mise-tasks/migrate.toml",
+  "backend/mise-tasks/ci.toml",
+]
