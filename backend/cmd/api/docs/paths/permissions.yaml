@@ -1,0 +1,97 @@
+paths:
+  /v1/permissions:
+    get:
+      summary: Find all permissions
+      tags:
+        - Permissions
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: List of permissions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Permission'
+    post:
+      summary: Create a new permission
+      tags:
+        - Permissions
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePermission'
+      responses:
+        '201':
+          description: Permission created successfully
+
+  /v1/permissions/{id}:
+    get:
+      summary: Find permission by ID
+      tags:
+        - Permissions
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Permission found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Permission'
+        '404':
+          description: Permission not found
+
+    put:
+      summary: Update permission
+      tags:
+        - Permissions
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePermission'
+      responses:
+        '204':
+          description: Permission updated successfully
+
+    delete:
+      summary: Delete permission
+      tags:
+        - Permissions
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Permission deleted successfully

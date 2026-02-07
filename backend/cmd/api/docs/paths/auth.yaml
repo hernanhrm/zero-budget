@@ -1,0 +1,76 @@
+paths:
+  /v1/auth/signup:
+    post:
+      summary: Sign up with email
+      description: Creates a new user, organization, workspace, and assigns Admin role
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SignupWithEmail'
+      responses:
+        '201':
+          description: User signed up successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SignupResponse'
+        '400':
+          description: Invalid input
+        '409':
+          description: Email already exists
+
+  /v1/auth/login:
+    post:
+      summary: Login with email
+      description: Authenticates user with email and password, returns JWT tokens
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginWithEmail'
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '401':
+          description: Invalid email or password
+
+  /v1/auth/refresh:
+    post:
+      summary: Refresh tokens
+      description: Refreshes access and refresh tokens using an expired access token and valid refresh token
+      tags:
+        - Authentication
+      parameters:
+        - in: header
+          name: Authorization
+          required: true
+          schema:
+            type: string
+            example: "Bearer <access_token>"
+          description: Bearer access token (can be expired)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshTokenRequest'
+      responses:
+        '200':
+          description: Tokens refreshed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RefreshResponse'
+        '401':
+          description: Invalid or expired refresh token

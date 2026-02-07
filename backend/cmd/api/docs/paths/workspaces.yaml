@@ -1,0 +1,102 @@
+paths:
+  /v1/workspaces:
+    get:
+      summary: Find all workspaces
+      tags:
+        - Workspaces
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: organizationId
+          in: query
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: List of workspaces
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Workspace'
+    post:
+      summary: Create a new workspace
+      tags:
+        - Workspaces
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateWorkspace'
+      responses:
+        '201':
+          description: Workspace created successfully
+
+  /v1/workspaces/{id}:
+    get:
+      summary: Find workspace by ID
+      tags:
+        - Workspaces
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Workspace found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Workspace'
+        '404':
+          description: Workspace not found
+
+    put:
+      summary: Update workspace
+      tags:
+        - Workspaces
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateWorkspace'
+      responses:
+        '204':
+          description: Workspace updated successfully
+
+    delete:
+      summary: Delete workspace
+      tags:
+        - Workspaces
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Workspace deleted successfully

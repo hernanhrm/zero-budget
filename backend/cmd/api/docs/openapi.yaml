@@ -1,0 +1,791 @@
+openapi: 3.0.0
+info:
+  title: Zero Budget API
+  description: API documentation for Zero Budget application
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080
+    description: Local development server
+  - url: https://zero-budget-production.up.railway.app
+    description: Production server
+paths:
+  /health:
+    get:
+      summary: Health check
+      description: Returns the health status of the service
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "ok"
+
+  /v1/users:
+    $ref: './paths/users.yaml#/paths/~1users'
+  /v1/users/{id}:
+    $ref: './paths/users.yaml#/paths/~1users~1{id}'
+  /v1/organizations:
+    $ref: './paths/organizations.yaml#/paths/~1organizations'
+  /v1/organizations/{id}:
+    $ref: './paths/organizations.yaml#/paths/~1organizations~1{id}'
+  /v1/workspaces:
+    $ref: './paths/workspaces.yaml#/paths/~1workspaces'
+  /v1/workspaces/{id}:
+    $ref: './paths/workspaces.yaml#/paths/~1workspaces~1{id}'
+  /v1/permissions:
+    $ref: './paths/permissions.yaml#/paths/~1permissions'
+  /v1/permissions/{id}:
+    $ref: './paths/permissions.yaml#/paths/~1permissions~1{id}'
+  /v1/roles:
+    $ref: './paths/roles.yaml#/paths/~1roles'
+  /v1/roles/{id}:
+    $ref: './paths/roles.yaml#/paths/~1roles~1{id}'
+  /v1/api-routes:
+    $ref: './paths/api-routes.yaml#/paths/~1api-routes'
+  /v1/api-routes/find:
+    $ref: './paths/api-routes.yaml#/paths/~1api-routes~1find'
+  /v1/workspace-members:
+    $ref: './paths/workspace-members.yaml#/paths/~1workspace-members'
+  /v1/workspace-members/find:
+    $ref: './paths/workspace-members.yaml#/paths/~1workspace-members~1find'
+  /v1/auth/signup:
+    $ref: './paths/auth.yaml#/paths/~1auth~1signup'
+  /v1/auth/login:
+    $ref: './paths/auth.yaml#/paths/~1auth~1login'
+  /v1/auth/refresh:
+    $ref: './paths/auth.yaml#/paths/~1auth~1refresh'
+  /v1/email-templates:
+    $ref: './paths/email-templates.yaml#/paths/~1email-templates'
+  /v1/email-templates/{id}:
+    $ref: './paths/email-templates.yaml#/paths/~1email-templates~1{id}'
+  /v1/email-templates/{id}/logs:
+    $ref: './paths/email-templates.yaml#/paths/~1email-templates~1{id}~1logs'
+
+x-tagGroups:
+  - name: Auth
+    tags:
+      - Authentication
+      - Users
+      - Organizations
+      - Workspaces
+      - Workspace Members
+      - Roles
+      - Permissions
+      - API Routes
+  - name: Notifications
+    tags:
+      - Email Templates
+      - Email Logs
+
+components:
+  schemas:
+    # User schemas
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        firstName:
+          type: string
+          minLength: 2
+          maxLength: 100
+        lastName:
+          type: string
+          minLength: 2
+          maxLength: 100
+        email:
+          type: string
+          format: email
+        imageUrl:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    
+    CreateUser:
+      type: object
+      required:
+        - firstName
+        - lastName
+        - email
+      properties:
+        firstName:
+          type: string
+          minLength: 2
+          maxLength: 100
+        lastName:
+          type: string
+          minLength: 2
+          maxLength: 100
+        email:
+          type: string
+          format: email
+
+    UpdateUser:
+      type: object
+      properties:
+        firstName:
+          type: string
+          minLength: 2
+          maxLength: 100
+        lastName:
+          type: string
+          minLength: 2
+          maxLength: 100
+        email:
+          type: string
+          format: email
+
+    # Organization schemas
+    Organization:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          minLength: 2
+          maxLength: 255
+        slug:
+          type: string
+          pattern: '^[a-z0-9-]+$'
+        ownerId:
+          type: string
+          format: uuid
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    CreateOrganization:
+      type: object
+      required:
+        - id
+        - name
+        - slug
+        - ownerId
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Client-provided unique identifier
+        name:
+          type: string
+          minLength: 2
+          maxLength: 255
+        slug:
+          type: string
+          pattern: '^[a-z0-9-]+$'
+        ownerId:
+          type: string
+          format: uuid
+
+    UpdateOrganization:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 2
+          maxLength: 255
+        slug:
+          type: string
+          pattern: '^[a-z0-9-]+$'
+
+    # Workspace schemas
+    Workspace:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        organizationId:
+          type: string
+          format: uuid
+        name:
+          type: string
+          minLength: 2
+          maxLength: 255
+        slug:
+          type: string
+          minLength: 2
+          maxLength: 255
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    CreateWorkspace:
+      type: object
+      required:
+        - id
+        - organizationId
+        - name
+        - slug
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Client-provided unique identifier
+        organizationId:
+          type: string
+          format: uuid
+        name:
+          type: string
+          minLength: 2
+          maxLength: 255
+        slug:
+          type: string
+          minLength: 2
+          maxLength: 255
+
+    UpdateWorkspace:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 2
+          maxLength: 255
+        slug:
+          type: string
+          minLength: 2
+          maxLength: 255
+
+    # Permission schemas
+    Permission:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        slug:
+          type: string
+          minLength: 2
+          maxLength: 100
+        description:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    CreatePermission:
+      type: object
+      required:
+        - id
+        - slug
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Client-provided unique identifier
+        slug:
+          type: string
+          minLength: 2
+          maxLength: 100
+        description:
+          type: string
+
+    UpdatePermission:
+      type: object
+      properties:
+        description:
+          type: string
+
+    # Role schemas
+    Role:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        workspaceId:
+          type: string
+          format: uuid
+        name:
+          type: string
+          minLength: 2
+          maxLength: 100
+        description:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    CreateRole:
+      type: object
+      required:
+        - id
+        - workspaceId
+        - name
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Client-provided unique identifier
+        workspaceId:
+          type: string
+          format: uuid
+        name:
+          type: string
+          minLength: 2
+          maxLength: 100
+        description:
+          type: string
+
+    UpdateRole:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 2
+          maxLength: 100
+        description:
+          type: string
+
+    # API Route schemas
+    ApiRoute:
+      type: object
+      properties:
+        method:
+          type: string
+          enum: [GET, POST, PUT, DELETE, PATCH]
+        path:
+          type: string
+        permissionId:
+          type: string
+          format: uuid
+        createdAt:
+          type: string
+          format: date-time
+
+    CreateApiRoute:
+      type: object
+      required:
+        - method
+        - path
+        - permissionId
+      properties:
+        method:
+          type: string
+          enum: [GET, POST, PUT, DELETE, PATCH]
+        path:
+          type: string
+        permissionId:
+          type: string
+          format: uuid
+
+    UpdateApiRoute:
+      type: object
+      properties:
+        permissionId:
+          type: string
+          format: uuid
+
+    # Workspace Member schemas
+    WorkspaceMember:
+      type: object
+      properties:
+        workspaceId:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        roleId:
+          type: string
+          format: uuid
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    CreateWorkspaceMember:
+      type: object
+      required:
+        - userId
+        - roleId
+      properties:
+        userId:
+          type: string
+          format: uuid
+        roleId:
+          type: string
+          format: uuid
+
+    UpdateWorkspaceMember:
+      type: object
+      required:
+        - roleId
+      properties:
+        roleId:
+          type: string
+          format: uuid
+
+    # Auth schemas
+    SignupWithEmail:
+      type: object
+      required:
+        - email
+        - firstName
+        - lastName
+        - password
+        - organizationName
+      properties:
+        email:
+          type: string
+          format: email
+          description: User email address
+        firstName:
+          type: string
+          minLength: 2
+          maxLength: 100
+          description: User first name
+        lastName:
+          type: string
+          minLength: 2
+          maxLength: 100
+          description: User last name
+        password:
+          type: string
+          minLength: 6
+          maxLength: 255
+          description: User password (minimum 6 characters)
+        organizationName:
+          type: string
+          minLength: 2
+          maxLength: 255
+          description: Organization name (also used for workspace name)
+
+    SignupResponse:
+      type: object
+      properties:
+        accessToken:
+          type: string
+          description: JWT access token (expires in 5 minutes)
+        refreshToken:
+          type: string
+          description: JWT refresh token (expires in 7 days)
+        expiresAt:
+          type: string
+          format: date-time
+          description: Access token expiration time
+        user:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+              description: User ID
+            email:
+              type: string
+              format: email
+              description: User email
+            firstName:
+              type: string
+              description: User first name
+            lastName:
+              type: string
+              description: User last name
+        workspace:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+              description: Workspace ID
+            name:
+              type: string
+              description: Workspace name
+            slug:
+              type: string
+              description: Workspace slug
+
+    LoginWithEmail:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          description: User email address
+        password:
+          type: string
+          minLength: 6
+          description: User password
+
+    LoginResponse:
+      type: object
+      properties:
+        accessToken:
+          type: string
+          description: JWT access token (expires in 5 minutes)
+        refreshToken:
+          type: string
+          description: JWT refresh token (expires in 7 days)
+        expiresAt:
+          type: string
+          format: date-time
+          description: Access token expiration time
+        user:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+              description: User ID
+            email:
+              type: string
+              format: email
+              description: User email
+            firstName:
+              type: string
+              description: User first name
+            lastName:
+              type: string
+              description: User last name
+        workspace:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+              description: Workspace ID
+            name:
+              type: string
+              description: Workspace name
+            slug:
+              type: string
+              description: Workspace slug
+
+    RefreshTokenRequest:
+      type: object
+      required:
+        - refreshToken
+      properties:
+        refreshToken:
+          type: string
+          description: Valid refresh token
+
+    RefreshResponse:
+      type: object
+      properties:
+        accessToken:
+          type: string
+          description: New JWT access token (expires in 5 minutes)
+        refreshToken:
+          type: string
+          description: New JWT refresh token (expires in 7 days)
+        expiresAt:
+          type: string
+          format: date-time
+          description: Access token expiration time
+
+    # Email Template schemas
+    EmailTemplate:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        workspaceId:
+          type: string
+          format: uuid
+          nullable: true
+        event:
+          type: string
+          minLength: 1
+          maxLength: 100
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        description:
+          type: string
+        subject:
+          type: string
+          minLength: 1
+          maxLength: 500
+        content:
+          type: string
+        isActive:
+          type: boolean
+        locale:
+          type: string
+          minLength: 2
+          maxLength: 10
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    CreateEmailTemplate:
+      type: object
+      required:
+        - id
+        - event
+        - name
+        - subject
+        - content
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Client-provided unique identifier
+        workspaceId:
+          type: string
+          format: uuid
+          nullable: true
+          description: Leave null for global templates
+        event:
+          type: string
+          minLength: 1
+          maxLength: 100
+          description: Custom event identifier (e.g., "user.welcome")
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        description:
+          type: string
+        subject:
+          type: string
+          minLength: 1
+          maxLength: 500
+        content:
+          type: string
+          description: Email body content with Go template syntax
+        isActive:
+          type: boolean
+          default: true
+        locale:
+          type: string
+          default: 'en'
+
+    UpdateEmailTemplate:
+      type: object
+      properties:
+        event:
+          type: string
+          minLength: 1
+          maxLength: 100
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        description:
+          type: string
+        subject:
+          type: string
+          minLength: 1
+          maxLength: 500
+        content:
+          type: string
+        isActive:
+          type: boolean
+        locale:
+          type: string
+          minLength: 2
+          maxLength: 10
+
+    # Email Log schemas
+    EmailLog:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        templateId:
+          type: string
+          format: uuid
+        workspaceId:
+          type: string
+          format: uuid
+        recipientEmail:
+          type: string
+          format: email
+        event:
+          type: string
+          minLength: 1
+          maxLength: 100
+        subject:
+          type: string
+        content:
+          type: string
+        status:
+          type: string
+          enum: [pending, sent, failed, delivered]
+        errorMessage:
+          type: string
+        sentAt:
+          type: string
+          format: date-time
+
+    CreateEmailLog:
+      type: object
+      required:
+        - id
+        - templateId
+        - workspaceId
+        - recipientEmail
+        - event
+        - subject
+        - content
+        - status
+      properties:
+        id:
+          type: string
+          format: uuid
+        templateId:
+          type: string
+          format: uuid
+        workspaceId:
+          type: string
+          format: uuid
+        recipientEmail:
+          type: string
+          format: email
+        event:
+          type: string
+        subject:
+          type: string
+        content:
+          type: string
+        status:
+          type: string
+          enum: [pending, sent, failed, delivered]
+        errorMessage:
+          type: string
+
+    UpdateEmailLog:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          enum: [pending, sent, failed, delivered]
+        errorMessage:
+          type: string

@@ -1,0 +1,27 @@
+go 1.24.12
+
+use (
+	./cmd/api
+	./internal/app/api_route
+	./internal/app/auth
+	./internal/app/email_log
+	./internal/app/email_template
+	./internal/app/organization
+	./internal/app/permission
+	./internal/app/role
+	./internal/app/user
+	./internal/app/workspace
+	./internal/app/workspace_member
+	./internal/domain
+	./internal/domain/errors
+	./internal/domain/ternary
+	./internal/infra/database
+	./internal/infra/di
+	./internal/infra/localconfig
+	./internal/infra/logger
+	./internal/infra/server
+	./internal/infra/validation
+	./pkg/dafi
+	./pkg/httpresponse
+	./pkg/sqlcraft
+)

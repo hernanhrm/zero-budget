@@ -4,71 +4,77 @@ This document provides guidelines for agentic coding agents working in this repo
 
 ## Project Overview
 
-This is a Go-based monorepo using Nx for task orchestration. The project follows a layered architecture:
-- **apps/api**: Main API application entry point
-- **backend/app/***: Business logic modules (api_route, auth, organization, permission, role, user, workspace, workspace_member)
-- **backend/domain**: Domain layer with interfaces and shared types
-- **backend/infra**: Infrastructure layer (database, DI, logging, HTTP, validation)
+This is a Go-based monorepo. The backend lives under the `backend/` directory with its own `go.work` workspace. The project follows a layered architecture:
+- **backend/cmd/api**: Main API application entry point
+- **backend/internal/app/***: Business logic modules (api_route, auth, organization, permission, role, user, workspace, workspace_member)
+- **backend/internal/domain**: Domain layer with interfaces and shared types
+- **backend/internal/infra**: Infrastructure layer (database, DI, logging, validation)
+- **backend/pkg**: Reusable packages (dafi, sqlcraft, httpresponse)
+- **frontend/**: Frontend application (TBD)
 
 ## Build, Lint, and Test Commands
 
-### Running Tasks via Nx
+### Go Commands
 
-All tasks should be run through Nx for consistency and caching benefits:
-
-```bash
-# Run all tasks (lint, test, build)
-bun nx run-many -t lint test build
-
-# Run a specific target for all projects
-bun nx run-many -t test
-
-# Run a target for a specific project
-bun nx run api:lint
-bun nx run api:test
-
-# Run with affected projects only
-bun nx affected -t test build
-```
-
-### Go-Specific Commands
+All Go commands should be run from the `backend/` directory where `go.work` lives:
 
 ```bash
+# Build the API
+cd backend && go build ./cmd/api/...
+
+# Run tests for all packages
+cd backend && go test ./...
+
 # Run tests for a specific package
-cd apps/api && go test ./...
-go test ./backend/infra/...
+cd backend && go test ./internal/infra/logger/...
 
-# Run a single test file
-go test -run TestSlogAdapter_JSONFormat ./backend/infra/logger
+# Run a single test
+cd backend && go test -run TestSlogAdapter_JSONFormat ./internal/infra/logger
 
 # Run tests with verbose output
-go test -v ./backend/infra/logger
+cd backend && go test -v ./internal/infra/logger
 
 # Run tests with coverage
-go test -cover ./...
+cd backend && go test -cover ./...
 
 # Run gofmt linter
-gofmt -l .
+cd backend && gofmt -l .
 
 # Run go vet
-go vet ./...
+cd backend && go vet ./...
 
 # Tidy go modules (per package)
-cd apps/api && go mod tidy
-cd backend/infra/database && go mod tidy
+cd backend/cmd/api && go mod tidy
+cd backend/internal/infra/database && go mod tidy
 ```
 
 ### Database Migrations
 
 ```bash
-# Run migrations (via Nx)
-bun nx run api:migrate:up
+# Run migrations
+cd backend/cmd/api && migrate -path migrations -database "$DATABASE_URL" up
 
 # Rollback one migration
-bun nx run api:migrate:down
+cd backend/cmd/api && migrate -path migrations -database "$DATABASE_URL" down 1
 
 # Create new migration
-bun nx run api:migrate:create --args.name=add_users_table
+cd backend/cmd/api && migrate create -ext sql -dir migrations -format 20060102150405 <name>
+
+# Install migrate CLI
+go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
+```
+
+### Database (Podman)
+
+```bash
+# Start database
+cd backend/internal/infra/database && podman compose up -d
+
+# Stop database
+cd backend/internal/infra/database && podman compose down
+
+# View logs
+cd backend/internal/infra/database && podman compose logs -f
 ```
 
 ## Code Style Guidelines
@@ -129,7 +135,7 @@ return oops.Code("database_failed").Wrapf(err, "failed to fetch user %d", userID
 return oops.In("repository").Code("not_found").Errorf("user %d not found", userID)
 ```
 
-**Error codes** in `backend/domain/errors/codes.go`:
+**Error codes** in `backend/internal/domain/errors/codes.go`:
 - `not_found` (404), `bad_request` (400), `validation` (422), `conflict` (409)
 - `unauthorized` (401), `forbidden` (403), `already_exists` (409)
 
@@ -137,11 +143,11 @@ return oops.In("repository").Code("not_found").Errorf("user %d not found", userI
 
 ### Architecture Layers
 
-1. **Handler Layer** (`app/*/handler`): HTTP request/response handling, validation
-2. **Service Layer** (`app/*/service`): Business logic, use cases
-3. **Repository Layer** (`app/*/repository`): Data access, persistence
-4. **Domain Layer** (`backend/domain`): Interfaces, domain types, shared errors
-5. **Infrastructure Layer** (`backend/infra`): Database, DI, logging, HTTP server
+1. **Handler Layer** (`internal/app/*/handler`): HTTP request/response handling, validation
+2. **Service Layer** (`internal/app/*/service`): Business logic, use cases
+3. **Repository Layer** (`internal/app/*/repository`): Data access, persistence
+4. **Domain Layer** (`internal/domain`): Interfaces, domain types, shared errors
+5. **Infrastructure Layer** (`internal/infra`): Database, DI, logging, HTTP server
 
 Dependencies flow downward (handler -> service -> repository -> infrastructure).
 
@@ -173,23 +179,8 @@ func TestSlogAdapter_JSONFormat(t *testing.T) {
 
 ### Configuration and Logging
 
-- Use `localconfig` package for configuration management (see `backend/infra/localconfig`)
+- Use `localconfig` package for configuration management (see `backend/internal/infra/localconfig`)
 - Use `domain.Logger` interface from `backend/domain`
-- Create loggers via `backend/infra/logger` package
+- Create loggers via `backend/internal/infra/logger` package
 - Use `NewProduction()` for production, `NewDevelopment()` for local dev
-- Use `backend/infra/httpresponse` for consistent API responses
-
-<!-- nx configuration start-->
-<!-- Leave the start & end comments to automatically receive updates. -->
-
-# General Guidelines for working with Nx
-
-- When running tasks (for example build, lint, test, e2e, etc.), always prefer running the task through `nx` (i.e. `nx run`, `nx run-many`, `nx affected`) instead of using the underlying tooling directly
-- You have access to the Nx MCP server and its tools, use them to help the user
-- When answering questions about the repository, use the `nx_workspace` tool first to gain an understanding of the workspace architecture where applicable.
-- When working in individual projects, use the `nx_project_details` mcp tool to analyze and understand the specific project structure and dependencies
-- For questions around nx configuration, best practices or if you're unsure, use the `nx_docs` tool to get relevant, up-to-date docs. Always use this instead of assuming things about nx configuration
-- If the user needs help with an Nx configuration or project graph error, use the `nx_workspace` tool to get any errors
-- For Nx plugin best practices, check `node_modules/@nx/<plugin>/PLUGIN.md`. Not all plugins have this file - proceed without it if unavailable.
-
-<!-- nx configuration end-->
+- Use `backend/internal/infra/httpresponse` for consistent API responses
