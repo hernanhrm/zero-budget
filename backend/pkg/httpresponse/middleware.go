@@ -6,8 +6,8 @@ import (
 	"maps"
 	"net/http"
 
-	"backend/domain"
-	apperrors "backend/domain/errors"
+	"backend/port"
+	apperrors "backend/port/errors"
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/labstack/echo/v4"
 	"github.com/samber/oops"

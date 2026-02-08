@@ -1,8 +1,8 @@
 package router
 
 import (
-	"backend/app/api_route/handler"
-	"backend/infra/di"
+	"backend/core/api_route/adapter/handler"
+	"backend/adapter/di"
 	"github.com/labstack/echo/v4"
 	"github.com/samber/do/v2"
 )

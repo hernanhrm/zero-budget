@@ -1,0 +1,120 @@
+package localconfig
+
+import (
+	"os"
+	"path/filepath"
+	"strconv"
+
+	"backend/port"
+	"github.com/joho/godotenv"
+	"github.com/samber/oops"
+)
+
+// GetConfig loads configuration from environment variables or .env file.
+// It reads CONFIG_ENV_PATH and CONFIG_ENV_FILENAME environment variables to determine
+// the location and name of the config file.
+//
+// Environment variables:
+//   - CONFIG_ENV_PATH: Relative path to the directory containing the env file (default: ".")
+//   - CONFIG_ENV_FILENAME: Name of the env file (default: ".env")
+//
+// If the config file is not found, it falls back to reading from system environment variables.
+// This is useful for production environments where variables are already loaded.
+func GetConfig(log domain.Logger) (LocalConfig, error) {
+	opts := ConfigOptions{
+		EnvPath:     getEnvOrDefault("CONFIG_ENV_PATH", "."),
+		EnvFileName: getEnvOrDefault("CONFIG_ENV_FILENAME", ".env"),
+	}
+	return GetConfigWithOptions(opts, log)
+}
+
+// GetConfigWithOptions loads configuration using the provided options.
+// This allows programmatic control over the config file location and name.
+//
+// If the config file is not found, it falls back to reading from system environment variables.
+func GetConfigWithOptions(opts ConfigOptions, log domain.Logger) (LocalConfig, error) {
+	// Construct the full path to the .env file
+	envFilePath := filepath.Join(opts.EnvPath, opts.EnvFileName)
+
+	// Try to load the .env file, but don't fail if it doesn't exist
+	// This allows the app to work in production with only env vars
+	// godotenv.Overload ensures new values override existing env vars
+	if err := godotenv.Overload(envFilePath); err != nil {
+		log.Warn("config file not found, using environment variables only",
+			"path", envFilePath,
+			"error", err.Error(),
+		)
+	} else {
+		log.Info("config file loaded successfully",
+			"path", envFilePath,
+		)
+	}
+
+	config := LocalConfig{
+		Service: Service{
+			Port:           getPort,
+			Name:           getEnvAsString("SERVICE_NAME"),
+			DocsPath:       getEnvAsString("DOCS_PATH"),
+			MigrationsPath: getEnvAsString("MIGRATIONS_PATH"),
+			SkipMigrations: getEnvAsBool("SKIP_MIGRATIONS"),
+		},
+		Database: Database{
+			URL: getEnvAsString("DATABASE_URL"),
+		},
+		JWTSecret: getEnvAsString("JWT_SECRET"),
+	}
+
+	log.Debug("configuration loaded",
+		"service_name", config.Service.Name,
+		"service_port", config.Service.Port(),
+	)
+
+	return config, nil
+}
+
+// getEnvOrDefault returns the value of the environment variable or a default value if not set.
+func getEnvOrDefault(key, defaultValue string) string {
+	if value := os.Getenv(key); value != "" {
+		return value
+	}
+	return defaultValue
+}
+
+// getEnvAsString returns the environment variable value as a string.
+func getEnvAsString(key string) string {
+	return os.Getenv(key)
+}
+
+// getEnvAsInt returns the environment variable value as an int.
+// Returns 0 if the environment variable is not set (default value).
+// Returns error if the value exists but is not a valid integer.
+func getEnvAsInt(key string, log domain.Logger) (int, error) {
+	valueStr := os.Getenv(key)
+	if valueStr == "" {
+		log.Debug("environment variable not set, using default value 0",
+			"key", key,
+		)
+		return 0, nil // Return 0 if not set (default value)
+	}
+
+	value, err := strconv.Atoi(valueStr)
+	if err != nil {
+		log.Error("invalid integer value for environment variable",
+			"key", key,
+			"value", valueStr,
+			"error", err,
+		)
+		return 0, oops.
+			Code("invalid_env_int").
+			With("key", key).
+			With("value", valueStr).
+			Wrapf(err, "environment variable %s has invalid integer value", key)
+	}
+
+	return value, nil
+}
+
+func getEnvAsBool(key string) bool {
+	val := os.Getenv(key)
+	return val == "true" || val == "1" || val == "yes"
+}

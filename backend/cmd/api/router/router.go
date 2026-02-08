@@ -3,7 +3,7 @@ package router
 import (
 	"net/http"
 
-	"backend/infra/localconfig"
+	"backend/adapter/localconfig"
 	scalargo "github.com/bdpiprava/scalar-go"
 	"github.com/labstack/echo/v4"
 	"github.com/samber/do/v2"

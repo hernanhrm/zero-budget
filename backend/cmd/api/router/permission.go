@@ -1,8 +1,8 @@
 package router
 
 import (
-	"backend/app/permission/handler"
-	"backend/infra/di"
+	"backend/core/permission/adapter/handler"
+	"backend/adapter/di"
 	"github.com/labstack/echo/v4"
 	"github.com/samber/do/v2"
 )

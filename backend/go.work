@@ -2,25 +2,25 @@ go 1.24.12
 
 use (
 	./cmd/api
-	./internal/app/api_route
-	./internal/app/auth
-	./internal/app/email_log
-	./internal/app/email_template
-	./internal/app/organization
-	./internal/app/permission
-	./internal/app/role
-	./internal/app/user
-	./internal/app/workspace
-	./internal/app/workspace_member
-	./internal/domain
-	./internal/domain/errors
-	./internal/domain/ternary
-	./internal/infra/database
-	./internal/infra/di
-	./internal/infra/localconfig
-	./internal/infra/logger
-	./internal/infra/server
-	./internal/infra/validation
+	./internal/adapter/database
+	./internal/adapter/di
+	./internal/adapter/localconfig
+	./internal/adapter/logger
+	./internal/adapter/server
+	./internal/adapter/validation
+	./internal/core/api_route
+	./internal/core/auth
+	./internal/core/email_log
+	./internal/core/email_template
+	./internal/core/organization
+	./internal/core/permission
+	./internal/core/role
+	./internal/core/user
+	./internal/core/workspace
+	./internal/core/workspace_member
+	./internal/port
+	./internal/port/errors
+	./internal/port/ternary
 	./pkg/dafi
 	./pkg/httpresponse
 	./pkg/sqlcraft
