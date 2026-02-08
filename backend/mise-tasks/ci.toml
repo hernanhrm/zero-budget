@@ -9,10 +9,21 @@ run = "go build ./cmd/api/..."
 description = "Run all tests"
 dir = "backend"
 usage = '''
-arg "[package]" help="Specific package to test (e.g. ./internal/infra/logger/...)" default="./..."
+arg "[package]" help="Specific package to test (e.g. ./internal/adapter/logger/...)"
 flag "-v --verbose" help="Enable verbose test output"
 '''
-run = 'go test ${usage_verbose:+-v} ${usage_package?}'
+run = '''
+#!/usr/bin/env bash
+if [ -n "${usage_package}" ]; then
+  go test ${usage_verbose:+-v} "${usage_package}"
+else
+  failed=0
+  for dir in $(grep -E '^\s+\./' go.work | tr -d '\t '); do
+    go test ${usage_verbose:+-v} "$dir/..." || failed=1
+  done
+  exit $failed
+fi
+'''
 
 [lint]
 description = "Run linters (gofmt + go vet)"
