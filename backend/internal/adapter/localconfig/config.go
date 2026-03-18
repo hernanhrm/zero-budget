@@ -16,6 +16,7 @@ type ConfigOptions struct {
 type LocalConfig struct {
 	Service   Service
 	Database  Database
+	Resend    Resend
 	JWTSecret string
 }
 
@@ -31,6 +32,12 @@ type Service struct {
 // Database holds database connection configuration.
 type Database struct {
 	URL string
+}
+
+// Resend holds Resend email service configuration.
+type Resend struct {
+	APIKey      string
+	FromAddress string
 }
 
 func getPort() int {

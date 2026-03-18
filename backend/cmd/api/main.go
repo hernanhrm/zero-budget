@@ -89,7 +89,7 @@ func main() {
 	role.Module(injector)
 	api_route.Module(injector)
 	workspace_member.Module(injector)
-	email_dispatcher.Module(injector)
+	email_dispatcher.Module(injector, cfg.Resend.APIKey, cfg.Resend.FromAddress)
 	identity.Module(injector, cfg.JWTSecret)
 
 	// Start event bus

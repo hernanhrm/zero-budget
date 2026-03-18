@@ -13,9 +13,13 @@ import (
 	"github.com/samber/do/v2"
 )
 
-func Module(i do.Injector) {
+func Module(i do.Injector, resendAPIKey, resendFromAddress string) {
 	di.Provide(i, func(i do.Injector) (port.EmailSender, error) {
 		logger := di.MustInvoke[basedomain.Logger](i)
+		if resendAPIKey != "" {
+			return core.NewResendSender(resendAPIKey, resendFromAddress, logger), nil
+		}
+		logger.Warn("RESEND_API_KEY not set, using log-only email sender")
 		return core.NewLogSender(logger), nil
 	})
 

@@ -61,6 +61,10 @@ func GetConfigWithOptions(opts ConfigOptions, log domain.Logger) (LocalConfig, e
 		Database: Database{
 			URL: getEnvAsString("DATABASE_URL"),
 		},
+		Resend: Resend{
+			APIKey:      getEnvAsString("RESEND_API_KEY"),
+			FromAddress: getEnvAsString("RESEND_FROM_ADDRESS"),
+		},
 		JWTSecret: getEnvAsString("JWT_SECRET"),
 	}
 

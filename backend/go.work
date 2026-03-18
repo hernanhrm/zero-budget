@@ -16,9 +16,9 @@ use (
 	./internal/core/auth/user
 	./internal/core/auth/workspace
 	./internal/core/auth/workspace_member
+	./internal/core/notifications/email_dispatcher
 	./internal/core/notifications/email_log
 	./internal/core/notifications/email_template
-	./internal/core/notifications/email_dispatcher
 	./internal/core/notifications/eventbus
 	./internal/core/notifications/events
 	./internal/port

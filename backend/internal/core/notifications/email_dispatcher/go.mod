@@ -13,6 +13,7 @@ require (
 	backend/port/errors v0.0.0
 	github.com/google/uuid v1.6.0
 	github.com/guregu/null/v6 v6.0.0
+	github.com/resend/resend-go/v3 v3.2.0
 	github.com/samber/do/v2 v2.0.0
 	github.com/samber/oops v1.21.0
 )
