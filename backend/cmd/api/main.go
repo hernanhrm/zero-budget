@@ -7,16 +7,19 @@ import (
 	"syscall"
 
 	"api/router"
-	"backend/core/api_route"
-	"backend/core/auth"
-	"backend/core/email_log"
-	"backend/core/email_template"
-	"backend/core/organization"
-	"backend/core/permission"
-	"backend/core/role"
-	"backend/core/user"
-	"backend/core/workspace"
-	"backend/core/workspace_member"
+	"backend/core/auth/api_route"
+	"backend/core/auth/identity"
+	"backend/core/auth/organization"
+	"backend/core/auth/permission"
+	"backend/core/auth/role"
+	"backend/core/auth/user"
+	"backend/core/auth/workspace"
+	"backend/core/auth/workspace_member"
+	"backend/core/notifications/email_log"
+	"backend/core/notifications/email_template"
+	"backend/core/notifications/email_dispatcher"
+	"backend/core/notifications/eventbus"
+	eventbusPort "backend/core/notifications/eventbus/port"
 	"backend/adapter/database"
 	"backend/adapter/di"
 	"backend/adapter/localconfig"
@@ -79,13 +82,19 @@ func main() {
 	user.Module(injector)
 	email_log.Module(injector)
 	email_template.Module(injector)
+	eventbus.Module(injector)
 	organization.Module(injector)
 	workspace.Module(injector)
 	permission.Module(injector)
 	role.Module(injector)
 	api_route.Module(injector)
 	workspace_member.Module(injector)
-	auth.Module(injector, cfg.JWTSecret)
+	email_dispatcher.Module(injector)
+	identity.Module(injector, cfg.JWTSecret)
+
+	// Start event bus
+	bus := di.MustInvoke[eventbusPort.EventBus](injector)
+	bus.Start(ctx)
 
 	// Build server config
 	config := server.Config{

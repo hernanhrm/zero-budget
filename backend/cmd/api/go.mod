@@ -3,14 +3,20 @@ module api
 go 1.24.12
 
 require (
-	backend/core/auth v0.0.0
+	backend/core/auth/identity v0.0.0
+	backend/core/notifications/email_dispatcher v0.0.0
+	backend/core/notifications/eventbus v0.0.0
 	github.com/bdpiprava/scalar-go v0.13.0
 	github.com/golang-migrate/migrate/v4 v4.18.0
 	github.com/labstack/echo/v4 v4.15.0
 	github.com/samber/do/v2 v2.0.0
 )
 
-replace backend/core/auth => ../../internal/core/auth
+replace (
+	backend/core/auth/identity => ../../internal/core/auth/identity
+	backend/core/notifications/email_dispatcher => ../../internal/core/notifications/email_dispatcher
+	backend/core/notifications/eventbus => ../../internal/core/notifications/eventbus
+)
 
 require (
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
