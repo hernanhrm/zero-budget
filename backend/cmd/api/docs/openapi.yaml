@@ -69,7 +69,7 @@ paths:
 x-tagGroups:
   - name: Auth
     tags:
-      - Authentication
+      - Identity
       - Users
       - Organizations
       - Workspaces

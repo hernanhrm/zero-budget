@@ -4,7 +4,7 @@ paths:
       summary: Sign up with email
       description: Creates a new user, organization, workspace, and assigns Admin role
       tags:
-        - Authentication
+        - Identity
       requestBody:
         required: true
         content:
@@ -28,7 +28,7 @@ paths:
       summary: Login with email
       description: Authenticates user with email and password, returns JWT tokens
       tags:
-        - Authentication
+        - Identity
       requestBody:
         required: true
         content:
@@ -50,7 +50,7 @@ paths:
       summary: Refresh tokens
       description: Refreshes access and refresh tokens using an expired access token and valid refresh token
       tags:
-        - Authentication
+        - Identity
       parameters:
         - in: header
           name: Authorization

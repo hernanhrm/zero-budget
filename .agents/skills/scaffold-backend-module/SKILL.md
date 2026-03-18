@@ -1,7 +1,7 @@
 ---
 name: scaffold-backend-module
 description: |
-  Generate a new backend module in `backend/internal/core/<name>`, register it in `cmd/api`, and create the necessary database migration with RLS.
+  Generate a new backend module in `backend/internal/core/<schema>/<name>`, register it in `cmd/api`, and create the necessary database migration with RLS.
   Use this skill when the user asks to "create a new backend module" or "scaffold a module".
 user-invocable: true
 allowed-tools: [Write, Edit, Bash, Glob, Read]
@@ -15,6 +15,13 @@ This skill orchestrates the creation of a new backend feature module. It enforce
 
 All modules in this project use **client-provided UUIDs** for entity IDs. The client is responsible for generating and sending the ID when creating entities. The repository uses `input.ID` directly instead of generating IDs.
 
+## Important: Schema-Based Organization
+
+Modules are organized by database schema under `backend/internal/core/`:
+- `backend/internal/core/auth/` — modules using the `auth` DB schema
+- `backend/internal/core/notifications/` — modules using the `notifications` DB schema
+- New schemas create new top-level directories under `core/`
+
 ## Usage
 
 **Trigger:** "Create a new backend module named [name] in schema [schema]"
@@ -23,7 +30,7 @@ All modules in this project use **client-provided UUIDs** for entity IDs. The cl
 - `{{module}}`: Module name in lowercase (e.g., "order").
 - `{{Module}}`: Module name in TitleCase (e.g., "Order").
 - `{{module}}s`: Plural module name (e.g., "orders").
-- `{{schema}}`: Database schema name (e.g., "public", "store").
+- `{{schema}}`: Database schema name (e.g., "auth", "notifications", "budgets").
 
 ## Workflow
 
@@ -33,7 +40,7 @@ Before generating any code or migrations, you **MUST** check the current state o
 
 1.  **Check for existing module code:**
     ```bash
-    ls -d backend/internal/core/{{module}}
+    ls -d backend/internal/core/{{schema}}/{{module}}
     ```
 2.  **Check for existing migrations:**
     ```bash
@@ -51,12 +58,12 @@ Before generating any code or migrations, you **MUST** check the current state o
 ---
 
 ### 2. Create Backend Module Structure
-**Location:** `backend/internal/core/{{module}}/`
+**Location:** `backend/internal/core/{{schema}}/{{module}}/`
 
 Generate the following directory structure and files:
 
 ```
-backend/internal/core/{{module}}/
+backend/internal/core/{{schema}}/{{module}}/
 ├── port/
 │   ├── port.go
 │   ├── command.go
@@ -74,7 +81,7 @@ backend/internal/core/{{module}}/
 
 **File: `go.mod`**
 ```go
-module backend/core/{{module}}
+module backend/core/{{schema}}/{{module}}
 
 go 1.24.0
 
@@ -98,10 +105,10 @@ import (
 	baseport "backend/port"
 	"backend/adapter/database"
 	"backend/adapter/di"
-	"backend/core/{{module}}/port"
-	"backend/core/{{module}}/adapter/handler"
-	"backend/core/{{module}}/adapter/postgres"
-	"backend/core/{{module}}/core"
+	"backend/core/{{schema}}/{{module}}/port"
+	"backend/core/{{schema}}/{{module}}/adapter/handler"
+	"backend/core/{{schema}}/{{module}}/adapter/postgres"
+	"backend/core/{{schema}}/{{module}}/core"
 	"github.com/samber/do/v2"
 )
 
@@ -207,7 +214,7 @@ package core
 
 import (
 	"context"
-	"backend/core/{{module}}/port"
+	"backend/core/{{schema}}/{{module}}/port"
 	baseport "backend/port"
 	apperrors "backend/port/errors"
 	"backend/infra/dafi"
@@ -317,7 +324,7 @@ import (
 	"errors"
 	"time"
 
-	"backend/core/{{module}}/port"
+	"backend/core/{{schema}}/{{module}}/port"
 	baseport "backend/port"
 	apperrors "backend/port/errors"
 	"backend/infra/dafi"
@@ -525,7 +532,7 @@ func (r postgres) Delete(ctx context.Context, filters ...dafi.Filter) error {
 package handler
 
 import (
-	"backend/core/{{module}}/port"
+	"backend/core/{{schema}}/{{module}}/port"
 	baseport "backend/port"
 	apperrors "backend/port/errors"
 	"backend/infra/dafi"
@@ -619,7 +626,7 @@ Create a new file to map the routes.
 package router
 
 import (
-	"backend/core/{{module}}/adapter/handler"
+	"backend/core/{{schema}}/{{module}}/adapter/handler"
 	"backend/adapter/di"
 	"github.com/labstack/echo/v4"
 	"github.com/samber/do/v2"
@@ -642,11 +649,29 @@ func Register{{Module}}Routes(injector do.Injector, e *echo.Echo) {
 Add `Register{{Module}}Routes(injector, e)` to the `SetupRoutes` function.
 
 **Task: Update `backend/cmd/api/main.go`**
-Import the module (`backend/core/{{module}}`) and call `{{module}}.Module(injector)` in `main()`.
+Import the module (`backend/core/{{schema}}/{{module}}`) and call `{{module}}.Module(injector)` in `main()`.
+
+**Task: Update `backend/go.work`**
+Add `./internal/core/{{schema}}/{{module}}` to the `use` block.
 
 ---
 
-### 4. Database Migration (Conditional)
+### 4. OpenAPI Documentation
+
+**Task: Create `backend/cmd/api/docs/paths/{{module}}s.yaml`**
+Create an OpenAPI path file for the new module's endpoints.
+
+**Task: Update `backend/cmd/api/docs/openapi.yaml`**
+- Add path references under `paths:` pointing to the new YAML file
+- Add the module's tag to the appropriate `x-tagGroup` based on `{{schema}}`:
+  - `auth` schema → add to the "Auth" tag group
+  - `notifications` schema → add to the "Notifications" tag group
+  - New schema → create a new tag group
+- Add component schemas (`{{Module}}`, `Create{{Module}}`, `Update{{Module}}`) under `components.schemas`
+
+---
+
+### 5. Database Migration (Conditional)
 
 **CONDITION:** **Only generate this file if NO existing migration for this module was found in Step 1.**
 
@@ -743,7 +768,8 @@ CREATE POLICY {{module}}s_delete ON {{schema}}.{{module}}s FOR DELETE USING (
 
 ---
 
-### 5. Final Steps
-1. Run `go mod tidy` in `backend/internal/core/{{module}}`.
+### 6. Final Steps
+1. Run `go mod tidy` in `backend/internal/core/{{schema}}/{{module}}`.
 2. Run `go mod tidy` in `backend/cmd/api`.
-3. Notify the user to run migrations.
+3. Verify build: `cd backend && go build ./cmd/api/...`
+4. Notify the user to run migrations.

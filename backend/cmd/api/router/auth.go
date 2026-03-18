@@ -1,7 +1,7 @@
 package router
 
 import (
-	"backend/core/auth/adapter/handler"
+	"backend/core/auth/identity/adapter/handler"
 	"backend/adapter/di"
 	"github.com/labstack/echo/v4"
 	"github.com/samber/do/v2"

@@ -1,7 +1,7 @@
 package router
 
 import (
-	"backend/core/email_log/adapter/handler"
+	"backend/core/notifications/email_log/adapter/handler"
 	"backend/adapter/di"
 	"github.com/labstack/echo/v4"
 	"github.com/samber/do/v2"
