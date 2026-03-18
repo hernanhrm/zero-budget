@@ -11,10 +11,11 @@ import (
 )
 
 const (
-	parameterPage   = "page"
-	parameterLimit  = "limit"
-	parameterSort   = "sort"
-	parameterSelect = "select"
+	parameterPage      = "page"
+	parameterLimit     = "limit"
+	parameterSort      = "sort"
+	parameterSelect    = "select"
+	parameterRelations = "relations"
 	defaultChaining = And
 )
 
@@ -77,6 +78,12 @@ func (p *QueryParser) parseValues(key string, values []string, criteria *Criteri
 			if err := p.parseSelect(value, criteria); err != nil {
 				return err
 			}
+
+			continue
+		}
+
+		if key == parameterRelations {
+			p.parseRelations(value, criteria)
 
 			continue
 		}
@@ -241,6 +248,26 @@ func (p *QueryParser) parseSelect(value string, criteria *Criteria) error {
 	}
 
 	criteria.SelectColumns = selectColumns
+
+	return nil
+}
+
+func (p *QueryParser) parseRelations(value string, criteria *Criteria) {
+	relations := strings.Split(value, ",")
+	for _, rel := range relations {
+		rel = strings.TrimSpace(rel)
+		if rel != "" {
+			criteria.Relations = append(criteria.Relations, rel)
+		}
+	}
+}
+
+func ValidateRelations(relations []string, allowedRelations map[string]struct{}) error {
+	for _, rel := range relations {
+		if _, ok := allowedRelations[rel]; !ok {
+			return fmt.Errorf("invalid relation: %s", rel)
+		}
+	}
 
 	return nil
 }

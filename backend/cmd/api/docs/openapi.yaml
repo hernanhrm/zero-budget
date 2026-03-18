@@ -418,6 +418,30 @@ components:
           type: string
           format: date-time
 
+    WorkspaceMemberRelation:
+      type: object
+      properties:
+        workspaceId:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        roleId:
+          type: string
+          format: uuid
+        createdAt:
+          type: string
+          format: date-time
+        user:
+          $ref: '#/components/schemas/User'
+          description: Included when "user" is in the relations query param
+          nullable: true
+        role:
+          $ref: '#/components/schemas/Role'
+          description: Included when "role" is in the relations query param
+          nullable: true
+
     CreateWorkspaceMember:
       type: object
       required:

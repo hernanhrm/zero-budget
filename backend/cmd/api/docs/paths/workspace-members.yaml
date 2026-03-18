@@ -25,15 +25,21 @@ paths:
           schema:
             type: string
             format: uuid
+        - name: relations
+          in: query
+          description: Comma-separated list of relations to include (e.g. "user", "role", "user,role")
+          schema:
+            type: string
+            example: "user,role"
       responses:
         '200':
-          description: List of workspace members
+          description: List of workspace members. When relations are requested, each member includes the related objects.
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/WorkspaceMember'
+                  $ref: '#/components/schemas/WorkspaceMemberRelation'
     post:
       summary: Add a member to a workspace
       tags:
@@ -71,13 +77,19 @@ paths:
           schema:
             type: string
             format: uuid
+        - name: relations
+          in: query
+          description: Comma-separated list of relations to include (e.g. "user", "role", "user,role")
+          schema:
+            type: string
+            example: "user,role"
       responses:
         '200':
-          description: Workspace member found
+          description: Workspace member found. When relations are requested, the response includes the related objects.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/WorkspaceMember'
+                $ref: '#/components/schemas/WorkspaceMemberRelation'
         '404':
           description: Workspace member not found
 

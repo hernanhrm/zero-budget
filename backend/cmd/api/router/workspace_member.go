@@ -13,6 +13,7 @@ func RegisterWorkspaceMemberRoutes(injector do.Injector, g *echo.Group) {
 	membersGroup := g.Group("/:slug/members")
 
 	membersGroup.GET("", h.FindAll)
+	membersGroup.GET("/find", h.FindOne)
 	membersGroup.POST("", h.Create)
 	membersGroup.PUT("", h.Update)
 	membersGroup.DELETE("", h.Delete)

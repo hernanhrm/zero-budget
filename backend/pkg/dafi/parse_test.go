@@ -77,6 +77,47 @@ func TestQueryParser_Parse(t *testing.T) {
 			},
 			wantErr: false,
 		},
+		{
+			name:   "single relation",
+			fields: fields{operators: defaultOperators},
+			args: args{values: url.Values{
+				"relations": []string{"user"},
+			}},
+			want: Criteria{
+				Relations: []string{"user"},
+			},
+			wantErr: false,
+		},
+		{
+			name:   "multiple relations",
+			fields: fields{operators: defaultOperators},
+			args: args{values: url.Values{
+				"relations": []string{"user,role"},
+			}},
+			want: Criteria{
+				Relations: []string{"user", "role"},
+			},
+			wantErr: false,
+		},
+		{
+			name:   "relations combined with pagination and filters",
+			fields: fields{operators: defaultOperators},
+			args: args{values: url.Values{
+				"relations": []string{"user,role"},
+				"name":      []string{"eq:john"},
+				"x":         []string{"page:0", "limit:10"},
+			}},
+			want: Criteria{
+				Relations: []string{"user", "role"},
+				Filters: Filters{
+					{Field: "name", Operator: "eq", Value: "john", ChainingKey: And},
+				},
+				Pagination: Pagination{
+					PageSize: 10,
+				},
+			},
+			wantErr: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -96,6 +137,7 @@ func TestQueryParser_Parse(t *testing.T) {
 			assert.Equal(t, tt.want.Pagination, got.Pagination)
 			assert.Equal(t, tt.want.SelectColumns, got.SelectColumns)
 			assert.Equal(t, tt.want.FiltersByModule, got.FiltersByModule)
+			assert.Equal(t, tt.want.Relations, got.Relations)
 		})
 	}
 }

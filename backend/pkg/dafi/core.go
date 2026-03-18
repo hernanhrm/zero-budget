@@ -3,6 +3,7 @@ package dafi
 type Criteria struct {
 	SelectColumns   []string
 	Joins           []string
+	Relations       []string
 	Filters         Filters
 	FiltersByModule map[string]Filters
 	Sorts           Sorts

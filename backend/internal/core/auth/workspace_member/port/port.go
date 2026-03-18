@@ -19,6 +19,7 @@ type Repository interface {
 
 type Service interface {
 	basedomain.UseCaseTx[Service]
+	basedomain.UseCaseQueryRelation[WorkspaceMemberRelation]
 	FindOne(ctx context.Context, criteria dafi.Criteria) (WorkspaceMember, error)
 	FindAll(ctx context.Context, criteria dafi.Criteria) (basedomain.List[WorkspaceMember], error)
 	Create(ctx context.Context, input CreateWorkspaceMember) error

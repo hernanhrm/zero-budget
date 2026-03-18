@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"strings"
+
 	"backend/core/auth/workspace_member/port"
 	basedomain "backend/port"
 	apperrors "backend/port/errors"
@@ -31,12 +33,38 @@ func (h HTTP) FindOne(c echo.Context) error {
 	}
 
 	criteria := dafi.Where("userId", dafi.Equal, userID)
+
+	if relationsParam := c.QueryParam("relations"); relationsParam != "" {
+		for _, rel := range strings.Split(relationsParam, ",") {
+			rel = strings.TrimSpace(rel)
+			if rel != "" {
+				criteria.Relations = append(criteria.Relations, rel)
+			}
+		}
+
+		if err := dafi.ValidateRelations(criteria.Relations, allowedRelations); err != nil {
+			return oops.WithContext(ctx).In(apperrors.LayerHandler).Code(apperrors.CodeBadRequest).Wrap(err)
+		}
+
+		item, err := h.svc.FindOneRelation(ctx, criteria)
+		if err != nil {
+			return oops.WithContext(ctx).In(apperrors.LayerHandler).Wrap(err)
+		}
+
+		return httpresponse.OK(c, item)
+	}
+
 	item, err := h.svc.FindOne(ctx, criteria)
 	if err != nil {
 		return oops.WithContext(ctx).In(apperrors.LayerHandler).Wrap(err)
 	}
 
 	return httpresponse.OK(c, item)
+}
+
+var allowedRelations = map[string]struct{}{
+	"user": {},
+	"role": {},
 }
 
 func (h HTTP) FindAll(c echo.Context) error {
@@ -46,6 +74,19 @@ func (h HTTP) FindAll(c echo.Context) error {
 	criteria, err := parser.Parse(c.QueryParams())
 	if err != nil {
 		return oops.WithContext(ctx).In(apperrors.LayerHandler).Code(apperrors.CodeBadRequest).Wrap(err)
+	}
+
+	if len(criteria.Relations) > 0 {
+		if err := dafi.ValidateRelations(criteria.Relations, allowedRelations); err != nil {
+			return oops.WithContext(ctx).In(apperrors.LayerHandler).Code(apperrors.CodeBadRequest).Wrap(err)
+		}
+
+		items, err := h.svc.FindAllRelation(ctx, criteria)
+		if err != nil {
+			return oops.WithContext(ctx).In(apperrors.LayerHandler).Wrap(err)
+		}
+
+		return httpresponse.OK(c, items)
 	}
 
 	items, err := h.svc.FindAll(ctx, criteria)
