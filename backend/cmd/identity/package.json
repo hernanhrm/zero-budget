@@ -1,0 +1,27 @@
+{
+  "name": "identity",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch --env-file=.env src/index.ts",
+    "build": "tsc",
+    "start": "node --env-file=.env dist/index.js",
+    "db:migrate": "npx @better-auth/cli migrate",
+    "db:generate": "npx @better-auth/cli generate"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.14.1",
+    "better-auth": "^1.2.8",
+    "drizzle-orm": "^0.44.2",
+    "hono": "^4.7.11",
+    "pg": "^8.16.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.0",
+    "@types/pg": "^8.15.4",
+    "drizzle-kit": "^0.31.10",
+    "tsx": "^4.19.4",
+    "typescript": "^5.8.3"
+  }
+}
