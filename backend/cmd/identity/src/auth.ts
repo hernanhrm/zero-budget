@@ -1,6 +1,7 @@
 import { betterAuth } from "better-auth";
 import { organization, twoFactor } from "better-auth/plugins";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { dash } from "@better-auth/infra";
 import { db } from "./db.js";
 
 export const auth = betterAuth({
@@ -8,6 +9,9 @@ export const auth = betterAuth({
     provider: "pg",
     usePlural: true,
   }),
+  experimental: {
+    joins: true, // Enable database joins for better performance
+  },
   appName: "Zero Budget",
   emailAndPassword: {
     enabled: true,
@@ -66,6 +70,7 @@ export const auth = betterAuth({
     },
   },
   plugins: [
+    dash(),
     organization({
       allowUserToCreateOrganization: true,
       schema: {
