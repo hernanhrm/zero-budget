@@ -12,6 +12,18 @@ export const auth = betterAuth({
   experimental: {
     joins: true, // Enable database joins for better performance
   },
+  advanced: {
+    ipAddress: {
+      // For Cloudflare
+      ipAddressHeaders: ["cf-connecting-ip", "x-forwarded-for"],
+
+      // For Vercel
+      // ipAddressHeaders: ["x-vercel-forwarded-for", "x-forwarded-for"],
+
+      // For AWS/Generic
+      // ipAddressHeaders: ["x-forwarded-for"],
+    },
+  },
   appName: "Zero Budget",
   emailAndPassword: {
     enabled: true,
