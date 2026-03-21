@@ -4,12 +4,13 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/guregu/null/v6"
 )
 
 type EmailLog struct {
 	ID             uuid.UUID      `json:"id"`
 	TemplateID     uuid.UUID      `json:"templateId"`
-	OrganizationID string         `json:"organizationId"`
+	OrganizationID null.String    `json:"organizationId"`
 	RecipientEmail string         `json:"recipientEmail"`
 	Event          string         `json:"event"`
 	Subject        string         `json:"subject"`

@@ -30,7 +30,7 @@ func (s EmailLogStatus) Validate() error {
 type CreateEmailLog struct {
 	ID             uuid.UUID      `json:"id"`
 	TemplateID     uuid.UUID      `json:"templateId"`
-	OrganizationID string         `json:"organizationId"`
+	OrganizationID null.String    `json:"organizationId"`
 	RecipientEmail string         `json:"recipientEmail"`
 	Event          string         `json:"event"`
 	Subject        string         `json:"subject"`
@@ -43,7 +43,7 @@ func (c CreateEmailLog) Validate(ctx context.Context) error {
 	return validation.ValidateStruct(ctx, &c,
 		validation.Field(&c.ID, validation.Required, validation.IsUUID),
 		validation.Field(&c.TemplateID, validation.Required, validation.IsUUID),
-		validation.Field(&c.OrganizationID, validation.Required),
+		validation.Field(&c.OrganizationID),
 		validation.Field(&c.RecipientEmail, validation.Required, validation.IsEmail),
 		validation.Field(&c.Event, validation.Required, validation.Length(1, 100)),
 		validation.Field(&c.Subject, validation.Required, validation.Length(1, 500)),

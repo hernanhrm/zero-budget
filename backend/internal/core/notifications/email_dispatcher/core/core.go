@@ -96,7 +96,7 @@ func (s service) sendEmail(ctx context.Context, input sendEmailInput) {
 	createLog := emailLogPort.CreateEmailLog{
 		ID:             logID,
 		TemplateID:     tmpl.ID,
-		OrganizationID: input.organizationID,
+		OrganizationID: null.NewString(input.organizationID, input.organizationID != ""),
 		RecipientEmail: input.recipient,
 		Event:          input.event,
 		Subject:        parsed.Subject,
