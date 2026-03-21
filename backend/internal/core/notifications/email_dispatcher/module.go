@@ -36,4 +36,5 @@ func Module(i do.Injector, resendAPIKey, resendFromAddress string) {
 	svc := di.MustInvoke[port.Service](i)
 
 	bus.Subscribe(events.UserSignedUp, svc.HandleUserSignedUp)
+	bus.Subscribe(events.UserVerificationEmail, svc.HandleUserVerificationEmail)
 }

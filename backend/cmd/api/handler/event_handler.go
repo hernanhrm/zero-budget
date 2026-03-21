@@ -32,12 +32,24 @@ func NewEventHandler(bus eventbusPort.EventBus, logger basedomain.Logger) EventH
 func (h EventHandler) Publish(c echo.Context) error {
 	ctx := c.Request().Context()
 
+	h.logger.Info("received publish request",
+		"method", c.Request().Method,
+		"path", c.Request().URL.Path,
+	)
+
 	var req publishEventRequest
 	if err := c.Bind(&req); err != nil {
+		h.logger.Error("failed to bind request", "error", err)
 		return oops.In(apperrors.LayerHandler).Code(apperrors.CodeBadRequest).Wrap(err)
 	}
 
+	h.logger.Info("parsed event request",
+		"event", req.Event,
+		"payloadKeys", payloadKeys(req.Payload),
+	)
+
 	if req.Event == "" {
+		h.logger.Warn("event name is empty, rejecting request")
 		return httpresponse.BadRequest(c, "event name is required")
 	}
 
@@ -47,7 +59,15 @@ func (h EventHandler) Publish(c echo.Context) error {
 		OccurredAt: time.Now(),
 	})
 
-	h.logger.Info("event published", "event", req.Event)
+	h.logger.Info("event published successfully", "event", req.Event)
 
 	return httpresponse.NoContent(c)
+}
+
+func payloadKeys(m map[string]any) []string {
+	keys := make([]string, 0, len(m))
+	for k := range m {
+		keys = append(keys, k)
+	}
+	return keys
 }

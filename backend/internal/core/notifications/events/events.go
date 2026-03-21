@@ -1,7 +1,8 @@
 package events
 
 const (
-	UserSignedUp = "user.signed_up"
+	UserSignedUp         = "user.signed_up"
+	UserVerificationEmail = "user.verification_email"
 )
 
 type UserSignedUpPayload struct {
@@ -9,4 +10,11 @@ type UserSignedUpPayload struct {
 	Email          string
 	Name           string
 	OrganizationID string
+}
+
+type UserVerificationEmailPayload struct {
+	UserID          string
+	Email           string
+	Name            string
+	VerificationURL string
 }

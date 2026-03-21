@@ -35,22 +35,24 @@ var columns = []string{
 	"content",
 	"is_active",
 	"locale",
+	"is_organization_template",
 	"created_at",
 	"updated_at",
 }
 
 var sqlColumnByDomainField = map[string]string{
-	"id":          "id",
-	"organizationId": "organization_id",
-	"event":       "event",
-	"name":        "name",
-	"description": "description",
-	"subject":     "subject",
-	"content":     "content",
-	"isActive":    "is_active",
-	"locale":      "locale",
-	"createdAt":   "created_at",
-	"updatedAt":   "updated_at",
+	"id":                     "id",
+	"organizationId":         "organization_id",
+	"event":                  "event",
+	"name":                   "name",
+	"description":            "description",
+	"subject":                "subject",
+	"content":                "content",
+	"isActive":               "is_active",
+	"locale":                 "locale",
+	"isOrganizationTemplate": "is_organization_template",
+	"createdAt":              "created_at",
+	"updatedAt":              "updated_at",
 }
 
 type postgres struct {
@@ -99,6 +101,7 @@ func (r postgres) FindOne(ctx context.Context, criteria dafi.Criteria) (port.Ema
 		&tmpl.Content,
 		&tmpl.IsActive,
 		&tmpl.Locale,
+		&tmpl.IsOrganizationTemplate,
 		&tmpl.CreatedAt,
 		&tmpl.UpdatedAt,
 	)
@@ -147,6 +150,7 @@ func (r postgres) FindAll(ctx context.Context, criteria dafi.Criteria) (basedoma
 			&tmpl.Content,
 			&tmpl.IsActive,
 			&tmpl.Locale,
+			&tmpl.IsOrganizationTemplate,
 			&tmpl.CreatedAt,
 			&tmpl.UpdatedAt,
 		)
@@ -174,6 +178,7 @@ func (r postgres) Create(ctx context.Context, input port.CreateEmailTemplate) er
 			input.Content,
 			input.IsActive,
 			input.Locale,
+			input.IsOrganizationTemplate,
 			now,
 			now,
 		)
@@ -212,6 +217,7 @@ func (r postgres) CreateBulk(ctx context.Context, inputs basedomain.List[port.Cr
 			input.Content,
 			input.IsActive,
 			input.Locale,
+			input.IsOrganizationTemplate,
 			now,
 			now,
 		)

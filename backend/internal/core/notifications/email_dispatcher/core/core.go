@@ -45,8 +45,13 @@ type sendEmailInput struct {
 
 func (s service) sendEmail(ctx context.Context, input sendEmailInput) {
 	criteria := dafi.Where("event", dafi.Equal, input.event).
-		And("organizationId", dafi.Equal, input.organizationID).
 		And("isActive", dafi.Equal, true)
+
+	if input.organizationID != "" {
+		criteria = criteria.And("organizationId", dafi.Equal, input.organizationID)
+	} else {
+		criteria = criteria.And("organizationId", dafi.IsNull, nil)
+	}
 
 	tmpl, err := s.emailTemplateSvc.FindOne(ctx, criteria)
 	if err != nil {

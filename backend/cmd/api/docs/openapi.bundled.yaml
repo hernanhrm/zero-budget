@@ -204,6 +204,9 @@ components:
           type: string
           minLength: 2
           maxLength: 10
+        isOrganizationTemplate:
+          type: boolean
+          description: Whether this template is duplicated for each new organization
         createdAt:
           type: string
           format: date-time
@@ -252,6 +255,10 @@ components:
         locale:
           type: string
           default: en
+        isOrganizationTemplate:
+          type: boolean
+          default: false
+          description: Whether this template should be duplicated for each new organization
     UpdateEmailTemplate:
       type: object
       properties:

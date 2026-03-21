@@ -1,5 +1,5 @@
 import { betterAuth } from "better-auth";
-import { organization, twoFactor } from "better-auth/plugins";
+import { openAPI, organization, twoFactor } from "better-auth/plugins";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { dash } from "@better-auth/infra";
 import { apiKey } from "@better-auth/api-key";
@@ -28,6 +28,88 @@ export const auth = betterAuth({
   appName: "Zero Budget",
   emailAndPassword: {
     enabled: true,
+    requireEmailVerification: true,
+  },
+  emailVerification: {
+    sendOnSignUp: true,
+    autoSignInAfterVerification: true,
+    async afterEmailVerification(user) {
+      const goApiUrl = process.env.GO_API_URL || "http://localhost:8080";
+      const internalApiKey = process.env.INTERNAL_API_KEY;
+      if (!internalApiKey) return;
+
+      try {
+        await fetch(`${goApiUrl}/v1/events/publish`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-API-Key": internalApiKey,
+          },
+          body: JSON.stringify({
+            event: "user.signed_up",
+            payload: {
+              userId: user.id,
+              email: user.email,
+              name: user.name,
+            },
+          }),
+        });
+      } catch (err) {
+        console.error("Failed to publish user.signed_up event:", err);
+      }
+    },
+    sendVerificationEmail: async ({ user, url }: { user: { id: string; email: string; name: string }; url: string }) => {
+      const goApiUrl = process.env.GO_API_URL || "http://localhost:8080";
+      const internalApiKey = process.env.INTERNAL_API_KEY;
+
+      console.log("[identity] sendVerificationEmail triggered", {
+        userId: user.id,
+        email: user.email,
+        name: user.name,
+        url,
+        goApiUrl,
+        hasApiKey: !!internalApiKey,
+      });
+
+      if (!internalApiKey) {
+        console.warn("[identity] INTERNAL_API_KEY not set, skipping event publish");
+        return;
+      }
+
+      try {
+        const eventPayload = {
+          event: "user.verification_email",
+          payload: {
+            userId: user.id,
+            email: user.email,
+            name: user.name,
+            verificationUrl: url,
+          },
+        };
+        console.log("[identity] publishing event to Go API", eventPayload);
+
+        const res = await fetch(`${goApiUrl}/v1/events/publish`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-API-Key": internalApiKey,
+          },
+          body: JSON.stringify(eventPayload),
+        });
+
+        console.log("[identity] Go API response", {
+          status: res.status,
+          statusText: res.statusText,
+        });
+
+        if (!res.ok) {
+          const body = await res.text();
+          console.error("[identity] Go API error response body:", body);
+        }
+      } catch (err) {
+        console.error("[identity] Failed to publish verification email event:", err);
+      }
+    },
   },
   socialProviders: {
     ...(process.env.GOOGLE_CLIENT_ID && {
@@ -83,6 +165,7 @@ export const auth = betterAuth({
     },
   },
   plugins: [
+    openAPI(),
     dash(),
     organization({
       allowUserToCreateOrganization: true,
@@ -145,35 +228,5 @@ export const auth = betterAuth({
       },
     }),
   ],
-  databaseHooks: {
-    user: {
-      create: {
-        after: async (user) => {
-          const goApiUrl = process.env.GO_API_URL || "http://localhost:8080";
-          const internalApiKey = process.env.INTERNAL_API_KEY;
-          if (!internalApiKey) return;
 
-          try {
-            await fetch(`${goApiUrl}/v1/events/publish`, {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                "X-API-Key": internalApiKey,
-              },
-              body: JSON.stringify({
-                event: "user.signed_up",
-                payload: {
-                  userId: user.id,
-                  email: user.email,
-                  name: user.name,
-                },
-              }),
-            });
-          } catch (err) {
-            console.error("Failed to publish event to Go API:", err);
-          }
-        },
-      },
-    },
-  },
 });
