@@ -1,0 +1,10 @@
+{
+	"scripts": {
+		"api:bundle": "redocly bundle backend/cmd/api/docs/openapi.yaml -o backend/cmd/api/docs/openapi.bundled.yaml --force",
+		"api:generate": "pnpm api:bundle && orval"
+	},
+	"devDependencies": {
+		"@redocly/cli": "^1.34.3",
+		"orval": "^8.5.3"
+	}
+}

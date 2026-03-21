@@ -7,14 +7,6 @@ import (
 	"syscall"
 
 	"api/router"
-	"backend/core/auth/api_route"
-	"backend/core/auth/identity"
-	"backend/core/auth/organization"
-	"backend/core/auth/permission"
-	"backend/core/auth/role"
-	"backend/core/auth/user"
-	"backend/core/auth/workspace"
-	"backend/core/auth/workspace_member"
 	"backend/core/notifications/email_log"
 	"backend/core/notifications/email_template"
 	"backend/core/notifications/email_dispatcher"
@@ -79,18 +71,10 @@ func main() {
 	di.ProvideValue(injector, db.Pool)
 
 	// Register feature modules
-	user.Module(injector)
 	email_log.Module(injector)
 	email_template.Module(injector)
 	eventbus.Module(injector)
-	organization.Module(injector)
-	workspace.Module(injector)
-	permission.Module(injector)
-	role.Module(injector)
-	api_route.Module(injector)
-	workspace_member.Module(injector)
 	email_dispatcher.Module(injector, cfg.Resend.APIKey, cfg.Resend.FromAddress)
-	identity.Module(injector, cfg.JWTSecret)
 
 	// Start event bus
 	bus := di.MustInvoke[eventbusPort.EventBus](injector)

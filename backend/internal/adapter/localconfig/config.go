@@ -17,7 +17,14 @@ type LocalConfig struct {
 	Service   Service
 	Database  Database
 	Resend    Resend
+	Identity  Identity
 	JWTSecret string
+}
+
+// Identity holds identity service configuration.
+type Identity struct {
+	URL            string
+	InternalAPIKey string
 }
 
 // Service holds service-specific configuration.

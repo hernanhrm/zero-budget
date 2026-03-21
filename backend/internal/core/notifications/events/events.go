@@ -5,8 +5,8 @@ const (
 )
 
 type UserSignedUpPayload struct {
-	UserID      string
-	Email       string
-	FirstName   string
-	WorkspaceID string
+	UserID         string
+	Email          string
+	Name           string
+	OrganizationID string
 }

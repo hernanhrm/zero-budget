@@ -11,13 +11,8 @@ import (
 
 func SetupRoutes(injector do.Injector) func(e *echo.Echo) {
 	return func(e *echo.Echo) {
-		RegisterAuthRoutes(injector, e)
-		RegisterUserRoutes(injector, e)
-		RegisterOrganizationRoutes(injector, e)
-		RegisterWorkspaceRoutes(injector, e)
-		RegisterPermissionRoutes(injector, e)
-		RegisterApiRouteRoutes(injector, e)
 		RegisterEmailTemplateRoutes(injector, e)
+		RegisterEventRoutes(injector, e)
 
 		e.GET("/v1/docs", func(c echo.Context) error {
 			configService := do.MustInvoke[*localconfig.ConfigService](injector)

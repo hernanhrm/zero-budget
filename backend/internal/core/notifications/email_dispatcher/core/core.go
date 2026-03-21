@@ -37,22 +37,22 @@ func New(
 }
 
 type sendEmailInput struct {
-	event       string
-	workspaceID uuid.UUID
-	recipient   string
-	data        any
+	event          string
+	organizationID string
+	recipient      string
+	data           any
 }
 
 func (s service) sendEmail(ctx context.Context, input sendEmailInput) {
 	criteria := dafi.Where("event", dafi.Equal, input.event).
-		And("workspaceId", dafi.Equal, input.workspaceID).
+		And("organizationId", dafi.Equal, input.organizationID).
 		And("isActive", dafi.Equal, true)
 
 	tmpl, err := s.emailTemplateSvc.FindOne(ctx, criteria)
 	if err != nil {
 		s.logger.Error("failed to find email template",
 			"event", input.event,
-			"workspaceId", input.workspaceID,
+			"organizationId", input.organizationID,
 			"error", err,
 		)
 		return
@@ -91,7 +91,7 @@ func (s service) sendEmail(ctx context.Context, input sendEmailInput) {
 	createLog := emailLogPort.CreateEmailLog{
 		ID:             logID,
 		TemplateID:     tmpl.ID,
-		WorkspaceID:    input.workspaceID,
+		OrganizationID: input.organizationID,
 		RecipientEmail: input.recipient,
 		Event:          input.event,
 		Subject:        parsed.Subject,

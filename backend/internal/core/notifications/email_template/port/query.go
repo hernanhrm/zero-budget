@@ -12,8 +12,8 @@ type ParsedTemplate struct {
 }
 
 type EmailTemplate struct {
-	ID          uuid.UUID `json:"id"`
-	WorkspaceID uuid.UUID `json:"workspaceId"`
+	ID             uuid.UUID `json:"id"`
+	OrganizationID string    `json:"organizationId"`
 	Event       string    `json:"event"`
 	Name        string    `json:"name"`
 	Description string    `json:"description"`

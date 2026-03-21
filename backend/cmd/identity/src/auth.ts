@@ -2,6 +2,7 @@ import { betterAuth } from "better-auth";
 import { organization, twoFactor } from "better-auth/plugins";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { dash } from "@better-auth/infra";
+import { apiKey } from "@better-auth/api-key";
 import { db } from "./db.js";
 
 export const auth = betterAuth({
@@ -122,5 +123,57 @@ export const auth = betterAuth({
         },
       },
     }),
+    apiKey(undefined, {
+      schema: {
+        apikey: {
+          fields: {
+            configId: "config_id",
+            referenceId: "reference_id",
+            createdAt: "created_at",
+            updatedAt: "updated_at",
+            expiresAt: "expires_at",
+            rateLimitEnabled: "rate_limit_enabled",
+            rateLimitTimeWindow: "rate_limit_time_window",
+            rateLimitMax: "rate_limit_max",
+            requestCount: "request_count",
+            lastRefillAt: "last_refill_at",
+            lastRequest: "last_request",
+            refillAmount: "refill_amount",
+            refillInterval: "refill_interval",
+          },
+        },
+      },
+    }),
   ],
+  databaseHooks: {
+    user: {
+      create: {
+        after: async (user) => {
+          const goApiUrl = process.env.GO_API_URL || "http://localhost:8080";
+          const internalApiKey = process.env.INTERNAL_API_KEY;
+          if (!internalApiKey) return;
+
+          try {
+            await fetch(`${goApiUrl}/v1/events/publish`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "X-API-Key": internalApiKey,
+              },
+              body: JSON.stringify({
+                event: "user.signed_up",
+                payload: {
+                  userId: user.id,
+                  email: user.email,
+                  name: user.name,
+                },
+              }),
+            });
+          } catch (err) {
+            console.error("Failed to publish event to Go API:", err);
+          }
+        },
+      },
+    },
+  },
 });

@@ -8,14 +8,6 @@ use (
 	./internal/adapter/logger
 	./internal/adapter/server
 	./internal/adapter/validation
-	./internal/core/auth/api_route
-	./internal/core/auth/identity
-	./internal/core/auth/organization
-	./internal/core/auth/permission
-	./internal/core/auth/role
-	./internal/core/auth/user
-	./internal/core/auth/workspace
-	./internal/core/auth/workspace_member
 	./internal/core/notifications/email_dispatcher
 	./internal/core/notifications/email_log
 	./internal/core/notifications/email_template

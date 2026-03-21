@@ -27,7 +27,7 @@ const tableName = "notifications.email_templates"
 
 var columns = []string{
 	"id",
-	"workspace_id",
+	"organization_id",
 	"event",
 	"name",
 	"description",
@@ -41,7 +41,7 @@ var columns = []string{
 
 var sqlColumnByDomainField = map[string]string{
 	"id":          "id",
-	"workspaceId": "workspace_id",
+	"organizationId": "organization_id",
 	"event":       "event",
 	"name":        "name",
 	"description": "description",
@@ -91,7 +91,7 @@ func (r postgres) FindOne(ctx context.Context, criteria dafi.Criteria) (port.Ema
 	var tmpl port.EmailTemplate
 	err = row.Scan(
 		&tmpl.ID,
-		&tmpl.WorkspaceID,
+		&tmpl.OrganizationID,
 		&tmpl.Event,
 		&tmpl.Name,
 		&tmpl.Description,
@@ -139,7 +139,7 @@ func (r postgres) FindAll(ctx context.Context, criteria dafi.Criteria) (basedoma
 		var tmpl port.EmailTemplate
 		err = rows.Scan(
 			&tmpl.ID,
-			&tmpl.WorkspaceID,
+			&tmpl.OrganizationID,
 			&tmpl.Event,
 			&tmpl.Name,
 			&tmpl.Description,
@@ -166,7 +166,7 @@ func (r postgres) Create(ctx context.Context, input port.CreateEmailTemplate) er
 		WithColumns(columns...).
 		WithValues(
 			input.ID,
-			input.WorkspaceID,
+			input.OrganizationID,
 			input.Event,
 			input.Name,
 			input.Description,
@@ -204,7 +204,7 @@ func (r postgres) CreateBulk(ctx context.Context, inputs basedomain.List[port.Cr
 	for _, input := range inputs {
 		query = query.WithValues(
 			input.ID,
-			input.WorkspaceID,
+			input.OrganizationID,
 			input.Event,
 			input.Name,
 			input.Description,

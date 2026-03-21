@@ -1,11 +1,11 @@
--- A. Seed the system-level welcome email template (workspace_id = NULL).
-INSERT INTO notifications.email_templates (workspace_id, event, name, description, subject, content, is_active, locale)
+-- A. Seed the system-level welcome email template (organization_id = NULL).
+INSERT INTO notifications.email_templates (organization_id, event, name, description, subject, content, is_active, locale)
 VALUES (
     NULL,
     'user.signed_up',
     'Welcome Email',
     'Sent to new users after sign-up',
-    'Welcome to Zero Budget, {{.FirstName}}!',
+    'Welcome to Zero Budget, {{.Name}}!',
     '<!DOCTYPE html>
 <html lang="en">
 <head><meta charset="UTF-8"></head>
@@ -20,7 +20,7 @@ VALUES (
         </tr>
         <tr>
           <td style="padding:32px;">
-            <h2 style="margin:0 0 16px;color:#18181b;font-size:20px;">Welcome, {{.FirstName}}!</h2>
+            <h2 style="margin:0 0 16px;color:#18181b;font-size:20px;">Welcome, {{.Name}}!</h2>
             <p style="margin:0 0 16px;color:#3f3f46;font-size:16px;line-height:1.5;">
               Your account (<strong>{{.Email}}</strong>) is ready. You can now start tracking your finances with Zero Budget.
             </p>
@@ -43,26 +43,26 @@ VALUES (
     'en'
 );
 
--- B. Function that copies all system templates (workspace_id IS NULL) into a new workspace.
-CREATE OR REPLACE FUNCTION notifications.copy_system_templates_to_workspace()
+-- B. Function that copies all system templates (organization_id IS NULL) into a new organization.
+CREATE OR REPLACE FUNCTION notifications.copy_system_templates_to_organization()
 RETURNS TRIGGER
 LANGUAGE plpgsql
 SECURITY DEFINER
 AS $$
 BEGIN
     INSERT INTO notifications.email_templates
-        (workspace_id, event, name, description, subject, content, is_active, locale)
+        (organization_id, event, name, description, subject, content, is_active, locale)
     SELECT
         NEW.id, event, name, description, subject, content, is_active, locale
     FROM notifications.email_templates
-    WHERE workspace_id IS NULL;
+    WHERE organization_id IS NULL;
 
     RETURN NEW;
 END;
 $$;
 
--- C. Fire the copy function after every new workspace is created.
+-- C. Fire the copy function after every new organization is created.
 CREATE TRIGGER trg_copy_system_templates
-    AFTER INSERT ON auth.workspaces
+    AFTER INSERT ON identity.organizations
     FOR EACH ROW
-    EXECUTE FUNCTION notifications.copy_system_templates_to_workspace();
+    EXECUTE FUNCTION notifications.copy_system_templates_to_organization();

@@ -3,7 +3,6 @@ module api
 go 1.24.12
 
 require (
-	backend/core/auth/identity v0.0.0
 	backend/core/notifications/email_dispatcher v0.0.0
 	backend/core/notifications/eventbus v0.0.0
 	github.com/bdpiprava/scalar-go v0.13.0
@@ -13,7 +12,6 @@ require (
 )
 
 replace (
-	backend/core/auth/identity => ../../internal/core/auth/identity
 	backend/core/notifications/email_dispatcher => ../../internal/core/notifications/email_dispatcher
 	backend/core/notifications/eventbus => ../../internal/core/notifications/eventbus
 )

@@ -9,7 +9,7 @@ import (
 type EmailLog struct {
 	ID             uuid.UUID      `json:"id"`
 	TemplateID     uuid.UUID      `json:"templateId"`
-	WorkspaceID    uuid.UUID      `json:"workspaceId"`
+	OrganizationID string         `json:"organizationId"`
 	RecipientEmail string         `json:"recipientEmail"`
 	Event          string         `json:"event"`
 	Subject        string         `json:"subject"`

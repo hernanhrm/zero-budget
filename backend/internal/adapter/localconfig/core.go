@@ -65,6 +65,10 @@ func GetConfigWithOptions(opts ConfigOptions, log domain.Logger) (LocalConfig, e
 			APIKey:      getEnvAsString("RESEND_API_KEY"),
 			FromAddress: getEnvAsString("RESEND_FROM_ADDRESS"),
 		},
+		Identity: Identity{
+			URL:            getEnvAsString("IDENTITY_URL"),
+			InternalAPIKey: getEnvAsString("INTERNAL_API_KEY"),
+		},
 		JWTSecret: getEnvAsString("JWT_SECRET"),
 	}
 
