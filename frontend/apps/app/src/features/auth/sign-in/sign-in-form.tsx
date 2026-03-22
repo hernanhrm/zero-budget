@@ -1,5 +1,4 @@
 import { useForm } from "@tanstack/react-form"
-import { useNavigate } from "@tanstack/react-router"
 import { Button } from "@workspace/ui/components/button"
 import {
 	Field,
@@ -18,8 +17,6 @@ interface SignInFormProps {
 }
 
 export function SignInForm({ serverError, onServerError }: SignInFormProps) {
-	const navigate = useNavigate()
-
 	const form = useForm({
 		defaultValues: {
 			email: "",
@@ -41,7 +38,6 @@ export function SignInForm({ serverError, onServerError }: SignInFormProps) {
 					onServerError(error.message ?? "Something went wrong")
 					return
 				}
-				navigate({ to: "/" })
 			} catch (e) {
 				onServerError(
 					e instanceof Error ? e.message : "Something went wrong",

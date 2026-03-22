@@ -7,8 +7,7 @@
     "dev": "tsx watch --env-file=.env src/index.ts",
     "build": "tsc",
     "start": "node --env-file=.env dist/index.js",
-    "db:migrate": "npx @better-auth/cli migrate",
-    "db:generate": "npx @better-auth/cli generate"
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@better-auth/api-key": "^1.5.5",
@@ -22,7 +21,6 @@
   "devDependencies": {
     "@types/node": "^22.15.0",
     "@types/pg": "^8.15.4",
-    "drizzle-kit": "^0.31.10",
     "tsx": "^4.19.4",
     "typescript": "^5.8.3"
   }

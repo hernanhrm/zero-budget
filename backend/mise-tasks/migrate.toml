@@ -2,7 +2,7 @@
 
 [migrate]
 description = "Run database migrations (up or down)"
-dir = "backend/cmd/api"
+dir = "backend/cmd/migrate"
 usage = '''
 flag "--down" help="Run down migrations instead of up"
 flag "-n --steps <steps>" help="Number of steps (for down migrations)" default=""
@@ -13,21 +13,19 @@ set -euo pipefail
 
 if [ "${usage_down:-false}" = "true" ]; then
   STEPS="${usage_steps:-1}"
-  echo "Rolling back $STEPS migration(s)..."
-  migrate -path migrations -database "$DATABASE_URL" down "$STEPS"
+  go run . down "$STEPS"
 else
-  echo "Running migrations up..."
-  migrate -path migrations -database "$DATABASE_URL" up
+  go run . up
 fi
 '''
 
+["migrate:version"]
+description = "Show current migration version"
+dir = "backend/cmd/migrate"
+run = 'go run . version'
+
 ["migrate:create"]
 description = "Create a new migration file"
-dir = "backend/cmd/api"
+dir = "backend/cmd/migrate"
 usage = 'arg "<name>" help="Name of the migration"'
 run = 'migrate create -ext sql -dir migrations -format 20060102150405 ${usage_name?}'
-
-["migrate:status"]
-description = "Show current migration version"
-dir = "backend/cmd/api"
-run = 'migrate -path migrations -database "$DATABASE_URL" version'

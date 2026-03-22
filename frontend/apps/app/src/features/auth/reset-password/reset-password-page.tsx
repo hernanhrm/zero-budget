@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { Route } from "#/routes/reset-password"
+import { Route } from "#/routes/_auth/reset-password"
 import { BrandingPanel } from "../components/branding-panel"
 import { ResetPasswordForm } from "./reset-password-form"
 

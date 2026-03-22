@@ -17,21 +17,7 @@ import (
 	"backend/adapter/localconfig"
 	"backend/adapter/logger"
 	"backend/adapter/server"
-	"github.com/golang-migrate/migrate/v4"
-	_ "github.com/golang-migrate/migrate/v4/database/postgres"
-	_ "github.com/golang-migrate/migrate/v4/source/file"
 )
-
-func runMigrations(dbURL, migrationsPath string) error {
-	m, err := migrate.New("file://"+migrationsPath, dbURL)
-	if err != nil {
-		return err
-	}
-	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
-		return err
-	}
-	return nil
-}
 
 func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
@@ -51,16 +37,6 @@ func main() {
 
 	cfg := configSvc.Get()
 	di.ProvideValue(injector, cfg)
-
-	if !cfg.Service.SkipMigrations {
-		if err := runMigrations(cfg.Database.URL, cfg.Service.MigrationsPath); err != nil {
-			log.Error("failed to run migrations", "error", err)
-			os.Exit(1)
-		}
-		log.Info("migrations completed successfully")
-	} else {
-		log.Info("migrations skipped")
-	}
 
 	db, err := database.NewConnection(ctx, cfg.Database.URL, log)
 	if err != nil {
