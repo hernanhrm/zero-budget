@@ -16,10 +16,22 @@ export interface MembersTableProps {
 }
 
 export interface PendingInvitation {
+	id: string
 	email: string
 	initials: string
 	role: string
 	invitedAgo: string
+}
+
+export interface ApiInvitation {
+	id: string
+	email: string
+	organizationId: string
+	role: string
+	status: string
+	inviterId: string
+	createdAt: string
+	expiresAt: string
 }
 
 export interface ApiMember {

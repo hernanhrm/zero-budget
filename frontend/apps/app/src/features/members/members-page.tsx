@@ -1,5 +1,7 @@
 import { UserPlus } from "lucide-react"
 import { Route } from "#/routes/_protected/members"
+import type { ApiInvitation } from "./types"
+import { mapApiInvitation } from "./utils"
 import { MembersTable } from "./components/members-table"
 import { PendingInvitations } from "./components/pending-invitations"
 
@@ -11,6 +13,11 @@ export function MembersPage() {
 	const error = loaderData?.members?.error
 		? String(loaderData.members.error)
 		: null
+
+	const apiInvitations = (loaderData?.invitations ?? []) as ApiInvitation[]
+	const pendingInvitations = apiInvitations
+		.filter((inv) => inv.status === "pending")
+		.map(mapApiInvitation)
 
 	return (
 		<div className="flex h-full flex-col gap-8 overflow-auto p-10">
@@ -31,7 +38,7 @@ export function MembersPage() {
 					INVITE MEMBER
 				</button>
 			</div>
-			<PendingInvitations />
+			<PendingInvitations invitations={pendingInvitations} />
 			<MembersTable members={members} isLoading={isLoading} error={error} />
 		</div>
 	)

@@ -1,4 +1,4 @@
-import type { ApiMember, Member } from "./types"
+import type { ApiInvitation, ApiMember, Member, PendingInvitation } from "./types"
 
 export function formatDate(dateString: string): string {
 	const date = new Date(dateString)
@@ -17,6 +17,28 @@ export function getInitials(name: string): string {
 		return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
 	}
 	return name.substring(0, 2).toUpperCase()
+}
+
+export function getTimeAgo(dateString: string): string {
+	const now = new Date()
+	const date = new Date(dateString)
+	const diffMs = now.getTime() - date.getTime()
+	const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
+
+	if (diffDays === 0) return "INVITED TODAY"
+	if (diffDays === 1) return "INVITED 1 DAY AGO"
+	return `INVITED ${diffDays} DAYS AGO`
+}
+
+export function mapApiInvitation(invitation: ApiInvitation): PendingInvitation {
+	const emailPrefix = invitation.email.split("@")[0]
+	return {
+		id: invitation.id,
+		email: invitation.email.toUpperCase(),
+		initials: getInitials(emailPrefix),
+		role: invitation.role.toUpperCase(),
+		invitedAgo: getTimeAgo(invitation.createdAt),
+	}
 }
 
 export function mapApiMember(apiMember: ApiMember): Member {
