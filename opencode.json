@@ -7,7 +7,20 @@
     },
     "railway": {
       "type": "local",
-      "command": ["npx", "-y", "@railway/mcp-server"]
+      "command": [
+        "npx",
+        "-y",
+        "@railway/mcp-server"
+      ]
+    },
+    "shadcn": {
+      "type": "local",
+      "command": [
+        "npx",
+        "shadcn@latest",
+        "mcp"
+      ],
+      "enabled": true
     }
   }
 }

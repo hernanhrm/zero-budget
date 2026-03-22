@@ -1,4 +1,5 @@
 import { betterAuth } from "better-auth";
+import { APIError } from "better-auth/api";
 import { openAPI, organization, twoFactor } from "better-auth/plugins";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { dash } from "@better-auth/infra";
@@ -6,6 +7,9 @@ import { apiKey } from "@better-auth/api-key";
 import { db } from "./db.js";
 
 export const auth = betterAuth({
+  trustedOrigins: (
+    process.env.TRUSTED_ORIGINS ?? "http://localhost:3000"
+  ).split(","),
   database: drizzleAdapter(db, {
     provider: "pg",
     usePlural: true,
@@ -28,7 +32,7 @@ export const auth = betterAuth({
   appName: "Zero Budget",
   emailAndPassword: {
     enabled: true,
-    requireEmailVerification: true,
+    requireEmailVerification: false,
   },
   emailVerification: {
     sendOnSignUp: true,
@@ -58,7 +62,13 @@ export const auth = betterAuth({
         console.error("Failed to publish user.signed_up event:", err);
       }
     },
-    sendVerificationEmail: async ({ user, url }: { user: { id: string; email: string; name: string }; url: string }) => {
+    sendVerificationEmail: async ({
+      user,
+      url,
+    }: {
+      user: { id: string; email: string; name: string };
+      url: string;
+    }) => {
       const goApiUrl = process.env.GO_API_URL || "http://localhost:8080";
       const internalApiKey = process.env.INTERNAL_API_KEY;
 
@@ -72,7 +82,9 @@ export const auth = betterAuth({
       });
 
       if (!internalApiKey) {
-        console.warn("[identity] INTERNAL_API_KEY not set, skipping event publish");
+        console.warn(
+          "[identity] INTERNAL_API_KEY not set, skipping event publish",
+        );
         return;
       }
 
@@ -107,7 +119,10 @@ export const auth = betterAuth({
           console.error("[identity] Go API error response body:", body);
         }
       } catch (err) {
-        console.error("[identity] Failed to publish verification email event:", err);
+        console.error(
+          "[identity] Failed to publish verification email event:",
+          err,
+        );
       }
     },
   },
@@ -228,5 +243,4 @@ export const auth = betterAuth({
       },
     }),
   ],
-
 });

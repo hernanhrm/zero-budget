@@ -4,6 +4,7 @@ import {
   text,
   timestamp,
   boolean,
+  integer,
   index,
   uniqueIndex,
 } from "drizzle-orm/pg-core";
@@ -157,6 +158,39 @@ export const twoFactors = pgTable(
   (table) => [
     index("twoFactors_secret_idx").on(table.secret),
     index("twoFactors_user_id_idx").on(table.user_id),
+  ],
+);
+
+export const apikeys = pgTable(
+  "apikeys",
+  {
+    id: text("id").primaryKey(),
+    config_id: text("config_id").default("default").notNull(),
+    name: text("name"),
+    start: text("start"),
+    reference_id: text("reference_id").notNull(),
+    prefix: text("prefix"),
+    key: text("key").notNull(),
+    refill_interval: integer("refill_interval"),
+    refill_amount: integer("refill_amount"),
+    last_refill_at: timestamp("last_refill_at"),
+    enabled: boolean("enabled").default(true),
+    rate_limit_enabled: boolean("rate_limit_enabled").default(true),
+    rate_limit_time_window: integer("rate_limit_time_window").default(86400000),
+    rate_limit_max: integer("rate_limit_max").default(10),
+    request_count: integer("request_count").default(0),
+    remaining: integer("remaining"),
+    last_request: timestamp("last_request"),
+    expires_at: timestamp("expires_at"),
+    created_at: timestamp("created_at").notNull(),
+    updated_at: timestamp("updated_at").notNull(),
+    permissions: text("permissions"),
+    metadata: text("metadata"),
+  },
+  (table) => [
+    index("apikeys_config_id_idx").on(table.config_id),
+    index("apikeys_reference_id_idx").on(table.reference_id),
+    index("apikeys_key_idx").on(table.key),
   ],
 );
 
