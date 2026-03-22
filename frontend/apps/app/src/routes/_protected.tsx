@@ -1,5 +1,6 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router"
 
+import { Sidebar } from "#/components/sidebar"
 import { authClient } from "#/lib/auth-client"
 
 export const Route = createFileRoute("/_protected")({
@@ -14,11 +15,9 @@ export const Route = createFileRoute("/_protected")({
 
 function ProtectedLayout() {
 	return (
-		<div className="min-h-screen bg-background">
-			<nav className="border-b p-4">
-				<span className="font-semibold">Zero Budget</span>
-			</nav>
-			<main className="p-6">
+		<div className="flex h-screen bg-[var(--zb-bg)]">
+			<Sidebar />
+			<main className="flex-1 overflow-hidden">
 				<Outlet />
 			</main>
 		</div>

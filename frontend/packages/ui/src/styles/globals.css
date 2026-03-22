@@ -120,11 +120,28 @@
 	--sidebar-ring: oklch(0.556 0 0);
 }
 
+:root {
+	--zb-bg: #1A1A1A;
+	--zb-bg-elevated: #232323;
+	--zb-border: #2d2d2d;
+	--zb-text-primary: #F5F5F0;
+	--zb-text-secondary: #6B6B6B;
+	--zb-text-muted: #3D3D3D;
+	--zb-accent: #FFD600;
+	--zb-danger: #FF6B35;
+}
+
 @layer base {
 	* {
 		@apply border-border outline-ring/50;
 	}
 	body {
 		@apply bg-background text-foreground;
+	}
+	.font-space-grotesk {
+		font-family: "Space Grotesk", sans-serif;
+	}
+	.font-ibm-plex-mono {
+		font-family: "IBM Plex Mono", monospace;
 	}
 }
