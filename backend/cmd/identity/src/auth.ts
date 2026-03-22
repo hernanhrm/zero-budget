@@ -7,6 +7,8 @@ import {
   publishVerificationEmail,
   publishUserSignedUp,
 } from "./lib/events.js";
+import { organizations, members, sessions } from "./schema.js";
+import { eq } from "drizzle-orm";
 
 export const auth = betterAuth({
   trustedOrigins: (
@@ -98,6 +100,45 @@ export const auth = betterAuth({
       expiresAt: "expires_at",
       createdAt: "created_at",
       updatedAt: "updated_at",
+    },
+  },
+  databaseHooks: {
+    user: {
+      create: {
+        after: async (user, context) => {
+          if (!context) return;
+
+          const baseName = user.name ?? user.email ?? "user";
+          const slugPart = baseName
+            .toLowerCase()
+            .replace(/\s+/g, "-")
+            .replace(/[^a-z0-9-]/g, "");
+          const randomSuffix = Math.random().toString(36).substring(2, 8);
+          const slug = `${slugPart}-${randomSuffix}`;
+          const orgId = crypto.randomUUID();
+          const memberId = crypto.randomUUID();
+          const now = new Date();
+
+          await db.insert(organizations).values({
+            id: orgId,
+            name: baseName,
+            slug,
+            created_at: now,
+          });
+
+          await db.insert(members).values({
+            id: memberId,
+            organization_id: orgId,
+            user_id: user.id,
+            role: "owner",
+            created_at: now,
+          });
+
+          await db.update(sessions)
+            .set({ active_organization_id: orgId })
+            .where(eq(sessions.user_id, user.id));
+        },
+      },
     },
   },
   plugins,

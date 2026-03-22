@@ -1,4 +1,3 @@
-import { useState } from "react"
 import { ChevronDown, Trash2 } from "lucide-react"
 import {
 	Select,
@@ -19,38 +18,46 @@ interface Member {
 	userId: string
 }
 
-const members: Member[] = [
-	{
-		name: "JOHN DOE",
-		email: "JOHN.DOE@EMAIL.COM",
-		initials: "JD",
-		role: "OWNER",
-		roleId: "owner-role-id",
-		joined: "JAN 15, 2026",
-		isOwner: true,
-		userId: "user-1",
-	},
-	{
-		name: "JANE SMITH",
-		email: "JANE.SMITH@EMAIL.COM",
-		initials: "JS",
-		role: "EDITOR",
-		roleId: "editor-role-id",
-		joined: "FEB 03, 2026",
-		isOwner: false,
-		userId: "user-2",
-	},
-	{
-		name: "ALEX WONG",
-		email: "ALEX.WONG@EMAIL.COM",
-		initials: "AW",
-		role: "VIEWER",
-		roleId: "viewer-role-id",
-		joined: "MAR 10, 2026",
-		isOwner: false,
-		userId: "user-3",
-	},
-]
+interface MembersTableProps {
+	members: Member[]
+	isLoading: boolean
+	error: string | null
+}
+
+function formatDate(dateString: string): string {
+	const date = new Date(dateString)
+	return date.toLocaleDateString("en-US", {
+		month: "short",
+		day: "2-digit",
+		year: "numeric",
+	}).toUpperCase()
+}
+
+function getInitials(name: string): string {
+	const parts = name.split(" ")
+	if (parts.length >= 2) {
+		return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+	}
+	return name.substring(0, 2).toUpperCase()
+}
+
+function mapApiMember(apiMember: {
+	userId: string
+	user: { name: string; email: string }
+	role: string
+	createdAt: string
+}): Member {
+	return {
+		name: apiMember.user.name.toUpperCase(),
+		email: apiMember.user.email.toUpperCase(),
+		initials: getInitials(apiMember.user.name),
+		role: (apiMember.role.toUpperCase() as "OWNER" | "EDITOR" | "VIEWER") || "VIEWER",
+		roleId: apiMember.role,
+		joined: formatDate(apiMember.createdAt.toString()),
+		isOwner: apiMember.role.toLowerCase() === "owner",
+		userId: apiMember.userId,
+	}
+}
 
 function OwnerBadge({ role }: { role: string }) {
 	return (
@@ -151,7 +158,25 @@ function MemberRow({
 	)
 }
 
-export function MembersTable() {
+function LoadingState() {
+	return (
+		<div className="flex h-16 items-center px-6 border-b border-border">
+			<div className="flex flex-1 items-center gap-3">
+				<div className="h-9 w-9 animate-pulse rounded bg-[#2D2D2D]" />
+				<div className="flex flex-col gap-0.5">
+					<div className="h-4 w-24 animate-pulse rounded bg-[#2D2D2D]" />
+					<div className="h-3 w-32 animate-pulse rounded bg-[#2D2D2D]" />
+				</div>
+			</div>
+			<div className="h-6 w-24 animate-pulse rounded bg-[#2D2D2D]" />
+			<div className="ml-6 h-4 w-24 animate-pulse rounded bg-[#2D2D2D]" />
+		</div>
+	)
+}
+
+export function MembersTable({ members: membersData, isLoading, error }: MembersTableProps) {
+	const members: Member[] = membersData.map(mapApiMember)
+
 	return (
 		<div className="w-full border border-border">
 			<div className="flex h-14 items-center justify-between bg-card px-6 border-b border-border">
@@ -179,13 +204,28 @@ export function MembersTable() {
 					ACTIONS
 				</span>
 			</div>
-			{members.map((member, index) => (
-				<MemberRow
-					key={member.email}
-					member={member}
-					isLast={index === members.length - 1}
-				/>
-			))}
+			{error && (
+				<div className="flex h-16 items-center justify-center px-6">
+					<span className="font-ibm-plex-mono text-xs text-[#FF6B35]">
+						{error}
+					</span>
+				</div>
+			)}
+			{isLoading ? (
+				<>
+					<LoadingState />
+					<LoadingState />
+					<LoadingState />
+				</>
+			) : (
+				members.map((member, index) => (
+					<MemberRow
+						key={member.userId}
+						member={member}
+						isLast={index === members.length - 1}
+					/>
+				))
+			)}
 		</div>
 	)
 }

@@ -16,6 +16,12 @@ export const organizationPlugin = organization({
     enabled: true,
   },
   schema: {
+    session: {
+      fields: {
+        activeOrganizationId: "active_organization_id",
+        activeTeamId: "active_team_id",
+      },
+    },
     organization: {
       fields: {
         createdAt: "created_at",

@@ -1,8 +1,17 @@
 import { UserPlus } from "lucide-react"
+import { Route } from "#/routes/_protected/members"
 import { MembersTable } from "./components/members-table"
 import { PendingInvitations } from "./components/pending-invitations"
 
 export function MembersPage() {
+	const loaderData = Route.useLoaderData()
+
+	const members = loaderData?.members?.data || []
+	const isLoading = !loaderData
+	const error = loaderData?.members?.error
+		? String(loaderData.members.error)
+		: null
+
 	return (
 		<div className="flex h-full flex-col gap-8 overflow-auto p-10">
 			<div className="flex w-full items-center justify-between">
@@ -23,7 +32,7 @@ export function MembersPage() {
 				</button>
 			</div>
 			<PendingInvitations />
-			<MembersTable />
+			<MembersTable members={members} isLoading={isLoading} error={error} />
 		</div>
 	)
 }
