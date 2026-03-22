@@ -1,191 +1,87 @@
-import { ChevronDown, Trash2 } from "lucide-react"
 import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@workspace/ui/components/select"
+	type ColumnDef,
+	flexRender,
+	getCoreRowModel,
+	useReactTable,
+} from "@tanstack/react-table"
+import { Trash2 } from "lucide-react"
+import type { Member, MembersTableProps } from "../types"
+import { mapApiMember } from "../utils"
+import { LoadingRow } from "./loading-row"
+import { OwnerBadge } from "./owner-badge"
+import { RoleSelect } from "./role-select"
 
-interface Member {
-	name: string
-	email: string
-	initials: string
-	role: "OWNER" | "EDITOR" | "VIEWER"
-	roleId: string
-	joined: string
-	isOwner: boolean
-	userId: string
-}
-
-interface MembersTableProps {
-	members: Member[]
-	isLoading: boolean
-	error: string | null
-}
-
-function formatDate(dateString: string): string {
-	const date = new Date(dateString)
-	return date
-		.toLocaleDateString("en-US", {
-			month: "short",
-			day: "2-digit",
-			year: "numeric",
-		})
-		.toUpperCase()
-}
-
-function getInitials(name: string): string {
-	const parts = name.split(" ")
-	if (parts.length >= 2) {
-		return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
-	}
-	return name.substring(0, 2).toUpperCase()
-}
-
-function mapApiMember(apiMember: {
-	userId: string
-	user: { name: string; email: string }
-	role: string
-	createdAt: string
-}): Member {
-	return {
-		name: apiMember.user.name.toUpperCase(),
-		email: apiMember.user.email.toUpperCase(),
-		initials: getInitials(apiMember.user.name),
-		role:
-			(apiMember.role.toUpperCase() as "OWNER" | "EDITOR" | "VIEWER") ||
-			"VIEWER",
-		roleId: apiMember.role,
-		joined: formatDate(apiMember.createdAt.toString()),
-		isOwner: apiMember.role.toLowerCase() === "owner",
-		userId: apiMember.userId,
-	}
-}
-
-function OwnerBadge({ role }: { role: string }) {
-	return (
-		<div className="flex h-6 items-center justify-start gap-1.5 pr-3">
-			<div className="h-1.5 w-1.5 rounded-full bg-primary" />
-			<span className="font-space-grotesk text-[10px] font-bold tracking-[1px] text-primary">
-				{role}
-			</span>
-		</div>
-	)
-}
-
-function RoleSelect({
-	role,
-	userId,
-}: {
-	role: "OWNER" | "EDITOR" | "VIEWER"
-	userId: string
-}) {
-	const [value, setValue] = useState(role)
-
-	const handleValueChange = (newValue: string) => {
-		setValue(newValue as "OWNER" | "EDITOR" | "VIEWER")
-	}
-
-	return (
-		<Select value={value} onValueChange={handleValueChange}>
-			<SelectTrigger className="flex h-6 w-fit items-center justify-between gap-1.5 rounded-none border border-border bg-transparent px-3 py-0 text-[10px] font-space-grotesk font-bold tracking-[1px] text-foreground shadow-none hover:border-muted-foreground [&>svg:last-child]:hidden">
-				<SelectValue />
-				<ChevronDown className="size-2.5 text-muted-foreground" />
-			</SelectTrigger>
-			<SelectContent
-				align="start"
-				className="min-w-[120px] rounded-none border-border bg-card"
-			>
-				<SelectItem
-					value="OWNER"
-					className="font-space-grotesk text-[10px] font-bold tracking-[1px] text-[#F5F5F0] focus:bg-[#2D2D2D] focus:text-[#FFD600]"
-				>
-					OWNER
-				</SelectItem>
-				<SelectItem
-					value="EDITOR"
-					className="font-space-grotesk text-[10px] font-bold tracking-[1px] text-[#F5F5F0] focus:bg-[#2D2D2D] focus:text-[#FFD600]"
-				>
-					EDITOR
-				</SelectItem>
-				<SelectItem
-					value="VIEWER"
-					className="font-space-grotesk text-[10px] font-bold tracking-[1px] text-[#F5F5F0] focus:bg-[#2D2D2D] focus:text-[#FFD600]"
-				>
-					VIEWER
-				</SelectItem>
-			</SelectContent>
-		</Select>
-	)
-}
-
-function MemberRow({ member, isLast }: { member: Member; isLast: boolean }) {
-	return (
-		<div
-			className={`flex h-16 items-center px-6 ${!isLast ? "border-b border-border" : ""}`}
-		>
-			<div className="flex flex-1 items-center gap-3">
-				<div
-					className={`flex h-9 w-9 items-center justify-center ${member.isOwner ? "bg-primary" : "bg-[#2D2D2D]"}`}
-				>
-					<span
-						className={`font-space-grotesk text-xs font-bold ${member.isOwner ? "text-[#1A1A1A]" : "text-[#6B6B6B]"}`}
+const columns: ColumnDef<Member>[] = [
+	{
+		accessorKey: "name",
+		header: "MEMBER",
+		cell: ({ row }) => {
+			const member = row.original
+			return (
+				<div className="flex items-center gap-3">
+					<div
+						className={`flex h-9 w-9 items-center justify-center ${member.isOwner ? "bg-primary" : "bg-skeleton"}`}
 					>
-						{member.initials}
-					</span>
+						<span
+							className={`font-space-grotesk text-xs font-bold ${member.isOwner ? "text-foreground" : "text-muted-foreground"}`}
+						>
+							{member.initials}
+						</span>
+					</div>
+					<div className="flex flex-col gap-0.5">
+						<span className="font-space-grotesk text-[13px] font-bold tracking-[1px] text-foreground">
+							{member.name}
+						</span>
+						<span className="font-ibm-plex-mono text-[10px] tracking-[1px] text-muted-foreground">
+							{member.email}
+						</span>
+					</div>
 				</div>
-				<div className="flex flex-col gap-0.5">
-					<span className="font-space-grotesk text-[13px] font-bold tracking-[1px] text-[#F5F5F0]">
-						{member.name}
-					</span>
-					<span className="font-ibm-plex-mono text-[10px] tracking-[1px] text-[#3D3D3D]">
-						{member.email}
-					</span>
-				</div>
-			</div>
-
-			<div className="flex w-40 items-center justify-start">
-				{member.isOwner ? (
-					<OwnerBadge role={member.role} />
-				) : (
-					<RoleSelect role={member.role} userId={member.userId} />
-				)}
-			</div>
-
-			<span className="w-[140px] font-ibm-plex-mono text-xs tracking-[1px] text-[#6B6B6B]">
-				{member.joined}
+			)
+		},
+	},
+	{
+		accessorKey: "role",
+		header: "ROLE",
+		cell: ({ row }) => {
+			const member = row.original
+			return member.isOwner ? (
+				<OwnerBadge role={member.role} />
+			) : (
+				<RoleSelect role={member.role} userId={member.userId} />
+			)
+		},
+	},
+	{
+		accessorKey: "joined",
+		header: "JOINED",
+		cell: ({ getValue }) => (
+			<span className="font-ibm-plex-mono text-xs tracking-[1px] text-muted-foreground">
+				{getValue() as string}
 			</span>
-			<div className="flex w-20 items-center justify-center">
-				{member.isOwner ? (
-					<span className="font-space-grotesk text-sm font-bold text-[#3D3D3D]">
+		),
+	},
+	{
+		id: "actions",
+		header: "ACTIONS",
+		cell: ({ row }) => {
+			const member = row.original
+			return member.isOwner ? (
+				<div className="flex w-20 items-center justify-center">
+					<span className="font-space-grotesk text-sm font-bold text-muted-foreground">
 						—
 					</span>
-				) : (
-					<button type="button" className="text-[#FF6B35] hover:opacity-80">
+				</div>
+			) : (
+				<div className="flex w-20 items-center justify-center">
+					<button type="button" className="text-destructive hover:opacity-80">
 						<Trash2 className="size-4" />
 					</button>
-				)}
-			</div>
-		</div>
-	)
-}
-
-function LoadingState() {
-	return (
-		<div className="flex h-16 items-center px-6 border-b border-border">
-			<div className="flex flex-1 items-center gap-3">
-				<div className="h-9 w-9 animate-pulse rounded bg-[#2D2D2D]" />
-				<div className="flex flex-col gap-0.5">
-					<div className="h-4 w-24 animate-pulse rounded bg-[#2D2D2D]" />
-					<div className="h-3 w-32 animate-pulse rounded bg-[#2D2D2D]" />
 				</div>
-			</div>
-			<div className="h-6 w-24 animate-pulse rounded bg-[#2D2D2D]" />
-			<div className="ml-6 h-4 w-24 animate-pulse rounded bg-[#2D2D2D]" />
-		</div>
-	)
-}
+			)
+		},
+	},
+]
 
 export function MembersTable({
 	members: membersData,
@@ -193,6 +89,12 @@ export function MembersTable({
 	error,
 }: MembersTableProps) {
 	const members: Member[] = membersData.map(mapApiMember)
+
+	const table = useReactTable({
+		data: members,
+		columns,
+		getCoreRowModel: getCoreRowModel(),
+	})
 
 	return (
 		<div className="w-full border border-border">
@@ -207,42 +109,75 @@ export function MembersTable({
 					</span>
 				</div>
 			</div>
-			<div className="flex h-10 items-center px-6 border-b border-border">
-				<span className="flex-1 font-space-grotesk text-[11px] font-bold tracking-[1px] text-muted-foreground">
-					MEMBER
-				</span>
-				<span className="w-40 font-space-grotesk text-[11px] font-bold tracking-[1px] text-muted-foreground">
-					ROLE
-				</span>
-				<span className="w-[140px] font-space-grotesk text-[11px] font-bold tracking-[1px] text-muted-foreground">
-					JOINED
-				</span>
-				<span className="w-20 text-center font-space-grotesk text-[11px] font-bold tracking-[1px] text-muted-foreground">
-					ACTIONS
-				</span>
-			</div>
-			{error && (
-				<div className="flex h-16 items-center justify-center px-6">
-					<span className="font-ibm-plex-mono text-xs text-[#FF6B35]">
-						{error}
-					</span>
-				</div>
-			)}
-			{isLoading ? (
-				<>
-					<LoadingState />
-					<LoadingState />
-					<LoadingState />
-				</>
-			) : (
-				members.map((member, index) => (
-					<MemberRow
-						key={member.userId}
-						member={member}
-						isLast={index === members.length - 1}
-					/>
-				))
-			)}
+			<table className="w-full">
+				<thead>
+					<tr className="flex h-10 items-center px-6 border-b border-border">
+						{table.getHeaderGroups().map((headerGroup) =>
+							headerGroup.headers.map((header) => (
+								<th
+									key={header.id}
+									className={
+										header.id === "name"
+											? "flex-1 text-left font-space-grotesk text-[11px] font-bold tracking-[1px] text-muted-foreground"
+											: header.id === "actions"
+												? "w-20 text-center font-space-grotesk text-[11px] font-bold tracking-[1px] text-muted-foreground"
+												: header.id === "joined"
+													? "w-[140px] text-left font-space-grotesk text-[11px] font-bold tracking-[1px] text-muted-foreground"
+													: "w-40 text-left font-space-grotesk text-[11px] font-bold tracking-[1px] text-muted-foreground"
+									}
+								>
+									{flexRender(
+										header.column.columnDef.header,
+										header.getContext(),
+									)}
+								</th>
+							)),
+						)}
+					</tr>
+				</thead>
+				<tbody>
+					{error && (
+						<tr className="h-16 border-b border-border">
+							<td colSpan={columns.length} className="px-6 text-center">
+								<span className="font-ibm-plex-mono text-xs text-destructive">
+									{error}
+								</span>
+							</td>
+						</tr>
+					)}
+					{isLoading ? (
+						<>
+							<LoadingRow />
+							<LoadingRow />
+							<LoadingRow />
+						</>
+					) : (
+						table.getRowModel().rows.map((row) => (
+							<tr
+								key={row.id}
+								className="flex h-16 items-center px-6 border-b border-border last:border-b-0"
+							>
+								{row.getVisibleCells().map((cell) => (
+									<td
+										key={cell.id}
+										className={
+											cell.column.id === "name"
+												? "flex-1"
+												: cell.column.id === "actions"
+													? "flex w-20 items-center justify-center"
+													: cell.column.id === "joined"
+														? "flex w-[140px] items-center"
+														: "flex w-40 items-center"
+										}
+									>
+										{flexRender(cell.column.columnDef.cell, cell.getContext())}
+									</td>
+								))}
+							</tr>
+						))
+					)}
+				</tbody>
+			</table>
 		</div>
 	)
 }
