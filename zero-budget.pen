@@ -15341,7 +15341,7 @@
                       "id": "nX6MS",
                       "name": "roleDropdown",
                       "width": 160,
-                      "height": 28,
+                      "height": 24,
                       "stroke": {
                         "thickness": 1,
                         "fill": "#2d2d2d"
@@ -15492,7 +15492,7 @@
                       "id": "Rquud",
                       "name": "roleDropdown3",
                       "width": 160,
-                      "height": 28,
+                      "height": 24,
                       "stroke": {
                         "thickness": 1,
                         "fill": "#2d2d2d"
