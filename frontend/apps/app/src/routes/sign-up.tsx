@@ -61,6 +61,8 @@ function SignUp() {
 					name: `${value.firstName} ${value.lastName}`,
 					email: value.email,
 					password: value.password,
+					callbackURL: window.location.origin,
+					rememberMe: true,
 				})
 				if (error) {
 					setServerError(error.message ?? "Something went wrong")
@@ -80,7 +82,7 @@ function SignUp() {
 		try {
 			const { error } = await authClient.sendVerificationEmail({
 				email: successEmail,
-				callbackURL: "/",
+				callbackURL: window.location.origin,
 			})
 			if (error) {
 				setResendStatus("error")
