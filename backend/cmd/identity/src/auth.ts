@@ -140,6 +140,24 @@ export const auth = betterAuth({
         },
       },
     },
+    session: {
+      create: {
+        after: async (session) => {
+          if (session.activeOrganizationId) return;
+
+          const userMemberships = await db.select()
+            .from(members)
+            .where(eq(members.user_id, session.userId))
+            .limit(1);
+
+          if (userMemberships.length > 0) {
+            await db.update(sessions)
+              .set({ active_organization_id: userMemberships[0].organization_id })
+              .where(eq(sessions.id, session.id));
+          }
+        },
+      },
+    },
   },
   plugins,
 });
