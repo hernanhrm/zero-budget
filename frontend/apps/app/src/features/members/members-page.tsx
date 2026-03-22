@@ -6,7 +6,7 @@ import { PendingInvitations } from "./components/pending-invitations"
 export function MembersPage() {
 	const loaderData = Route.useLoaderData()
 
-	const members = loaderData?.members?.data || []
+	const members = loaderData?.members?.members || []
 	const isLoading = !loaderData
 	const error = loaderData?.members?.error
 		? String(loaderData.members.error)
@@ -36,3 +36,4 @@ export function MembersPage() {
 		</div>
 	)
 }
+

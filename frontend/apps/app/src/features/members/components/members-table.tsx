@@ -26,11 +26,13 @@ interface MembersTableProps {
 
 function formatDate(dateString: string): string {
 	const date = new Date(dateString)
-	return date.toLocaleDateString("en-US", {
-		month: "short",
-		day: "2-digit",
-		year: "numeric",
-	}).toUpperCase()
+	return date
+		.toLocaleDateString("en-US", {
+			month: "short",
+			day: "2-digit",
+			year: "numeric",
+		})
+		.toUpperCase()
 }
 
 function getInitials(name: string): string {
@@ -51,7 +53,9 @@ function mapApiMember(apiMember: {
 		name: apiMember.user.name.toUpperCase(),
 		email: apiMember.user.email.toUpperCase(),
 		initials: getInitials(apiMember.user.name),
-		role: (apiMember.role.toUpperCase() as "OWNER" | "EDITOR" | "VIEWER") || "VIEWER",
+		role:
+			(apiMember.role.toUpperCase() as "OWNER" | "EDITOR" | "VIEWER") ||
+			"VIEWER",
 		roleId: apiMember.role,
 		joined: formatDate(apiMember.createdAt.toString()),
 		isOwner: apiMember.role.toLowerCase() === "owner",
@@ -89,22 +93,34 @@ function RoleSelect({
 				<SelectValue />
 				<ChevronDown className="size-2.5 text-muted-foreground" />
 			</SelectTrigger>
-			<SelectContent align="start" className="min-w-[120px] rounded-none border-border bg-card">
-				<SelectItem value="OWNER" className="font-space-grotesk text-[10px] font-bold tracking-[1px] text-[#F5F5F0] focus:bg-[#2D2D2D] focus:text-[#FFD600]">OWNER</SelectItem>
-				<SelectItem value="EDITOR" className="font-space-grotesk text-[10px] font-bold tracking-[1px] text-[#F5F5F0] focus:bg-[#2D2D2D] focus:text-[#FFD600]">EDITOR</SelectItem>
-				<SelectItem value="VIEWER" className="font-space-grotesk text-[10px] font-bold tracking-[1px] text-[#F5F5F0] focus:bg-[#2D2D2D] focus:text-[#FFD600]">VIEWER</SelectItem>
+			<SelectContent
+				align="start"
+				className="min-w-[120px] rounded-none border-border bg-card"
+			>
+				<SelectItem
+					value="OWNER"
+					className="font-space-grotesk text-[10px] font-bold tracking-[1px] text-[#F5F5F0] focus:bg-[#2D2D2D] focus:text-[#FFD600]"
+				>
+					OWNER
+				</SelectItem>
+				<SelectItem
+					value="EDITOR"
+					className="font-space-grotesk text-[10px] font-bold tracking-[1px] text-[#F5F5F0] focus:bg-[#2D2D2D] focus:text-[#FFD600]"
+				>
+					EDITOR
+				</SelectItem>
+				<SelectItem
+					value="VIEWER"
+					className="font-space-grotesk text-[10px] font-bold tracking-[1px] text-[#F5F5F0] focus:bg-[#2D2D2D] focus:text-[#FFD600]"
+				>
+					VIEWER
+				</SelectItem>
 			</SelectContent>
 		</Select>
 	)
 }
 
-function MemberRow({
-	member,
-	isLast,
-}: {
-	member: Member
-	isLast: boolean
-}) {
+function MemberRow({ member, isLast }: { member: Member; isLast: boolean }) {
 	return (
 		<div
 			className={`flex h-16 items-center px-6 ${!isLast ? "border-b border-border" : ""}`}
@@ -128,7 +144,7 @@ function MemberRow({
 					</span>
 				</div>
 			</div>
-			
+
 			<div className="flex w-40 items-center justify-start">
 				{member.isOwner ? (
 					<OwnerBadge role={member.role} />
@@ -146,10 +162,7 @@ function MemberRow({
 						—
 					</span>
 				) : (
-					<button
-						type="button"
-						className="text-[#FF6B35] hover:opacity-80"
-					>
+					<button type="button" className="text-[#FF6B35] hover:opacity-80">
 						<Trash2 className="size-4" />
 					</button>
 				)}
@@ -174,7 +187,11 @@ function LoadingState() {
 	)
 }
 
-export function MembersTable({ members: membersData, isLoading, error }: MembersTableProps) {
+export function MembersTable({
+	members: membersData,
+	isLoading,
+	error,
+}: MembersTableProps) {
 	const members: Member[] = membersData.map(mapApiMember)
 
 	return (
