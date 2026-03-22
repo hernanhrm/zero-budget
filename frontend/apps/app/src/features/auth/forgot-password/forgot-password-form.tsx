@@ -1,47 +1,45 @@
 import { useForm } from "@tanstack/react-form"
-import { useNavigate } from "@tanstack/react-router"
 import { Button } from "@workspace/ui/components/button"
 import {
 	Field,
 	FieldError,
 	FieldGroup,
-	FieldSeparator,
 	FieldLabel,
 } from "@workspace/ui/components/field"
 import { Input } from "@workspace/ui/components/input"
 import { authClient } from "#/lib/auth-client"
-import { signInSchema } from "./schema"
+import { forgotPasswordSchema } from "./schema"
 
-interface SignInFormProps {
+interface ForgotPasswordFormProps {
 	serverError: string
 	onServerError: (error: string) => void
+	onSuccess: (email: string) => void
 }
 
-export function SignInForm({ serverError, onServerError }: SignInFormProps) {
-	const navigate = useNavigate()
-
+export function ForgotPasswordForm({
+	serverError,
+	onServerError,
+	onSuccess,
+}: ForgotPasswordFormProps) {
 	const form = useForm({
 		defaultValues: {
 			email: "",
-			password: "",
 		},
 		validators: {
-			onSubmit: signInSchema,
+			onSubmit: forgotPasswordSchema,
 		},
 		onSubmit: async ({ value }) => {
 			onServerError("")
 			try {
-				const { error } = await authClient.signIn.email({
+				const { error } = await authClient.requestPasswordReset({
 					email: value.email,
-					password: value.password,
-					callbackURL: window.location.origin,
-					rememberMe: true,
+					redirectTo: `${window.location.origin}/reset-password`,
 				})
 				if (error) {
 					onServerError(error.message ?? "Something went wrong")
 					return
 				}
-				navigate({ to: "/" })
+				onSuccess(value.email)
 			} catch (e) {
 				onServerError(
 					e instanceof Error ? e.message : "Something went wrong",
@@ -62,10 +60,10 @@ export function SignInForm({ serverError, onServerError }: SignInFormProps) {
 					</span>
 				</div>
 				<h1 className="font-mono text-lg font-bold uppercase tracking-wider">
-					Welcome back
+					Forgot password?
 				</h1>
 				<p className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
-					Sign in to your account
+					Enter your email to receive a reset link
 				</p>
 			</div>
 
@@ -107,45 +105,6 @@ export function SignInForm({ serverError, onServerError }: SignInFormProps) {
 						}}
 					/>
 
-					<form.Field
-						name="password"
-						children={(field) => {
-							const isInvalid =
-								field.state.meta.isTouched &&
-								field.state.meta.errors.length > 0
-							return (
-								<Field data-invalid={isInvalid || undefined}>
-									<div className="flex items-center justify-between">
-										<FieldLabel
-											htmlFor={field.name}
-											className="font-mono uppercase tracking-wider"
-										>
-											Password
-										</FieldLabel>
-										<a
-											href="/forgot-password"
-											className="font-mono text-xs uppercase tracking-wider text-primary underline underline-offset-4"
-										>
-											Forgot password?
-										</a>
-									</div>
-									<Input
-										id={field.name}
-										name={field.name}
-										type="password"
-										value={field.state.value}
-										onBlur={field.handleBlur}
-										onChange={(e) => field.handleChange(e.target.value)}
-										aria-invalid={isInvalid || undefined}
-									/>
-									{isInvalid && (
-										<FieldError errors={field.state.meta.errors} />
-									)}
-								</Field>
-							)
-						}}
-					/>
-
 					{serverError && (
 						<p className="text-xs text-destructive">{serverError}</p>
 					)}
@@ -158,26 +117,19 @@ export function SignInForm({ serverError, onServerError }: SignInFormProps) {
 								disabled={isSubmitting}
 								className="w-full font-mono uppercase tracking-wider"
 							>
-								{isSubmitting ? "Signing in..." : "Sign in"}
+								{isSubmitting ? "Sending..." : "Send reset link"}
 							</Button>
 						)}
 					/>
-
-					<FieldSeparator>
-						<span className="font-mono text-[10px] uppercase tracking-wider">
-							Or
-						</span>
-					</FieldSeparator>
 				</FieldGroup>
 			</form>
 
 			<p className="text-center font-mono text-xs uppercase tracking-wider text-muted-foreground">
-				Don't have an account?{" "}
 				<a
-					href="/sign-up"
+					href="/sign-in"
 					className="text-primary underline underline-offset-4"
 				>
-					Sign up
+					Back to sign in
 				</a>
 			</p>
 		</div>

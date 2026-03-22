@@ -33,6 +33,70 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: false,
+    sendResetPassword: async ({
+      user,
+      url,
+    }: {
+      user: { id: string; email: string; name: string };
+      url: string;
+      token: string;
+    }) => {
+      const goApiUrl = process.env.GO_API_URL || "http://localhost:8080";
+      const internalApiKey = process.env.INTERNAL_API_KEY;
+
+      console.log("[identity] sendResetPassword triggered", {
+        userId: user.id,
+        email: user.email,
+        name: user.name,
+        url,
+        goApiUrl,
+        hasApiKey: !!internalApiKey,
+      });
+
+      if (!internalApiKey) {
+        console.warn(
+          "[identity] INTERNAL_API_KEY not set, skipping event publish",
+        );
+        return;
+      }
+
+      try {
+        const eventPayload = {
+          event: "user.password_reset",
+          payload: {
+            userId: user.id,
+            email: user.email,
+            name: user.name,
+            resetUrl: url,
+          },
+        };
+        console.log("[identity] publishing event to Go API", eventPayload);
+
+        const res = await fetch(`${goApiUrl}/v1/events/publish`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-API-Key": internalApiKey,
+          },
+          body: JSON.stringify(eventPayload),
+        });
+
+        console.log("[identity] Go API response", {
+          status: res.status,
+          statusText: res.statusText,
+        });
+
+        if (!res.ok) {
+          const body = await res.text();
+          console.error("[identity] Go API error response body:", body);
+        }
+      } catch (err) {
+        console.error(
+          "[identity] Failed to publish password reset event:",
+          err,
+        );
+      }
+    },
   },
   emailVerification: {
     sendOnSignUp: true,

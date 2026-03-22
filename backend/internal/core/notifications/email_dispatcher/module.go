@@ -37,4 +37,5 @@ func Module(i do.Injector, resendAPIKey, resendFromAddress string) {
 
 	bus.Subscribe(events.UserSignedUp, svc.HandleUserSignedUp)
 	bus.Subscribe(events.UserVerificationEmail, svc.HandleUserVerificationEmail)
+	bus.Subscribe(events.UserPasswordReset, svc.HandleUserPasswordReset)
 }

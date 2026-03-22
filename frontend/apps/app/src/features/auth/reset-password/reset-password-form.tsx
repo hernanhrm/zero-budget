@@ -5,43 +5,45 @@ import {
 	Field,
 	FieldError,
 	FieldGroup,
-	FieldSeparator,
 	FieldLabel,
 } from "@workspace/ui/components/field"
 import { Input } from "@workspace/ui/components/input"
 import { authClient } from "#/lib/auth-client"
-import { signInSchema } from "./schema"
+import { resetPasswordSchema } from "./schema"
 
-interface SignInFormProps {
+interface ResetPasswordFormProps {
+	token: string
 	serverError: string
 	onServerError: (error: string) => void
 }
 
-export function SignInForm({ serverError, onServerError }: SignInFormProps) {
+export function ResetPasswordForm({
+	token,
+	serverError,
+	onServerError,
+}: ResetPasswordFormProps) {
 	const navigate = useNavigate()
 
 	const form = useForm({
 		defaultValues: {
-			email: "",
 			password: "",
+			confirmPassword: "",
 		},
 		validators: {
-			onSubmit: signInSchema,
+			onSubmit: resetPasswordSchema,
 		},
 		onSubmit: async ({ value }) => {
 			onServerError("")
 			try {
-				const { error } = await authClient.signIn.email({
-					email: value.email,
-					password: value.password,
-					callbackURL: window.location.origin,
-					rememberMe: true,
+				const { error } = await authClient.resetPassword({
+					newPassword: value.password,
+					token,
 				})
 				if (error) {
 					onServerError(error.message ?? "Something went wrong")
 					return
 				}
-				navigate({ to: "/" })
+				navigate({ to: "/sign-in" })
 			} catch (e) {
 				onServerError(
 					e instanceof Error ? e.message : "Something went wrong",
@@ -62,10 +64,10 @@ export function SignInForm({ serverError, onServerError }: SignInFormProps) {
 					</span>
 				</div>
 				<h1 className="font-mono text-lg font-bold uppercase tracking-wider">
-					Welcome back
+					Reset password
 				</h1>
 				<p className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
-					Sign in to your account
+					Enter your new password
 				</p>
 			</div>
 
@@ -77,7 +79,7 @@ export function SignInForm({ serverError, onServerError }: SignInFormProps) {
 			>
 				<FieldGroup>
 					<form.Field
-						name="email"
+						name="password"
 						children={(field) => {
 							const isInvalid =
 								field.state.meta.isTouched &&
@@ -88,12 +90,12 @@ export function SignInForm({ serverError, onServerError }: SignInFormProps) {
 										htmlFor={field.name}
 										className="font-mono uppercase tracking-wider"
 									>
-										Email
+										New Password
 									</FieldLabel>
 									<Input
 										id={field.name}
 										name={field.name}
-										type="email"
+										type="password"
 										value={field.state.value}
 										onBlur={field.handleBlur}
 										onChange={(e) => field.handleChange(e.target.value)}
@@ -108,27 +110,19 @@ export function SignInForm({ serverError, onServerError }: SignInFormProps) {
 					/>
 
 					<form.Field
-						name="password"
+						name="confirmPassword"
 						children={(field) => {
 							const isInvalid =
 								field.state.meta.isTouched &&
 								field.state.meta.errors.length > 0
 							return (
 								<Field data-invalid={isInvalid || undefined}>
-									<div className="flex items-center justify-between">
-										<FieldLabel
-											htmlFor={field.name}
-											className="font-mono uppercase tracking-wider"
-										>
-											Password
-										</FieldLabel>
-										<a
-											href="/forgot-password"
-											className="font-mono text-xs uppercase tracking-wider text-primary underline underline-offset-4"
-										>
-											Forgot password?
-										</a>
-									</div>
+									<FieldLabel
+										htmlFor={field.name}
+										className="font-mono uppercase tracking-wider"
+									>
+										Confirm Password
+									</FieldLabel>
 									<Input
 										id={field.name}
 										name={field.name}
@@ -158,28 +152,12 @@ export function SignInForm({ serverError, onServerError }: SignInFormProps) {
 								disabled={isSubmitting}
 								className="w-full font-mono uppercase tracking-wider"
 							>
-								{isSubmitting ? "Signing in..." : "Sign in"}
+								{isSubmitting ? "Resetting..." : "Reset password"}
 							</Button>
 						)}
 					/>
-
-					<FieldSeparator>
-						<span className="font-mono text-[10px] uppercase tracking-wider">
-							Or
-						</span>
-					</FieldSeparator>
 				</FieldGroup>
 			</form>
-
-			<p className="text-center font-mono text-xs uppercase tracking-wider text-muted-foreground">
-				Don't have an account?{" "}
-				<a
-					href="/sign-up"
-					className="text-primary underline underline-offset-4"
-				>
-					Sign up
-				</a>
-			</p>
 		</div>
 	)
 }
