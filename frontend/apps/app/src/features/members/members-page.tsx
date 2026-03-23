@@ -44,7 +44,7 @@ export function MembersPage() {
 					INVITE MEMBER
 				</button>
 			</div>
-			<PendingInvitations invitations={pendingInvitations} />
+			<PendingInvitations invitations={pendingInvitations} onSuccess={() => router.invalidate()} />
 			<MembersTable members={members} isLoading={isLoading} error={error} />
 			<InviteMemberModal
 				open={inviteOpen}

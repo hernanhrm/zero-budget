@@ -12,7 +12,7 @@ const app = new Hono();
 const corsConfig = cors({
   origin: process.env.CORS_ORIGIN ?? "http://localhost:3000",
   allowHeaders: ["Content-Type", "Authorization"],
-  allowMethods: ["POST", "GET", "OPTIONS"],
+  allowMethods: ["POST", "GET", "DELETE", "OPTIONS"],
   exposeHeaders: ["Content-Length"],
   maxAge: 600,
   credentials: true,

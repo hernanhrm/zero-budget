@@ -3,7 +3,8 @@ import { X } from "lucide-react"
 import type { PendingInvitation } from "../types"
 
 interface PendingColumnsOptions {
-	onResend: (invitationId: string) => void
+	onResend: (invitation: PendingInvitation) => void
+	onCancel: (invitationId: string) => void
 }
 
 export function createPendingColumns(
@@ -61,13 +62,14 @@ export function createPendingColumns(
 					<button
 						type="button"
 						className="font-space-grotesk text-[11px] font-bold tracking-[1px] text-primary hover:opacity-80"
-						onClick={() => options.onResend(row.original.id)}
+						onClick={() => options.onResend(row.original)}
 					>
 						RESEND
 					</button>
 					<button
 						type="button"
 						className="text-muted-foreground hover:text-destructive"
+						onClick={() => options.onCancel(row.original.id)}
 					>
 						<X className="size-3.5" />
 					</button>

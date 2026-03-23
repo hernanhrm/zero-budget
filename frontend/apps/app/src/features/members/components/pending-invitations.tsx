@@ -1,34 +1,42 @@
 import { useMemo } from "react"
+import { authClient } from "#/lib/auth-client"
 import type { PendingInvitation } from "../types"
 import { DataTable } from "./data-table"
 import { createPendingColumns } from "./pending-columns"
 
 interface PendingInvitationsProps {
 	invitations: PendingInvitation[]
+	onSuccess: () => void
 }
 
-export function PendingInvitations({ invitations }: PendingInvitationsProps) {
-	const handleResend = async (invitationId: string) => {
-		try {
-			const res = await fetch(
-				`${import.meta.env.VITE_IDENTITY_URL}/api/invitations/${invitationId}/resend`,
-				{
-					method: "POST",
-					credentials: "include",
-				},
-			)
+export function PendingInvitations({ invitations, onSuccess }: PendingInvitationsProps) {
+	const handleResend = async (invitation: PendingInvitation) => {
+		const { error } = await authClient.organization.inviteMember({
+			email: invitation.email.toLowerCase(),
+			role: invitation.role.toLowerCase(),
+			resend: true,
+		})
 
-			if (!res.ok) {
-				const body = await res.json()
-				console.error("Failed to resend invitation:", body.error)
-			}
-		} catch (err) {
-			console.error("Failed to resend invitation:", err)
+		if (error) {
+			console.error("Failed to resend invitation:", error)
 		}
 	}
 
+	const handleCancel = async (invitationId: string) => {
+		const { error } = await authClient.organization.cancelInvitation({
+			invitationId,
+		})
+
+		if (error) {
+			console.error("Failed to cancel invitation:", error)
+			return
+		}
+
+		onSuccess()
+	}
+
 	const columns = useMemo(
-		() => createPendingColumns({ onResend: handleResend }),
+		() => createPendingColumns({ onResend: handleResend, onCancel: handleCancel }),
 		[],
 	)
 
