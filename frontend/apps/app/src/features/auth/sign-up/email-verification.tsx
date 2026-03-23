@@ -3,9 +3,13 @@ import { authClient } from "#/lib/auth-client"
 
 interface EmailVerificationProps {
 	email: string
+	redirect?: string
 }
 
-export function EmailVerification({ email }: EmailVerificationProps) {
+export function EmailVerification({
+	email,
+	redirect,
+}: EmailVerificationProps) {
 	const [resendStatus, setResendStatus] = useState<
 		"idle" | "sending" | "sent" | "error"
 	>("idle")
@@ -15,7 +19,9 @@ export function EmailVerification({ email }: EmailVerificationProps) {
 		try {
 			const { error } = await authClient.sendVerificationEmail({
 				email,
-				callbackURL: window.location.origin,
+				callbackURL: redirect
+					? `${window.location.origin}${redirect}`
+					: window.location.origin,
 			})
 			if (error) {
 				setResendStatus("error")

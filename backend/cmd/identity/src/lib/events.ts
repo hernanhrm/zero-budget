@@ -76,3 +76,15 @@ export async function publishUserSignedUp(user: {
     name: user.name,
   });
 }
+
+export async function publishOrganizationInvitationCreated(data: {
+  email: string;
+  inviterName: string;
+  inviterEmail: string;
+  inviterInitial: string;
+  organizationName: string;
+  acceptUrl: string;
+  declineUrl: string;
+}) {
+  await publishEvent("organization.invitation_created", { ...data });
+}

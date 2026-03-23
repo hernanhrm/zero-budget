@@ -47,8 +47,8 @@ export function mapApiMember(apiMember: ApiMember): Member {
 		email: apiMember.user.email.toUpperCase(),
 		initials: getInitials(apiMember.user.name),
 		role:
-			(apiMember.role.toUpperCase() as "OWNER" | "EDITOR" | "VIEWER") ||
-			"VIEWER",
+			(apiMember.role.toUpperCase() as "OWNER" | "ADMIN" | "MEMBER") ||
+			"MEMBER",
 		roleId: apiMember.role,
 		joined: formatDate(apiMember.createdAt.toString()),
 		isOwner: apiMember.role.toLowerCase() === "owner",

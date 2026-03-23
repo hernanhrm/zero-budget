@@ -1,12 +1,17 @@
+import { useRouter } from "@tanstack/react-router"
 import { UserPlus } from "lucide-react"
+import { useState } from "react"
 import { Route } from "#/routes/_protected/members"
-import type { ApiInvitation } from "./types"
-import { mapApiInvitation } from "./utils"
+import { InviteMemberModal } from "./components/invite-member-modal"
 import { MembersTable } from "./components/members-table"
 import { PendingInvitations } from "./components/pending-invitations"
+import type { ApiInvitation } from "./types"
+import { mapApiInvitation } from "./utils"
 
 export function MembersPage() {
 	const loaderData = Route.useLoaderData()
+	const router = useRouter()
+	const [inviteOpen, setInviteOpen] = useState(false)
 
 	const members = loaderData?.members?.members || []
 	const isLoading = !loaderData
@@ -32,6 +37,7 @@ export function MembersPage() {
 				</div>
 				<button
 					type="button"
+					onClick={() => setInviteOpen(true)}
 					className="flex h-10 items-center gap-2 bg-primary px-4 font-space-grotesk text-xs font-bold tracking-[1px] text-primary-foreground hover:opacity-90"
 				>
 					<UserPlus className="size-3.5" />
@@ -40,6 +46,11 @@ export function MembersPage() {
 			</div>
 			<PendingInvitations invitations={pendingInvitations} />
 			<MembersTable members={members} isLoading={isLoading} error={error} />
+			<InviteMemberModal
+				open={inviteOpen}
+				onOpenChange={setInviteOpen}
+				onSuccess={() => router.invalidate()}
+			/>
 		</div>
 	)
 }

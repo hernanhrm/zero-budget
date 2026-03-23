@@ -1,12 +1,37 @@
+import { useMemo } from "react"
 import type { PendingInvitation } from "../types"
 import { DataTable } from "./data-table"
-import { pendingColumns } from "./pending-columns"
+import { createPendingColumns } from "./pending-columns"
 
 interface PendingInvitationsProps {
 	invitations: PendingInvitation[]
 }
 
 export function PendingInvitations({ invitations }: PendingInvitationsProps) {
+	const handleResend = async (invitationId: string) => {
+		try {
+			const res = await fetch(
+				`${import.meta.env.VITE_IDENTITY_URL}/api/invitations/${invitationId}/resend`,
+				{
+					method: "POST",
+					credentials: "include",
+				},
+			)
+
+			if (!res.ok) {
+				const body = await res.json()
+				console.error("Failed to resend invitation:", body.error)
+			}
+		} catch (err) {
+			console.error("Failed to resend invitation:", err)
+		}
+	}
+
+	const columns = useMemo(
+		() => createPendingColumns({ onResend: handleResend }),
+		[],
+	)
+
 	if (invitations.length === 0) {
 		return null
 	}
@@ -26,7 +51,7 @@ export function PendingInvitations({ invitations }: PendingInvitationsProps) {
 					</div>
 				</div>
 			</div>
-			<DataTable columns={pendingColumns} data={invitations} />
+			<DataTable columns={columns} data={invitations} />
 		</div>
 	)
 }

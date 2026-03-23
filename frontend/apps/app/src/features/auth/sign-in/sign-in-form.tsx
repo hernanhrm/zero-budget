@@ -12,11 +12,16 @@ import { authClient } from "#/lib/auth-client"
 import { signInSchema } from "./schema"
 
 interface SignInFormProps {
+	redirect?: string
 	serverError: string
 	onServerError: (error: string) => void
 }
 
-export function SignInForm({ serverError, onServerError }: SignInFormProps) {
+export function SignInForm({
+	redirect,
+	serverError,
+	onServerError,
+}: SignInFormProps) {
 	const form = useForm({
 		defaultValues: {
 			email: "",
@@ -31,7 +36,9 @@ export function SignInForm({ serverError, onServerError }: SignInFormProps) {
 				const { error } = await authClient.signIn.email({
 					email: value.email,
 					password: value.password,
-					callbackURL: window.location.origin,
+					callbackURL: redirect
+					? `${window.location.origin}${redirect}`
+					: window.location.origin,
 					rememberMe: true,
 				})
 				if (error) {
@@ -48,6 +55,19 @@ export function SignInForm({ serverError, onServerError }: SignInFormProps) {
 
 	return (
 		<div className="w-full max-w-sm space-y-6">
+			{redirect?.startsWith("/invite/") && (
+				<div className="rounded border border-primary/20 bg-primary/5 px-4 py-3">
+					<p className="font-mono text-xs uppercase tracking-wider text-primary">
+						Sign in to accept your invitation, or{" "}
+						<a
+							href={`/sign-up?redirect=${encodeURIComponent(redirect)}`}
+							className="underline underline-offset-4"
+						>
+							sign up
+						</a>
+					</p>
+				</div>
+			)}
 			<div className="space-y-1">
 				<div className="flex items-center gap-2 lg:hidden mb-4">
 					<div className="flex size-7 items-center justify-center bg-primary font-mono text-sm font-bold text-primary-foreground">
@@ -170,7 +190,11 @@ export function SignInForm({ serverError, onServerError }: SignInFormProps) {
 			<p className="text-center font-mono text-xs uppercase tracking-wider text-muted-foreground">
 				Don't have an account?{" "}
 				<a
-					href="/sign-up"
+					href={
+						redirect
+							? `/sign-up?redirect=${encodeURIComponent(redirect)}`
+							: "/sign-up"
+					}
 					className="text-primary underline underline-offset-4"
 				>
 					Sign up

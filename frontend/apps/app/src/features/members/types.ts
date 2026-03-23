@@ -2,7 +2,7 @@ export interface Member {
 	name: string
 	email: string
 	initials: string
-	role: "OWNER" | "EDITOR" | "VIEWER"
+	role: "OWNER" | "ADMIN" | "MEMBER"
 	roleId: string
 	joined: string
 	isOwner: boolean

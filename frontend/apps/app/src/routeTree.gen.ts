@@ -18,6 +18,8 @@ import { Route as AuthSignUpRouteImport } from './routes/_auth/sign-up'
 import { Route as AuthSignInRouteImport } from './routes/_auth/sign-in'
 import { Route as AuthResetPasswordRouteImport } from './routes/_auth/reset-password'
 import { Route as AuthForgotPasswordRouteImport } from './routes/_auth/forgot-password'
+import { Route as InviteDeclineInvitationIdRouteImport } from './routes/invite.decline.$invitationId'
+import { Route as InviteAcceptInvitationIdRouteImport } from './routes/invite.accept.$invitationId'
 
 const AboutRoute = AboutRouteImport.update({
   id: '/about',
@@ -62,6 +64,18 @@ const AuthForgotPasswordRoute = AuthForgotPasswordRouteImport.update({
   path: '/forgot-password',
   getParentRoute: () => AuthRoute,
 } as any)
+const InviteDeclineInvitationIdRoute =
+  InviteDeclineInvitationIdRouteImport.update({
+    id: '/invite/decline/$invitationId',
+    path: '/invite/decline/$invitationId',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const InviteAcceptInvitationIdRoute =
+  InviteAcceptInvitationIdRouteImport.update({
+    id: '/invite/accept/$invitationId',
+    path: '/invite/accept/$invitationId',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof ProtectedIndexRoute
@@ -71,6 +85,8 @@ export interface FileRoutesByFullPath {
   '/sign-in': typeof AuthSignInRoute
   '/sign-up': typeof AuthSignUpRoute
   '/members': typeof ProtectedMembersRoute
+  '/invite/accept/$invitationId': typeof InviteAcceptInvitationIdRoute
+  '/invite/decline/$invitationId': typeof InviteDeclineInvitationIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof ProtectedIndexRoute
@@ -80,6 +96,8 @@ export interface FileRoutesByTo {
   '/sign-in': typeof AuthSignInRoute
   '/sign-up': typeof AuthSignUpRoute
   '/members': typeof ProtectedMembersRoute
+  '/invite/accept/$invitationId': typeof InviteAcceptInvitationIdRoute
+  '/invite/decline/$invitationId': typeof InviteDeclineInvitationIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -92,6 +110,8 @@ export interface FileRoutesById {
   '/_auth/sign-up': typeof AuthSignUpRoute
   '/_protected/members': typeof ProtectedMembersRoute
   '/_protected/': typeof ProtectedIndexRoute
+  '/invite/accept/$invitationId': typeof InviteAcceptInvitationIdRoute
+  '/invite/decline/$invitationId': typeof InviteDeclineInvitationIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -103,6 +123,8 @@ export interface FileRouteTypes {
     | '/sign-in'
     | '/sign-up'
     | '/members'
+    | '/invite/accept/$invitationId'
+    | '/invite/decline/$invitationId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -112,6 +134,8 @@ export interface FileRouteTypes {
     | '/sign-in'
     | '/sign-up'
     | '/members'
+    | '/invite/accept/$invitationId'
+    | '/invite/decline/$invitationId'
   id:
     | '__root__'
     | '/_auth'
@@ -123,12 +147,16 @@ export interface FileRouteTypes {
     | '/_auth/sign-up'
     | '/_protected/members'
     | '/_protected/'
+    | '/invite/accept/$invitationId'
+    | '/invite/decline/$invitationId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   AuthRoute: typeof AuthRouteWithChildren
   ProtectedRoute: typeof ProtectedRouteWithChildren
   AboutRoute: typeof AboutRoute
+  InviteAcceptInvitationIdRoute: typeof InviteAcceptInvitationIdRoute
+  InviteDeclineInvitationIdRoute: typeof InviteDeclineInvitationIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -196,6 +224,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthForgotPasswordRouteImport
       parentRoute: typeof AuthRoute
     }
+    '/invite/decline/$invitationId': {
+      id: '/invite/decline/$invitationId'
+      path: '/invite/decline/$invitationId'
+      fullPath: '/invite/decline/$invitationId'
+      preLoaderRoute: typeof InviteDeclineInvitationIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/invite/accept/$invitationId': {
+      id: '/invite/accept/$invitationId'
+      path: '/invite/accept/$invitationId'
+      fullPath: '/invite/accept/$invitationId'
+      preLoaderRoute: typeof InviteAcceptInvitationIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -233,6 +275,8 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRouteWithChildren,
   ProtectedRoute: ProtectedRouteWithChildren,
   AboutRoute: AboutRoute,
+  InviteAcceptInvitationIdRoute: InviteAcceptInvitationIdRoute,
+  InviteDeclineInvitationIdRoute: InviteDeclineInvitationIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

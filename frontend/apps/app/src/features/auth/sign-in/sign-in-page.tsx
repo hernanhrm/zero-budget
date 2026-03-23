@@ -2,7 +2,11 @@ import { useState } from "react"
 import { BrandingPanel } from "../components/branding-panel"
 import { SignInForm } from "./sign-in-form"
 
-export function SignInPage() {
+interface SignInPageProps {
+	redirect?: string
+}
+
+export function SignInPage({ redirect }: SignInPageProps) {
 	const [serverError, setServerError] = useState("")
 
 	return (
@@ -12,6 +16,7 @@ export function SignInPage() {
 			</div>
 			<div className="flex items-center justify-center bg-card p-6">
 				<SignInForm
+					redirect={redirect}
 					serverError={serverError}
 					onServerError={setServerError}
 				/>

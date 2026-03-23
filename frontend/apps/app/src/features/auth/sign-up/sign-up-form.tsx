@@ -13,12 +13,14 @@ import { authClient } from "#/lib/auth-client"
 import { signUpSchema } from "./schema"
 
 interface SignUpFormProps {
+	redirect?: string
 	onSuccess: (email: string) => void
 	serverError: string
 	onServerError: (error: string) => void
 }
 
 export function SignUpForm({
+	redirect,
 	onSuccess,
 	serverError,
 	onServerError,
@@ -42,7 +44,9 @@ export function SignUpForm({
 					name: `${value.firstName} ${value.lastName}`,
 					email: value.email,
 					password: value.password,
-					callbackURL: window.location.origin,
+					callbackURL: redirect
+					? `${window.location.origin}${redirect}`
+					: window.location.origin,
 					rememberMe: true,
 				})
 				if (error) {
@@ -60,6 +64,13 @@ export function SignUpForm({
 
 	return (
 		<div className="w-full max-w-sm space-y-6">
+			{redirect?.startsWith("/invite/") && (
+				<div className="rounded border border-primary/20 bg-primary/5 px-4 py-3">
+					<p className="font-mono text-xs uppercase tracking-wider text-primary">
+						Create an account to accept your invitation
+					</p>
+				</div>
+			)}
 			<div className="space-y-1">
 				<div className="flex items-center gap-2 lg:hidden mb-4">
 					<div className="flex size-7 items-center justify-center bg-primary font-mono text-sm font-bold text-primary-foreground">
@@ -302,7 +313,11 @@ export function SignUpForm({
 			<p className="text-center font-mono text-xs uppercase tracking-wider text-muted-foreground">
 				Already have an account?{" "}
 				<a
-					href="/sign-in"
+					href={
+						redirect
+							? `/sign-in?redirect=${encodeURIComponent(redirect)}`
+							: "/sign-in"
+					}
 					className="text-primary underline underline-offset-4"
 				>
 					Sign in
