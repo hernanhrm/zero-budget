@@ -6,14 +6,17 @@ import { InviteMemberModal } from "./components/invite-member-modal"
 import { MembersTable } from "./components/members-table"
 import { PendingInvitations } from "./components/pending-invitations"
 import type { ApiInvitation } from "./types"
-import { mapApiInvitation } from "./utils"
+import { mapApiInvitation, mapApiMember } from "./utils"
 
 export function MembersPage() {
 	const loaderData = Route.useLoaderData()
+	const { session } = Route.useRouteContext()
 	const router = useRouter()
 	const [inviteOpen, setInviteOpen] = useState(false)
 
-	const members = loaderData?.members?.members || []
+	const currentUserId = session?.data?.user?.id ?? ""
+	const apiMembers = loaderData?.members?.members || []
+	const members = apiMembers.map(mapApiMember)
 	const isLoading = !loaderData
 	const error = loaderData?.members?.error
 		? String(loaderData.members.error)
@@ -45,7 +48,7 @@ export function MembersPage() {
 				</button>
 			</div>
 			<PendingInvitations invitations={pendingInvitations} onSuccess={() => router.invalidate()} />
-			<MembersTable members={members} isLoading={isLoading} error={error} />
+			<MembersTable members={members} isLoading={isLoading} error={error} currentUserId={currentUserId} onSuccess={() => router.invalidate()} />
 			<InviteMemberModal
 				open={inviteOpen}
 				onOpenChange={setInviteOpen}

@@ -43,6 +43,7 @@ export function mapApiInvitation(invitation: ApiInvitation): PendingInvitation {
 
 export function mapApiMember(apiMember: ApiMember): Member {
 	return {
+		id: apiMember.id,
 		name: apiMember.user.name.toUpperCase(),
 		email: apiMember.user.email.toUpperCase(),
 		initials: getInitials(apiMember.user.name),

@@ -1,14 +1,49 @@
-import type { MembersTableProps } from "../types"
-import { mapApiMember } from "../utils"
+import { useMemo, useState } from "react"
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+} from "@workspace/ui/components/alert-dialog"
+import { authClient } from "#/lib/auth-client"
+import type { Member, MembersTableProps } from "../types"
 import { DataTable } from "./data-table"
-import { membersColumns } from "./members-columns"
+import { createMembersColumns } from "./members-columns"
 
 export function MembersTable({
-	members: membersData,
+	members,
 	isLoading,
 	error,
+	currentUserId,
+	onSuccess,
 }: MembersTableProps) {
-	const members = membersData.map(mapApiMember)
+	const [memberToRemove, setMemberToRemove] = useState<Member | null>(null)
+
+	const handleConfirmRemove = async () => {
+		if (!memberToRemove) return
+
+		const { error } = await authClient.organization.removeMember({
+			memberIdOrEmail: memberToRemove.id,
+		})
+
+		if (error) {
+			console.error("Failed to remove member:", error)
+			setMemberToRemove(null)
+			return
+		}
+
+		setMemberToRemove(null)
+		onSuccess()
+	}
+
+	const columns = useMemo(
+		() => createMembersColumns({ currentUserId, onRemove: setMemberToRemove }),
+		[currentUserId],
+	)
 
 	return (
 		<div className="w-full border border-border">
@@ -32,8 +67,32 @@ export function MembersTable({
 			) : isLoading ? (
 				<div className="h-16 animate-pulse bg-muted" />
 			) : (
-				<DataTable columns={membersColumns} data={members} />
+				<DataTable columns={columns} data={members} />
 			)}
+			<AlertDialog open={!!memberToRemove} onOpenChange={(open) => !open && setMemberToRemove(null)}>
+				<AlertDialogContent>
+					<AlertDialogHeader>
+						<AlertDialogTitle className="font-space-grotesk tracking-[1px]">
+							REMOVE MEMBER
+						</AlertDialogTitle>
+						<AlertDialogDescription className="font-ibm-plex-mono text-xs tracking-[1px]">
+							ARE YOU SURE YOU WANT TO REMOVE {memberToRemove?.name}? THIS ACTION CANNOT BE UNDONE.
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+					<AlertDialogFooter>
+						<AlertDialogCancel className="font-space-grotesk text-xs font-bold tracking-[1px]">
+							CANCEL
+						</AlertDialogCancel>
+						<AlertDialogAction
+							variant="destructive"
+							className="font-space-grotesk text-xs font-bold tracking-[1px]"
+							onClick={handleConfirmRemove}
+						>
+							REMOVE
+						</AlertDialogAction>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
 		</div>
 	)
 }

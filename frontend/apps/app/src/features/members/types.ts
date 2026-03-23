@@ -1,4 +1,5 @@
 export interface Member {
+	id: string
 	name: string
 	email: string
 	initials: string
@@ -13,6 +14,8 @@ export interface MembersTableProps {
 	members: Member[]
 	isLoading: boolean
 	error: string | null
+	currentUserId: string
+	onSuccess: () => void
 }
 
 export interface PendingInvitation {
@@ -35,8 +38,9 @@ export interface ApiInvitation {
 }
 
 export interface ApiMember {
+	id: string
 	userId: string
 	user: { name: string; email: string }
 	role: string
-	createdAt: string
+	createdAt: string | Date
 }
