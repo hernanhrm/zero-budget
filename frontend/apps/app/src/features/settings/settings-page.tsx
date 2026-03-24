@@ -1,0 +1,82 @@
+import {
+	Tabs,
+	TabsContent,
+	TabsList,
+	TabsTrigger,
+} from "@workspace/ui/components/tabs"
+import { ProfileTab } from "./components/profile-tab"
+import { SecurityTab } from "./components/security-tab"
+import { CurrencyTab } from "./components/currency-tab"
+import { NotificationsTab } from "./components/notifications-tab"
+import { DangerZoneTab } from "./components/danger-zone-tab"
+
+export function SettingsPage() {
+	return (
+		<div className="flex h-full flex-col overflow-auto p-10">
+			<Tabs defaultValue="profile" className="flex-col gap-0">
+				<div className="flex w-full items-center justify-between">
+					<div className="flex flex-col gap-2">
+						<h1 className="font-space-grotesk text-4xl font-bold tracking-[1px] text-foreground">
+							SETTINGS
+						</h1>
+						<p className="font-ibm-plex-mono text-[13px] tracking-[1px] text-muted-foreground">
+							CONFIGURE YOUR ACCOUNT AND PREFERENCES
+						</p>
+					</div>
+				</div>
+
+				<TabsList
+					variant="line"
+					className="mt-8 h-11 w-full justify-start gap-0 border-b border-border p-0"
+				>
+					<TabsTrigger
+						value="profile"
+						className="h-full !flex-initial !py-0 px-5 font-space-grotesk text-xs font-bold tracking-[1px] after:bg-primary"
+					>
+						PROFILE
+					</TabsTrigger>
+					<TabsTrigger
+						value="security"
+						className="h-full !flex-initial !py-0 px-5 font-space-grotesk text-xs font-bold tracking-[1px] after:bg-primary"
+					>
+						SECURITY
+					</TabsTrigger>
+					<TabsTrigger
+						value="currency"
+						className="h-full !flex-initial !py-0 px-5 font-space-grotesk text-xs font-bold tracking-[1px] after:bg-primary"
+					>
+						CURRENCY
+					</TabsTrigger>
+					<TabsTrigger
+						value="notifications"
+						className="h-full !flex-initial !py-0 px-5 font-space-grotesk text-xs font-bold tracking-[1px] after:bg-primary"
+					>
+						NOTIFICATIONS
+					</TabsTrigger>
+					<TabsTrigger
+						value="danger-zone"
+						className="h-full !flex-initial !py-0 px-5 font-space-grotesk text-xs font-bold tracking-[1px] text-[#FF6B35] after:bg-[#FF6B35] data-active:text-[#FF6B35]"
+					>
+						DANGER ZONE
+					</TabsTrigger>
+				</TabsList>
+
+				<TabsContent value="profile" className="mt-8">
+					<ProfileTab />
+				</TabsContent>
+				<TabsContent value="security" className="mt-8">
+					<SecurityTab />
+				</TabsContent>
+				<TabsContent value="currency" className="mt-8">
+					<CurrencyTab />
+				</TabsContent>
+				<TabsContent value="notifications" className="mt-8">
+					<NotificationsTab />
+				</TabsContent>
+				<TabsContent value="danger-zone" className="mt-8">
+					<DangerZoneTab />
+				</TabsContent>
+			</Tabs>
+		</div>
+	)
+}

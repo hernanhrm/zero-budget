@@ -13,6 +13,7 @@ import { Route as AboutRouteImport } from './routes/about'
 import { Route as ProtectedRouteImport } from './routes/_protected'
 import { Route as AuthRouteImport } from './routes/_auth'
 import { Route as ProtectedIndexRouteImport } from './routes/_protected/index'
+import { Route as ProtectedSettingsRouteImport } from './routes/_protected/settings'
 import { Route as ProtectedMembersRouteImport } from './routes/_protected/members'
 import { Route as AuthSignUpRouteImport } from './routes/_auth/sign-up'
 import { Route as AuthSignInRouteImport } from './routes/_auth/sign-in'
@@ -37,6 +38,11 @@ const AuthRoute = AuthRouteImport.update({
 const ProtectedIndexRoute = ProtectedIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => ProtectedRoute,
+} as any)
+const ProtectedSettingsRoute = ProtectedSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
   getParentRoute: () => ProtectedRoute,
 } as any)
 const ProtectedMembersRoute = ProtectedMembersRouteImport.update({
@@ -85,6 +91,7 @@ export interface FileRoutesByFullPath {
   '/sign-in': typeof AuthSignInRoute
   '/sign-up': typeof AuthSignUpRoute
   '/members': typeof ProtectedMembersRoute
+  '/settings': typeof ProtectedSettingsRoute
   '/invite/accept/$invitationId': typeof InviteAcceptInvitationIdRoute
   '/invite/decline/$invitationId': typeof InviteDeclineInvitationIdRoute
 }
@@ -96,6 +103,7 @@ export interface FileRoutesByTo {
   '/sign-in': typeof AuthSignInRoute
   '/sign-up': typeof AuthSignUpRoute
   '/members': typeof ProtectedMembersRoute
+  '/settings': typeof ProtectedSettingsRoute
   '/invite/accept/$invitationId': typeof InviteAcceptInvitationIdRoute
   '/invite/decline/$invitationId': typeof InviteDeclineInvitationIdRoute
 }
@@ -109,6 +117,7 @@ export interface FileRoutesById {
   '/_auth/sign-in': typeof AuthSignInRoute
   '/_auth/sign-up': typeof AuthSignUpRoute
   '/_protected/members': typeof ProtectedMembersRoute
+  '/_protected/settings': typeof ProtectedSettingsRoute
   '/_protected/': typeof ProtectedIndexRoute
   '/invite/accept/$invitationId': typeof InviteAcceptInvitationIdRoute
   '/invite/decline/$invitationId': typeof InviteDeclineInvitationIdRoute
@@ -123,6 +132,7 @@ export interface FileRouteTypes {
     | '/sign-in'
     | '/sign-up'
     | '/members'
+    | '/settings'
     | '/invite/accept/$invitationId'
     | '/invite/decline/$invitationId'
   fileRoutesByTo: FileRoutesByTo
@@ -134,6 +144,7 @@ export interface FileRouteTypes {
     | '/sign-in'
     | '/sign-up'
     | '/members'
+    | '/settings'
     | '/invite/accept/$invitationId'
     | '/invite/decline/$invitationId'
   id:
@@ -146,6 +157,7 @@ export interface FileRouteTypes {
     | '/_auth/sign-in'
     | '/_auth/sign-up'
     | '/_protected/members'
+    | '/_protected/settings'
     | '/_protected/'
     | '/invite/accept/$invitationId'
     | '/invite/decline/$invitationId'
@@ -187,6 +199,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof ProtectedIndexRouteImport
+      parentRoute: typeof ProtectedRoute
+    }
+    '/_protected/settings': {
+      id: '/_protected/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof ProtectedSettingsRouteImport
       parentRoute: typeof ProtectedRoute
     }
     '/_protected/members': {
@@ -259,11 +278,13 @@ const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
 
 interface ProtectedRouteChildren {
   ProtectedMembersRoute: typeof ProtectedMembersRoute
+  ProtectedSettingsRoute: typeof ProtectedSettingsRoute
   ProtectedIndexRoute: typeof ProtectedIndexRoute
 }
 
 const ProtectedRouteChildren: ProtectedRouteChildren = {
   ProtectedMembersRoute: ProtectedMembersRoute,
+  ProtectedSettingsRoute: ProtectedSettingsRoute,
   ProtectedIndexRoute: ProtectedIndexRoute,
 }
 
