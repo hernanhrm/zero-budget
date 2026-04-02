@@ -8,13 +8,6 @@ import {
 	FieldLabel,
 } from "@workspace/ui/components/field"
 import { Input } from "@workspace/ui/components/input"
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@workspace/ui/components/select"
 import { useState } from "react"
 import { authClient } from "#/lib/auth-client"
 import { Route } from "#/routes/_protected/settings"
@@ -35,12 +28,25 @@ export function ProfileTab() {
 	const firstName = nameParts[0] ?? ""
 	const lastName = nameParts.slice(1).join(" ")
 
+	const defaultValues = {
+		firstName,
+		lastName,
+		timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+	}
+
+	const hasChanges = (
+		current: typeof defaultValues,
+		initial: typeof defaultValues,
+	) => {
+		return (
+			current.firstName !== initial.firstName ||
+			current.lastName !== initial.lastName ||
+			current.timezone !== initial.timezone
+		)
+	}
+
 	const form = useForm({
-		defaultValues: {
-			firstName,
-			lastName,
-			timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-		},
+		defaultValues,
 		validators: {
 			onSubmit: profileSchema,
 		},
@@ -139,16 +145,24 @@ export function ProfileTab() {
 					<p className="font-space-grotesk text-xs font-normal text-muted-foreground">
 						Changes will be saved to your profile
 					</p>
-					<form.Subscribe selector={(state) => state.isSubmitting}>
-						{(isSubmitting) => (
-							<Button
-								type="submit"
-								disabled={isSubmitting}
-								className="h-9 rounded px-5 font-space-grotesk text-xs font-bold tracking-[1px]"
-							>
-								{isSubmitting ? "SAVING..." : "SAVE CHANGES"}
-							</Button>
-						)}
+					<form.Subscribe
+						selector={(state) => ({
+							isSubmitting: state.isSubmitting,
+							values: state.values,
+						})}
+					>
+						{({ isSubmitting, values }) => {
+							const isDirty = hasChanges(values, defaultValues)
+							return (
+								<Button
+									type="submit"
+									disabled={isSubmitting || !isDirty}
+									className="h-9 rounded px-5 font-space-grotesk text-xs font-bold tracking-[1px]"
+								>
+									{isSubmitting ? "SAVING..." : "SAVE CHANGES"}
+								</Button>
+							)
+						}}
 					</form.Subscribe>
 				</div>
 			</FieldGroup>
