@@ -32,11 +32,44 @@ paths:
   /v1/email-templates/{id}/logs:
     $ref: './paths/email-templates.yaml#/paths/~1v1~1email-templates~1{id}~1logs'
 
+  /v1/currencies:
+    $ref: './paths/currencies.yaml#/paths/~1v1~1currencies'
+  /v1/currencies/{code}:
+    $ref: './paths/currencies.yaml#/paths/~1v1~1currencies~1{code}'
+  /v1/organization-currencies:
+    $ref: './paths/organization-currencies.yaml#/paths/~1v1~1organization-currencies'
+  /v1/organization-currencies/{id}:
+    $ref: './paths/organization-currencies.yaml#/paths/~1v1~1organization-currencies~1{id}'
+  /v1/accounts:
+    $ref: './paths/accounts.yaml#/paths/~1v1~1accounts'
+  /v1/accounts/{id}:
+    $ref: './paths/accounts.yaml#/paths/~1v1~1accounts~1{id}'
+  /v1/categories:
+    $ref: './paths/categories.yaml#/paths/~1v1~1categories'
+  /v1/categories/{id}:
+    $ref: './paths/categories.yaml#/paths/~1v1~1categories~1{id}'
+  /v1/budgets:
+    $ref: './paths/budgets.yaml#/paths/~1v1~1budgets'
+  /v1/budgets/{id}:
+    $ref: './paths/budgets.yaml#/paths/~1v1~1budgets~1{id}'
+  /v1/transactions:
+    $ref: './paths/transactions.yaml#/paths/~1v1~1transactions'
+  /v1/transactions/{id}:
+    $ref: './paths/transactions.yaml#/paths/~1v1~1transactions~1{id}'
+
 x-tagGroups:
   - name: Notifications
     tags:
       - Email Templates
       - Email Logs
+  - name: Budget
+    tags:
+      - Currencies
+      - Organization Currencies
+      - Accounts
+      - Categories
+      - Budgets
+      - Transactions
 
 components:
   schemas:
@@ -235,3 +268,389 @@ components:
           enum: [pending, sent, failed, delivered]
         errorMessage:
           type: string
+
+    # Currency schemas
+    Currency:
+      type: object
+      properties:
+        code:
+          type: string
+        name:
+          type: string
+        symbol:
+          type: string
+        decimalPlaces:
+          type: integer
+
+    # Organization Currency schemas
+    CreateOrganizationCurrency:
+      type: object
+      required:
+        - id
+        - organizationId
+        - currencyCode
+        - isBase
+      properties:
+        id:
+          type: string
+          format: uuid
+        organizationId:
+          type: string
+        currencyCode:
+          type: string
+          minLength: 3
+          maxLength: 3
+        isBase:
+          type: boolean
+
+    UpdateOrganizationCurrency:
+      type: object
+      properties:
+        isBase:
+          type: boolean
+
+    OrganizationCurrency:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        organizationId:
+          type: string
+        currencyCode:
+          type: string
+        isBase:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    # Account schemas
+    CreateAccount:
+      type: object
+      required:
+        - id
+        - organizationId
+        - name
+        - type
+        - currencyCode
+        - currentBalance
+        - isActive
+      properties:
+        id:
+          type: string
+          format: uuid
+        organizationId:
+          type: string
+        name:
+          type: string
+        type:
+          type: string
+        currencyCode:
+          type: string
+        currentBalance:
+          type: integer
+          format: int64
+        isActive:
+          type: boolean
+
+    UpdateAccount:
+      type: object
+      properties:
+        name:
+          type: string
+        type:
+          type: string
+        currencyCode:
+          type: string
+        currentBalance:
+          type: integer
+          format: int64
+        isActive:
+          type: boolean
+
+    Account:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        organizationId:
+          type: string
+        name:
+          type: string
+        type:
+          type: string
+        currencyCode:
+          type: string
+        currentBalance:
+          type: integer
+          format: int64
+        isActive:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    # Category schemas
+    CreateCategory:
+      type: object
+      required:
+        - id
+        - organizationId
+        - name
+        - isActive
+      properties:
+        id:
+          type: string
+          format: uuid
+        organizationId:
+          type: string
+        parentId:
+          type: string
+          format: uuid
+          nullable: true
+        name:
+          type: string
+        icon:
+          type: string
+          nullable: true
+        color:
+          type: string
+          nullable: true
+        isActive:
+          type: boolean
+
+    UpdateCategory:
+      type: object
+      properties:
+        parentId:
+          type: string
+          format: uuid
+          nullable: true
+        name:
+          type: string
+        icon:
+          type: string
+          nullable: true
+        color:
+          type: string
+          nullable: true
+        isActive:
+          type: boolean
+
+    Category:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        organizationId:
+          type: string
+        parentId:
+          type: string
+          format: uuid
+          nullable: true
+        name:
+          type: string
+        icon:
+          type: string
+          nullable: true
+        color:
+          type: string
+          nullable: true
+        isActive:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    # Budget schemas
+    CreateBudget:
+      type: object
+      required:
+        - id
+        - organizationId
+        - name
+        - month
+        - year
+        - currencyCode
+        - isActive
+      properties:
+        id:
+          type: string
+          format: uuid
+        organizationId:
+          type: string
+        name:
+          type: string
+        month:
+          type: integer
+        year:
+          type: integer
+        currencyCode:
+          type: string
+        isActive:
+          type: boolean
+
+    UpdateBudget:
+      type: object
+      properties:
+        name:
+          type: string
+        isActive:
+          type: boolean
+
+    Budget:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        organizationId:
+          type: string
+        name:
+          type: string
+        month:
+          type: integer
+        year:
+          type: integer
+        currencyCode:
+          type: string
+        isActive:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    # Transaction schemas
+    CreateTransaction:
+      type: object
+      required:
+        - id
+        - organizationId
+        - accountId
+        - type
+        - amount
+        - date
+      properties:
+        id:
+          type: string
+          format: uuid
+        organizationId:
+          type: string
+        accountId:
+          type: string
+          format: uuid
+        categoryId:
+          type: string
+          format: uuid
+          nullable: true
+        subcategoryId:
+          type: string
+          format: uuid
+          nullable: true
+        budgetId:
+          type: string
+          format: uuid
+          nullable: true
+        type:
+          type: string
+        amount:
+          type: integer
+          format: int64
+        description:
+          type: string
+          nullable: true
+        externalReferenceNumber:
+          type: string
+          nullable: true
+        date:
+          type: string
+          format: date
+
+    UpdateTransaction:
+      type: object
+      properties:
+        categoryId:
+          type: string
+          format: uuid
+          nullable: true
+        subcategoryId:
+          type: string
+          format: uuid
+          nullable: true
+        budgetId:
+          type: string
+          format: uuid
+          nullable: true
+        type:
+          type: string
+        amount:
+          type: integer
+          format: int64
+        description:
+          type: string
+          nullable: true
+        externalReferenceNumber:
+          type: string
+          nullable: true
+        date:
+          type: string
+          format: date
+
+    Transaction:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        organizationId:
+          type: string
+        accountId:
+          type: string
+          format: uuid
+        categoryId:
+          type: string
+          format: uuid
+          nullable: true
+        subcategoryId:
+          type: string
+          format: uuid
+          nullable: true
+        budgetId:
+          type: string
+          format: uuid
+          nullable: true
+        type:
+          type: string
+        amount:
+          type: integer
+          format: int64
+        description:
+          type: string
+          nullable: true
+        externalReferenceNumber:
+          type: string
+          nullable: true
+        date:
+          type: string
+          format: date
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time

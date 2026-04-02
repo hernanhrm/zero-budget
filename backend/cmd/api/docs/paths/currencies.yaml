@@ -1,0 +1,47 @@
+paths:
+  /v1/currencies:
+    get:
+      summary: Find all currencies
+      tags:
+        - Currencies
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: List of currencies
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Currency'
+
+  /v1/currencies/{code}:
+    get:
+      summary: Find currency by code
+      tags:
+        - Currencies
+      parameters:
+        - name: code
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Currency found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Currency'
+        '404':
+          description: Currency not found

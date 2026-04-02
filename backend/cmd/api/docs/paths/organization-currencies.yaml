@@ -1,0 +1,97 @@
+paths:
+  /v1/organization-currencies:
+    get:
+      summary: Find all organization currencies
+      tags:
+        - Organization Currencies
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: List of organization currencies
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OrganizationCurrency'
+    post:
+      summary: Create a new organization currency
+      tags:
+        - Organization Currencies
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateOrganizationCurrency'
+      responses:
+        '201':
+          description: Organization currency created successfully
+
+  /v1/organization-currencies/{id}:
+    get:
+      summary: Find organization currency by ID
+      tags:
+        - Organization Currencies
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Organization currency found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizationCurrency'
+        '404':
+          description: Organization currency not found
+
+    put:
+      summary: Update organization currency
+      tags:
+        - Organization Currencies
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateOrganizationCurrency'
+      responses:
+        '204':
+          description: Organization currency updated successfully
+
+    delete:
+      summary: Delete organization currency
+      tags:
+        - Organization Currencies
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Organization currency deleted successfully

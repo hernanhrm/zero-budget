@@ -21,10 +21,28 @@ func SetupRoutes(injector do.Injector) func(e *echo.Echo) {
 			"/v1/email-templates":          {Resource: "emailTemplate"},
 			"/v1/email-templates/:id":      {Resource: "emailTemplate"},
 			"/v1/email-templates/:id/logs": {Resource: "emailLog", Actions: middleware.ReadOnlyActions},
+			"/v1/currencies":               {Resource: "currency", Actions: middleware.ReadOnlyActions},
+			"/v1/currencies/:code":         {Resource: "currency", Actions: middleware.ReadOnlyActions},
+			"/v1/organization-currencies":      {Resource: "organizationCurrency"},
+			"/v1/organization-currencies/:id":  {Resource: "organizationCurrency"},
+			"/v1/accounts":                 {Resource: "account"},
+			"/v1/accounts/:id":             {Resource: "account"},
+			"/v1/categories":               {Resource: "category"},
+			"/v1/categories/:id":           {Resource: "category"},
+			"/v1/budgets":                  {Resource: "budget"},
+			"/v1/budgets/:id":              {Resource: "budget"},
+			"/v1/transactions":             {Resource: "transaction"},
+			"/v1/transactions/:id":         {Resource: "transaction"},
 		}))
 
 		RegisterEmailTemplateRoutes(injector, e)
 		RegisterEventRoutes(injector, e)
+		RegisterCurrencyRoutes(injector, e)
+		RegisterOrganizationCurrencyRoutes(injector, e)
+		RegisterAccountRoutes(injector, e)
+		RegisterCategoryRoutes(injector, e)
+		RegisterBudgetRoutes(injector, e)
+		RegisterTransactionRoutes(injector, e)
 
 		e.GET("/v1/docs", func(c echo.Context) error {
 			configService := do.MustInvoke[*localconfig.ConfigService](injector)

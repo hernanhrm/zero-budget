@@ -9,6 +9,12 @@ use (
 	./internal/adapter/logger
 	./internal/adapter/server
 	./internal/adapter/validation
+	./internal/core/budget/account
+	./internal/core/budget/budget
+	./internal/core/budget/category
+	./internal/core/budget/currency
+	./internal/core/budget/transaction
+	./internal/core/budget/organization_currency
 	./internal/core/notifications/email_dispatcher
 	./internal/core/notifications/email_log
 	./internal/core/notifications/email_template
