@@ -52,6 +52,12 @@ const loadBalancedInstances = 10;
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const container = await getRandom(env.IDENTITY_CONTAINER, loadBalancedInstances);
+    await container.startAndWaitForPorts({
+      startOptions: {
+        envVars: containerEnvFromWorkerEnv(env),
+        enableInternet: true,
+      },
+    });
     return container.fetch(request);
   },
 };
