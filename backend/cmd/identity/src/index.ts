@@ -77,7 +77,9 @@ app.get("/health", (c) => {
 });
 
 const port = Number(process.env.PORT) || 8081;
+// Cloudflare Containers probe the app on the instance network (e.g. 10.0.0.1), not loopback.
+const hostname = process.env.HOST ?? "0.0.0.0";
 
-console.log(`Identity server running on port ${port}`);
+console.log(`Identity server listening on http://${hostname}:${port}`);
 
-serve({ fetch: app.fetch, port });
+serve({ fetch: app.fetch, port, hostname });
