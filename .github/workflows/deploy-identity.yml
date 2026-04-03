@@ -36,7 +36,7 @@ jobs:
           docker build -t ${{ env.IMAGE_TAG }} .
           wrangler containers push ${{ env.IMAGE_TAG }}
         env:
-          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
 
       - name: Display image info
         run: |
