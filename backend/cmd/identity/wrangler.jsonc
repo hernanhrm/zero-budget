@@ -2,6 +2,9 @@
   "name": "zero-budget-identity",
   "main": "worker/index.ts",
   "compatibility_date": "2026-01-15",
+  "observability": {
+    "enabled": true
+  },
   "containers": [
     {
       "class_name": "IdentityContainer",
