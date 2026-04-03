@@ -1,0 +1,27 @@
+{
+  "name": "zero-budget-identity",
+  "main": "worker/index.ts",
+  "compatibility_date": "2026-01-15",
+  "containers": [
+    {
+      "class_name": "IdentityContainer",
+      "image": "./Dockerfile",
+      "max_instances": 10,
+      "instance_type": "standard-1"
+    }
+  ],
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "IDENTITY_CONTAINER",
+        "class_name": "IdentityContainer"
+      }
+    ]
+  },
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": ["IdentityContainer"]
+    }
+  ]
+}
