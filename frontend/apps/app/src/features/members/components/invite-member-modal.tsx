@@ -5,15 +5,10 @@ import {
 	DialogClose,
 	DialogContent,
 	DialogFooter,
-	DialogHeader,
-	DialogTitle,
 } from "@workspace/ui/components/dialog"
-import {
-	Field,
-	FieldError,
-	FieldGroup,
-	FieldLabel,
-} from "@workspace/ui/components/field"
+import { DialogPanelHeader } from "@workspace/ui/components/dialog-panel-header"
+import { Field, FieldError, FieldGroup } from "@workspace/ui/components/field"
+import { FormFieldLabel } from "@workspace/ui/components/form-field-label"
 import { Input } from "@workspace/ui/components/input"
 import {
 	Select,
@@ -66,9 +61,7 @@ export function InviteMemberModal({
 				onSuccess()
 				onOpenChange(false)
 			} catch (e) {
-				setServerError(
-					e instanceof Error ? e.message : "Something went wrong",
-				)
+				setServerError(e instanceof Error ? e.message : "Something went wrong")
 			}
 		},
 	})
@@ -84,12 +77,11 @@ export function InviteMemberModal({
 				onOpenChange(value)
 			}}
 		>
-			<DialogContent className="sm:max-w-[480px] gap-0 p-0">
-				<DialogHeader className="border-b border-border px-6 py-4">
-					<DialogTitle className="font-space-grotesk text-sm font-bold tracking-[1px]">
-						INVITE MEMBER
-					</DialogTitle>
-				</DialogHeader>
+			<DialogContent
+				className="gap-0 p-0 sm:max-w-[480px]"
+				showCloseButton={false}
+			>
+				<DialogPanelHeader title="INVITE MEMBER" titleClassName="text-sm" />
 
 				<form
 					onSubmit={(e) => {
@@ -97,22 +89,18 @@ export function InviteMemberModal({
 						form.handleSubmit()
 					}}
 				>
-					<div className="px-6 py-5">
+					<div className="form-panel-body">
 						<FieldGroup>
-							<form.Field
-								name="email"
-								children={(field) => {
+							<form.Field name="email">
+								{(field) => {
 									const isInvalid =
 										field.state.meta.isTouched &&
 										field.state.meta.errors.length > 0
 									return (
 										<Field data-invalid={isInvalid || undefined}>
-											<FieldLabel
-												htmlFor={field.name}
-												className="font-space-grotesk text-[10px] font-bold tracking-[1px] text-muted-foreground"
-											>
+											<FormFieldLabel htmlFor={field.name} size="sm">
 												EMAIL ADDRESS
-											</FieldLabel>
+											</FormFieldLabel>
 											<Input
 												id={field.name}
 												name={field.name}
@@ -120,36 +108,26 @@ export function InviteMemberModal({
 												placeholder="ENTER EMAIL ADDRESS"
 												value={field.state.value}
 												onBlur={field.handleBlur}
-												onChange={(e) =>
-													field.handleChange(e.target.value)
-												}
+												onChange={(e) => field.handleChange(e.target.value)}
 												aria-invalid={isInvalid || undefined}
 											/>
 											{isInvalid && (
-												<FieldError
-													errors={field.state.meta.errors}
-												/>
+												<FieldError errors={field.state.meta.errors} />
 											)}
 										</Field>
 									)
 								}}
-							/>
+							</form.Field>
 
-							<form.Field
-								name="role"
-								children={(field) => (
+							<form.Field name="role">
+								{(field) => (
 									<Field>
-										<FieldLabel className="font-space-grotesk text-[10px] font-bold tracking-[1px] text-muted-foreground">
-											ROLE
-										</FieldLabel>
+										<FormFieldLabel size="sm">ROLE</FormFieldLabel>
 										<Select
 											value={field.state.value}
 											onValueChange={(value) =>
 												field.handleChange(
-													value as
-														| "member"
-														| "admin"
-														| "owner",
+													value as "member" | "admin" | "owner",
 												)
 											}
 										>
@@ -157,76 +135,54 @@ export function InviteMemberModal({
 												<SelectValue />
 											</SelectTrigger>
 											<SelectContent>
-												<SelectItem value="member">
-													MEMBER
-												</SelectItem>
-												<SelectItem value="admin">
-													ADMIN
-												</SelectItem>
-												<SelectItem value="owner">
-													OWNER
-												</SelectItem>
+												<SelectItem value="member">MEMBER</SelectItem>
+												<SelectItem value="admin">ADMIN</SelectItem>
+												<SelectItem value="owner">OWNER</SelectItem>
 											</SelectContent>
 										</Select>
 									</Field>
 								)}
-							/>
+							</form.Field>
 
-							<form.Field
-								name="message"
-								children={(field) => (
+							<form.Field name="message">
+								{(field) => (
 									<Field>
-										<FieldLabel className="font-space-grotesk text-[10px] font-bold tracking-[1px] text-muted-foreground">
+										<FormFieldLabel size="sm">
 											MESSAGE (OPTIONAL)
-										</FieldLabel>
+										</FormFieldLabel>
 										<Textarea
 											id={field.name}
 											name={field.name}
 											placeholder="Add a personal note..."
 											value={field.state.value}
 											onBlur={field.handleBlur}
-											onChange={(e) =>
-												field.handleChange(e.target.value)
-											}
+											onChange={(e) => field.handleChange(e.target.value)}
 											rows={3}
 										/>
 									</Field>
 								)}
-							/>
+							</form.Field>
 
 							{serverError && (
-								<p className="text-xs text-destructive">
-									{serverError}
-								</p>
+								<p className="text-xs text-destructive">{serverError}</p>
 							)}
 						</FieldGroup>
 					</div>
 
 					<DialogFooter className="border-t border-border px-6 py-4">
 						<DialogClose asChild>
-							<Button
-								type="button"
-								variant="outline"
-								className="font-space-grotesk text-xs font-bold tracking-[1px]"
-							>
+							<Button type="button" variant="outline">
 								CANCEL
 							</Button>
 						</DialogClose>
-						<form.Subscribe
-							selector={(state) => state.isSubmitting}
-							children={(isSubmitting) => (
-								<Button
-									type="submit"
-									disabled={isSubmitting}
-									className="gap-2 font-space-grotesk text-xs font-bold tracking-[1px]"
-								>
+						<form.Subscribe selector={(state) => state.isSubmitting}>
+							{(isSubmitting) => (
+								<Button type="submit" disabled={isSubmitting} className="gap-2">
 									<Send className="size-3.5" />
-									{isSubmitting
-										? "SENDING..."
-										: "SEND INVITE"}
+									{isSubmitting ? "SENDING..." : "SEND INVITE"}
 								</Button>
 							)}
-						/>
+						</form.Subscribe>
 					</DialogFooter>
 				</form>
 			</DialogContent>

@@ -1,7 +1,5 @@
 import { useForm } from "@tanstack/react-form"
 import { useRouter } from "@tanstack/react-router"
-import { TriangleAlert, Trash2, Download } from "lucide-react"
-import { useState } from "react"
 import { Button } from "@workspace/ui/components/button"
 import {
 	Card,
@@ -9,11 +7,11 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@workspace/ui/components/card"
-import {
-	Field,
-	FieldLabel,
-} from "@workspace/ui/components/field"
+import { Field } from "@workspace/ui/components/field"
+import { FormFieldLabel } from "@workspace/ui/components/form-field-label"
 import { Input } from "@workspace/ui/components/input"
+import { Download, Trash2, TriangleAlert } from "lucide-react"
+import { useState } from "react"
 import { authClient } from "#/lib/auth-client"
 
 export function DangerZoneTab() {
@@ -47,8 +45,7 @@ export function DangerZoneTab() {
 			<div className="flex items-center gap-3 border border-[#FF6B35] bg-[#2A1A1A] px-5 py-4">
 				<TriangleAlert className="size-5 shrink-0 text-[#FF6B35]" />
 				<span className="font-ibm-plex-mono text-xs tracking-[1px] text-[#FF6B35]">
-					ACTIONS IN THIS SECTION ARE IRREVERSIBLE. PLEASE PROCEED WITH
-					CAUTION.
+					ACTIONS IN THIS SECTION ARE IRREVERSIBLE. PLEASE PROCEED WITH CAUTION.
 				</span>
 			</div>
 
@@ -65,8 +62,8 @@ export function DangerZoneTab() {
 				<CardContent className="flex flex-col gap-6 p-6">
 					<p className="font-ibm-plex-mono text-xs leading-[1.6] tracking-[0.5px] text-foreground">
 						ONCE YOU DELETE YOUR ACCOUNT, THERE IS NO GOING BACK. THIS WILL
-						PERMANENTLY DELETE YOUR ACCOUNT, ALL YOUR BUDGETS, TRANSACTIONS,
-						AND REMOVE ALL ORGANIZATION MEMBERSHIPS.
+						PERMANENTLY DELETE YOUR ACCOUNT, ALL YOUR BUDGETS, TRANSACTIONS, AND
+						REMOVE ALL ORGANIZATION MEMBERSHIPS.
 					</p>
 
 					<form
@@ -76,27 +73,24 @@ export function DangerZoneTab() {
 						}}
 					>
 						<div className="flex flex-col gap-6">
-							<form.Field
-								name="confirmation"
-								children={(field) => (
+							<form.Field name="confirmation">
+								{(field) => (
 									<Field>
-										<FieldLabel className="font-space-grotesk text-[11px] font-bold tracking-[1px] text-muted-foreground">
+										<FormFieldLabel htmlFor={field.name}>
 											TYPE &quot;DELETE&quot; TO CONFIRM
-										</FieldLabel>
+										</FormFieldLabel>
 										<Input
 											id={field.name}
 											name={field.name}
 											value={field.state.value}
 											onBlur={field.handleBlur}
-											onChange={(e) =>
-												field.handleChange(e.target.value)
-											}
+											onChange={(e) => field.handleChange(e.target.value)}
 											placeholder="DELETE"
 											className="h-11 border-[#FF6B35] px-4 font-space-grotesk text-sm"
 										/>
 									</Field>
 								)}
-							/>
+							</form.Field>
 
 							{serverError && (
 								<p className="text-xs text-destructive">{serverError}</p>
@@ -111,19 +105,18 @@ export function DangerZoneTab() {
 										isSubmitting: state.isSubmitting,
 										confirmation: state.values.confirmation,
 									})}
-									children={({ isSubmitting, confirmation }) => (
+								>
+									{({ isSubmitting, confirmation }) => (
 										<Button
 											type="submit"
 											disabled={isSubmitting || confirmation !== "DELETE"}
 											className="gap-2 bg-[#FF6B35] font-space-grotesk text-xs font-bold tracking-[1px] text-white hover:bg-[#FF6B35]/90"
 										>
 											<Trash2 data-icon="inline-start" />
-											{isSubmitting
-												? "DELETING..."
-												: "DELETE MY ACCOUNT"}
+											{isSubmitting ? "DELETING..." : "DELETE MY ACCOUNT"}
 										</Button>
 									)}
-								/>
+								</form.Subscribe>
 							</div>
 						</div>
 					</form>

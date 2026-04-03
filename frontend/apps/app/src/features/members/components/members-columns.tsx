@@ -1,4 +1,9 @@
 import type { ColumnDef } from "@tanstack/react-table"
+import {
+	TableCellMonoValue,
+	TableCellValueStack,
+} from "@workspace/ui/components/table-cell-values"
+import { TableColumnHeader } from "@workspace/ui/components/table-column-header"
 import { Trash2 } from "lucide-react"
 import type { Member } from "../types"
 import { OwnerBadge } from "./owner-badge"
@@ -15,11 +20,7 @@ export function createMembersColumns(
 	return [
 		{
 			accessorKey: "name",
-			header: () => (
-				<span className="font-space-grotesk text-[11px] font-bold tracking-[1px] text-muted-foreground">
-					MEMBER
-				</span>
-			),
+			header: () => <TableColumnHeader>MEMBER</TableColumnHeader>,
 			cell: ({ row }) => {
 				const member = row.original
 				return (
@@ -33,25 +34,17 @@ export function createMembersColumns(
 								{member.initials}
 							</span>
 						</div>
-						<div className="flex flex-col gap-0.5">
-							<span className="font-space-grotesk text-[13px] font-bold tracking-[1px] text-foreground">
-								{member.name}
-							</span>
-							<span className="font-ibm-plex-mono text-[10px] tracking-[1px] text-muted-foreground">
-								{member.email}
-							</span>
-						</div>
+						<TableCellValueStack
+							primary={member.name}
+							secondary={member.email}
+						/>
 					</div>
 				)
 			},
 		},
 		{
 			accessorKey: "role",
-			header: () => (
-				<span className="font-space-grotesk text-[11px] font-bold tracking-[1px] text-muted-foreground">
-					ROLE
-				</span>
-			),
+			header: () => <TableColumnHeader>ROLE</TableColumnHeader>,
 			cell: ({ row }) => {
 				const member = row.original
 				return member.isOwner ? (
@@ -63,24 +56,14 @@ export function createMembersColumns(
 		},
 		{
 			accessorKey: "joined",
-			header: () => (
-				<span className="font-space-grotesk text-[11px] font-bold tracking-[1px] text-muted-foreground">
-					JOINED
-				</span>
-			),
+			header: () => <TableColumnHeader>JOINED</TableColumnHeader>,
 			cell: ({ getValue }) => (
-				<span className="font-ibm-plex-mono text-xs tracking-[1px] text-muted-foreground">
-					{getValue() as string}
-				</span>
+				<TableCellMonoValue>{getValue() as string}</TableCellMonoValue>
 			),
 		},
 		{
 			id: "actions",
-			header: () => (
-				<span className="font-space-grotesk text-[11px] font-bold tracking-[1px] text-muted-foreground">
-					ACTIONS
-				</span>
-			),
+			header: () => <TableColumnHeader>ACTIONS</TableColumnHeader>,
 			cell: ({ row }) => {
 				const member = row.original
 				const isCurrentUser = member.userId === options.currentUserId

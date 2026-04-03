@@ -1,4 +1,6 @@
 import type { ColumnDef } from "@tanstack/react-table"
+import { TableCellValueStack } from "@workspace/ui/components/table-cell-values"
+import { TableColumnHeader } from "@workspace/ui/components/table-column-header"
 import { X } from "lucide-react"
 import type { PendingInvitation } from "../types"
 
@@ -13,11 +15,7 @@ export function createPendingColumns(
 	return [
 		{
 			accessorKey: "email",
-			header: () => (
-				<span className="font-space-grotesk text-[11px] font-bold tracking-[1px] text-muted-foreground">
-					EMAIL
-				</span>
-			),
+			header: () => <TableColumnHeader>EMAIL</TableColumnHeader>,
 			cell: ({ row }) => {
 				const invitation = row.original
 				return (
@@ -27,25 +25,17 @@ export function createPendingColumns(
 								{invitation.initials}
 							</span>
 						</div>
-						<div className="flex flex-col gap-0.5">
-							<span className="font-space-grotesk text-[13px] font-bold tracking-[1px] text-foreground">
-								{invitation.email}
-							</span>
-							<span className="font-ibm-plex-mono text-[10px] tracking-[1px] text-muted-foreground">
-								{invitation.invitedAgo}
-							</span>
-						</div>
+						<TableCellValueStack
+							primary={invitation.email}
+							secondary={invitation.invitedAgo}
+						/>
 					</div>
 				)
 			},
 		},
 		{
 			accessorKey: "role",
-			header: () => (
-				<span className="font-space-grotesk text-[11px] font-bold tracking-[1px] text-muted-foreground">
-					ROLE
-				</span>
-			),
+			header: () => <TableColumnHeader>ROLE</TableColumnHeader>,
 			cell: ({ getValue }) => (
 				<div className="inline-flex h-5 items-center border border-border px-2">
 					<span className="font-space-grotesk text-[10px] font-bold tracking-[1px] text-muted-foreground">

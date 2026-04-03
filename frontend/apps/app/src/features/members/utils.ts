@@ -1,4 +1,9 @@
-import type { ApiInvitation, ApiMember, Member, PendingInvitation } from "./types"
+import type {
+	ApiInvitation,
+	ApiMember,
+	Member,
+	PendingInvitation,
+} from "./types"
 
 export function formatDate(dateString: string): string {
 	const date = new Date(dateString)

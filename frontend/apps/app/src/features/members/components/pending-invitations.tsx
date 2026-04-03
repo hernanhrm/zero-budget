@@ -1,4 +1,5 @@
-import { useMemo } from "react"
+import { DataTableSectionHeader } from "@workspace/ui/components/data-table-section-header"
+import { useCallback, useMemo } from "react"
 import { authClient } from "#/lib/auth-client"
 import type { PendingInvitation } from "../types"
 import { DataTable } from "./data-table"
@@ -9,8 +10,11 @@ interface PendingInvitationsProps {
 	onSuccess: () => void
 }
 
-export function PendingInvitations({ invitations, onSuccess }: PendingInvitationsProps) {
-	const handleResend = async (invitation: PendingInvitation) => {
+export function PendingInvitations({
+	invitations,
+	onSuccess,
+}: PendingInvitationsProps) {
+	const handleResend = useCallback(async (invitation: PendingInvitation) => {
 		const { error } = await authClient.organization.inviteMember({
 			email: invitation.email.toLowerCase(),
 			role: invitation.role.toLowerCase(),
@@ -20,24 +24,28 @@ export function PendingInvitations({ invitations, onSuccess }: PendingInvitation
 		if (error) {
 			console.error("Failed to resend invitation:", error)
 		}
-	}
+	}, [])
 
-	const handleCancel = async (invitationId: string) => {
-		const { error } = await authClient.organization.cancelInvitation({
-			invitationId,
-		})
+	const handleCancel = useCallback(
+		async (invitationId: string) => {
+			const { error } = await authClient.organization.cancelInvitation({
+				invitationId,
+			})
 
-		if (error) {
-			console.error("Failed to cancel invitation:", error)
-			return
-		}
+			if (error) {
+				console.error("Failed to cancel invitation:", error)
+				return
+			}
 
-		onSuccess()
-	}
+			onSuccess()
+		},
+		[onSuccess],
+	)
 
 	const columns = useMemo(
-		() => createPendingColumns({ onResend: handleResend, onCancel: handleCancel }),
-		[],
+		() =>
+			createPendingColumns({ onResend: handleResend, onCancel: handleCancel }),
+		[handleResend, handleCancel],
 	)
 
 	if (invitations.length === 0) {
@@ -46,19 +54,16 @@ export function PendingInvitations({ invitations, onSuccess }: PendingInvitation
 
 	return (
 		<div className="w-full border border-border">
-			<div className="flex h-14 items-center justify-between bg-card px-6 border-b border-border">
-				<div className="flex items-center gap-3">
-					<div className="h-5 w-1 bg-primary" />
-					<span className="font-space-grotesk text-sm font-bold tracking-[1px] text-foreground">
-						PENDING INVITATIONS
-					</span>
+			<DataTableSectionHeader
+				title="PENDING INVITATIONS"
+				countSlot={
 					<div className="flex h-5 w-6 items-center justify-center bg-primary">
 						<span className="font-space-grotesk text-[11px] font-bold text-primary-foreground">
 							{invitations.length}
 						</span>
 					</div>
-				</div>
-			</div>
+				}
+			/>
 			<DataTable columns={columns} data={invitations} />
 		</div>
 	)

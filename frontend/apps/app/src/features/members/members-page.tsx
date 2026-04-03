@@ -1,4 +1,6 @@
 import { useRouter } from "@tanstack/react-router"
+import { Button } from "@workspace/ui/components/button"
+import { ModulePageHeader } from "@workspace/ui/components/module-page-header"
 import { UserPlus } from "lucide-react"
 import { useState } from "react"
 import { Route } from "#/routes/_protected/members"
@@ -29,26 +31,30 @@ export function MembersPage() {
 
 	return (
 		<div className="flex h-full flex-col gap-8 overflow-auto p-10">
-			<div className="flex w-full items-center justify-between">
-				<div className="flex flex-col gap-3">
-					<h1 className="font-space-grotesk text-4xl font-bold tracking-[1px] text-foreground">
-						MEMBERS
-					</h1>
-					<p className="font-ibm-plex-mono text-[13px] tracking-[1px] text-muted-foreground">
-						INVITE PEOPLE AND MANAGE ROLES FOR YOUR BUDGET
-					</p>
-				</div>
-				<button
+			<ModulePageHeader
+				title="MEMBERS"
+				description="INVITE PEOPLE AND MANAGE ROLES FOR YOUR BUDGET"
+			>
+				<Button
 					type="button"
 					onClick={() => setInviteOpen(true)}
-					className="flex h-10 items-center gap-2 bg-primary px-4 font-space-grotesk text-xs font-bold tracking-[1px] text-primary-foreground hover:opacity-90"
+					className="gap-2"
 				>
 					<UserPlus className="size-3.5" />
 					INVITE MEMBER
-				</button>
-			</div>
-			<PendingInvitations invitations={pendingInvitations} onSuccess={() => router.invalidate()} />
-			<MembersTable members={members} isLoading={isLoading} error={error} currentUserId={currentUserId} onSuccess={() => router.invalidate()} />
+				</Button>
+			</ModulePageHeader>
+			<PendingInvitations
+				invitations={pendingInvitations}
+				onSuccess={() => router.invalidate()}
+			/>
+			<MembersTable
+				members={members}
+				isLoading={isLoading}
+				error={error}
+				currentUserId={currentUserId}
+				onSuccess={() => router.invalidate()}
+			/>
 			<InviteMemberModal
 				open={inviteOpen}
 				onOpenChange={setInviteOpen}
