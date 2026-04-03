@@ -10,7 +10,12 @@ import {
 import { organizations, members, sessions } from "./schema.js";
 import { eq } from "drizzle-orm";
 
+const baseURL = process.env.BETTER_AUTH_URL;
+const cookieSecure = baseURL?.startsWith("https://") ?? false;
+
 export const auth = betterAuth({
+  secret: process.env.BETTER_AUTH_SECRET,
+  baseURL,
   trustedOrigins: (
     process.env.TRUSTED_ORIGINS ?? "http://localhost:3000"
   ).split(","),
@@ -26,7 +31,7 @@ export const auth = betterAuth({
     defaultCookieAttributes: {
       sameSite: "lax",
       path: "/",
-      secure: false,
+      secure: cookieSecure,
     },
     ipAddress: {
       ipAddressHeaders: ["cf-connecting-ip", "x-forwarded-for"],
