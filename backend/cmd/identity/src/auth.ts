@@ -10,6 +10,19 @@ import {
 import { organizations, members, sessions } from "./schema.js";
 import { eq } from "drizzle-orm";
 
+if (process.env.NODE_ENV === "production") {
+  if (!process.env.BETTER_AUTH_SECRET?.trim()) {
+    throw new Error(
+      "BETTER_AUTH_SECRET is required. Set a Worker secret: npx wrangler secret put BETTER_AUTH_SECRET",
+    );
+  }
+  if (!process.env.BETTER_AUTH_URL?.trim()) {
+    throw new Error(
+      "BETTER_AUTH_URL is required (public Worker URL). npx wrangler secret put BETTER_AUTH_URL",
+    );
+  }
+}
+
 const baseURL = process.env.BETTER_AUTH_URL;
 const cookieSecure = baseURL?.startsWith("https://") ?? false;
 
