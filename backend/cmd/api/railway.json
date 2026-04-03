@@ -10,14 +10,6 @@
       {
         "variable": "DOCS_PATH",
         "value": "apps/api/docs"
-      },
-      {
-        "variable": "MIGRATIONS_PATH",
-        "value": "apps/api/migrations"
-      },
-      {
-        "variable": "SKIP_MIGRATIONS",
-        "value": "false"
       }
     ]
   }

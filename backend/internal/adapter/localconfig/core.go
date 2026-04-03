@@ -52,11 +52,9 @@ func GetConfigWithOptions(opts ConfigOptions, log domain.Logger) (LocalConfig, e
 
 	config := LocalConfig{
 		Service: Service{
-			Port:           getPort,
-			Name:           getEnvAsString("SERVICE_NAME"),
-			DocsPath:       getEnvAsString("DOCS_PATH"),
-			MigrationsPath: getEnvAsString("MIGRATIONS_PATH"),
-			SkipMigrations: getEnvAsBool("SKIP_MIGRATIONS"),
+			Port:     getPort,
+			Name:     getEnvAsString("SERVICE_NAME"),
+			DocsPath: getEnvAsString("DOCS_PATH"),
 		},
 		Database: Database{
 			URL: getEnvAsString("DATABASE_URL"),
@@ -69,7 +67,6 @@ func GetConfigWithOptions(opts ConfigOptions, log domain.Logger) (LocalConfig, e
 			URL:            getEnvAsString("IDENTITY_URL"),
 			InternalAPIKey: getEnvAsString("INTERNAL_API_KEY"),
 		},
-		JWTSecret: getEnvAsString("JWT_SECRET"),
 	}
 
 	log.Debug("configuration loaded",
@@ -120,9 +117,4 @@ func getEnvAsInt(key string, log domain.Logger) (int, error) {
 	}
 
 	return value, nil
-}
-
-func getEnvAsBool(key string) bool {
-	val := os.Getenv(key)
-	return val == "true" || val == "1" || val == "yes"
 }

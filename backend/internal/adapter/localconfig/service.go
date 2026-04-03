@@ -45,13 +45,3 @@ func (s *ConfigService) GetServiceName() string {
 func (s *ConfigService) GetDocsPath() string {
 	return s.config.Service.DocsPath
 }
-
-// GetMigrationsPath returns the migrations path.
-func (s *ConfigService) GetMigrationsPath() string {
-	return s.config.Service.MigrationsPath
-}
-
-// GetSkipMigrations returns whether to skip migrations.
-func (s *ConfigService) GetSkipMigrations() bool {
-	return s.config.Service.SkipMigrations
-}
