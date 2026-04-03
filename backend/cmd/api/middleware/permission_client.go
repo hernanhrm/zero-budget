@@ -76,6 +76,9 @@ func (pc PermissionClient) HasPermission(ctx context.Context, permission string,
 	if auth := headers.Get("Authorization"); auth != "" {
 		req.Header.Set("Authorization", auth)
 	}
+	if apiKey := headers.Get("X-API-Key"); apiKey != "" {
+		req.Header.Set("X-API-Key", apiKey)
+	}
 	req.Header.Set("Origin", "http://localhost:8080")
 
 	resp, err := pc.httpClient.Do(req)

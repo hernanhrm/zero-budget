@@ -3,6 +3,7 @@ go 1.24.12
 use (
 	./cmd/api
 	./cmd/migrate
+	./cmd/zb
 	./internal/adapter/database
 	./internal/adapter/di
 	./internal/adapter/localconfig

@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cd frontend/apps/app && npx tsc --noEmit 2>&1 | grep -E \"profile-tab|error TS\" | head -20)"
+    ]
+  }
+}
