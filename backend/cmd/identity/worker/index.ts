@@ -1,5 +1,10 @@
-import { Container, getRandom } from "@cloudflare/containers";
+import { Container, getContainer } from "@cloudflare/containers";
 
+// Each key must exist as a Worker secret (or plain var) so Wrangler injects `env.*`
+// and it is forwarded into the container. Example:
+//   cd backend/cmd/identity && npx wrangler secret put BETTER_AUTH_SECRET
+//   npx wrangler secret put BETTER_AUTH_URL
+// BETTER_AUTH_URL must be the public Worker URL (e.g. https://zero-budget-identity.<subdomain>.workers.dev).
 const containerEnvKeys = [
   "DATABASE_URL",
   "TRUSTED_ORIGINS",
@@ -47,11 +52,10 @@ export class IdentityContainer extends Container<Env> {
   }
 }
 
-const loadBalancedInstances = 10;
-
+// One Durable Object / one container. getRandom(N) cold-starts a different instance per request and looks like a restart loop.
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
-    const container = await getRandom(env.IDENTITY_CONTAINER, loadBalancedInstances);
+    const container = getContainer(env.IDENTITY_CONTAINER);
     await container.startAndWaitForPorts({
       startOptions: {
         envVars: containerEnvFromWorkerEnv(env),

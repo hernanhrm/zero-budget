@@ -9,7 +9,7 @@
     {
       "class_name": "IdentityContainer",
       "image": "./Dockerfile",
-      "max_instances": 10,
+      "max_instances": 1,
       "instance_type": "standard-1"
     }
   ],
