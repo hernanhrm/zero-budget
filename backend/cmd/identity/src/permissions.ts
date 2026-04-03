@@ -7,6 +7,12 @@ const statement = {
   team: ["create", "read", "update", "delete"],
   emailTemplate: ["create", "read", "update", "delete"],
   emailLog: ["read"],
+  currency: ["read"],
+  organizationCurrency: ["create", "read", "update", "delete"],
+  account: ["create", "read", "update", "delete"],
+  category: ["create", "read", "update", "delete"],
+  budget: ["create", "read", "update", "delete"],
+  transaction: ["create", "read", "update", "delete"],
 } as const;
 
 export const ac = createAccessControl(statement);
@@ -18,6 +24,12 @@ export const owner = ac.newRole({
   team: ["create", "read", "update", "delete"],
   emailTemplate: ["create", "read", "update", "delete"],
   emailLog: ["read"],
+  currency: ["read"],
+  organizationCurrency: ["create", "read", "update", "delete"],
+  account: ["create", "read", "update", "delete"],
+  category: ["create", "read", "update", "delete"],
+  budget: ["create", "read", "update", "delete"],
+  transaction: ["create", "read", "update", "delete"],
 });
 
 export const admin = ac.newRole({
@@ -27,10 +39,22 @@ export const admin = ac.newRole({
   team: ["create", "read", "update", "delete"],
   emailTemplate: ["create", "read", "update", "delete"],
   emailLog: ["read"],
+  currency: ["read"],
+  organizationCurrency: ["create", "read", "update", "delete"],
+  account: ["create", "read", "update", "delete"],
+  category: ["create", "read", "update", "delete"],
+  budget: ["create", "read", "update", "delete"],
+  transaction: ["create", "read", "update", "delete"],
 });
 
 export const member = ac.newRole({
   member: ["read"],
   invitation: ["read"],
   team: ["read"],
+  currency: ["read"],
+  organizationCurrency: ["read"],
+  account: ["read"],
+  category: ["read"],
+  budget: ["read"],
+  transaction: ["read"],
 });

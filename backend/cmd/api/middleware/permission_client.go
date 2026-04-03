@@ -1,10 +1,14 @@
 package middleware
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
+	"log"
 	"net/http"
+	"strings"
 	"time"
 
 	apperrors "backend/port/errors"
@@ -29,31 +33,60 @@ func NewPermissionClient(identityURL string) *PermissionClient {
 }
 
 type hasPermissionResponse struct {
-	HasPermission bool `json:"hasPermission"`
+	Error         any  `json:"error"`
+	HasPermission bool `json:"success"`
+}
+
+type permissionsRequest struct {
+	Permissions map[string][]string `json:"permissions"`
 }
 
 // HasPermission checks whether the user (identified by forwarded headers) has the given permission.
 func (pc PermissionClient) HasPermission(ctx context.Context, permission string, headers http.Header) (bool, error) {
-	url := fmt.Sprintf("%s/api/auth/organization/has-permission?permission=%s", pc.identityURL, permission)
+	url := fmt.Sprintf("%s/api/auth/organization/has-permission", pc.identityURL)
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	parts := strings.Split(permission, ":")
+	if len(parts) != 2 {
+		return false, oops.In(apperrors.LayerMiddleware).Code(apperrors.CodeBadRequest).Errorf("invalid permission format: %s", permission)
+	}
+	module := parts[0]
+	action := parts[1]
+
+	permReq := permissionsRequest{
+		Permissions: map[string][]string{
+			module: {action},
+		},
+	}
+	body, err := json.Marshal(permReq)
+	if err != nil {
+		return false, oops.In(apperrors.LayerMiddleware).Wrapf(err, "failed to marshal permission request")
+	}
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(body))
 	if err != nil {
 		return false, oops.In(apperrors.LayerMiddleware).Wrapf(err, "failed to create permission request")
 	}
 
-	// Forward cookies and authorization header for session identification
+	req.Header.Set("Content-Type", "application/json")
+
+	// Forward cookies, authorization, and origin headers for session identification
 	if cookie := headers.Get("Cookie"); cookie != "" {
 		req.Header.Set("Cookie", cookie)
 	}
 	if auth := headers.Get("Authorization"); auth != "" {
 		req.Header.Set("Authorization", auth)
 	}
+	req.Header.Set("Origin", "http://localhost:8080")
 
 	resp, err := pc.httpClient.Do(req)
 	if err != nil {
 		return false, oops.In(apperrors.LayerMiddleware).Wrapf(err, "failed to call identity service")
 	}
 	defer resp.Body.Close()
+
+	respBody, _ := io.ReadAll(resp.Body)
+	log.Printf("[permission-client] request body sent: %s", body)
+	log.Printf("[permission-client] response status: %d, body: %s", resp.StatusCode, respBody)
 
 	if resp.StatusCode == http.StatusUnauthorized {
 		return false, oops.In(apperrors.LayerMiddleware).Code(apperrors.CodeUnauthorized).Errorf("user is not authenticated")
@@ -64,7 +97,7 @@ func (pc PermissionClient) HasPermission(ctx context.Context, permission string,
 	}
 
 	var result hasPermissionResponse
-	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+	if err := json.Unmarshal(respBody, &result); err != nil {
 		return false, oops.In(apperrors.LayerMiddleware).Wrapf(err, "failed to decode permission response")
 	}
 
