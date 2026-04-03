@@ -30,19 +30,13 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract metadata
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/identity
-          tags: |
-            type=sha,format=sha-{{ sha }}
-
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
         with:
           context: ./backend/cmd/identity
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/identity:${{ github.sha }}
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/identity:sha-${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
