@@ -40,23 +40,19 @@ jobs:
 
       - name: Deploy to Cloudflare Container Apps
         run: |
-          IMAGE_TAG="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/identity:${{ github.sha }}"
+          IMAGE_TAG="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/identity:sha-${{ github.sha }}"
           
-          curl -s -X POST \
-            -H "Authorization: Bearer ${{ secrets.CF_API_TOKEN }}" \
-            -H "Content-Type: application/json" \
-            "https://api.cloudflare.com/client/v4/accounts/${{ secrets.CF_ACCOUNT_ID }}/container/apps" \
-            -d '{
-              "name": "${{ env.SERVICE_NAME }}",
-              "image": "'"$IMAGE_TAG"'",
-              "region": "us-east-1",
-              "env_vars": {
-                "DATABASE_URL": {"value": "${{ secrets.IDENTITY_DATABASE_URL }}"},
-                "BETTER_AUTH_SECRET": {"value": "${{ secrets.IDENTITY_BETTER_AUTH_SECRET }}"},
-                "BETTER_AUTH_URL": {"value": "${{ secrets.IDENTITY_BETTER_AUTH_URL }}"},
-                "TRUSTED_ORIGINS": {"value": "${{ secrets.IDENTITY_TRUSTED_ORIGINS }}"},
-                "CORS_ORIGIN": {"value": "${{ secrets.IDENTITY_CORS_ORIGIN }}"},
-                "APP_URL": {"value": "${{ secrets.IDENTITY_APP_URL }}"},
-                "PORT": {"value": "8081"}
-              }
-            }' | jq .
+          npx wrangler container-apps deploy \
+            --account-id ${{ secrets.CF_ACCOUNT_ID }} \
+            --name ${{ env.SERVICE_NAME }} \
+            --image $IMAGE_TAG \
+            --region us-east-1 \
+            --env DATABASE_URL=${{ secrets.IDENTITY_DATABASE_URL }} \
+            --env BETTER_AUTH_SECRET=${{ secrets.IDENTITY_BETTER_AUTH_SECRET }} \
+            --env BETTER_AUTH_URL=${{ secrets.IDENTITY_BETTER_AUTH_URL }} \
+            --env TRUSTED_ORIGINS=${{ secrets.IDENTITY_TRUSTED_ORIGINS }} \
+            --env CORS_ORIGIN=${{ secrets.IDENTITY_CORS_ORIGIN }} \
+            --env APP_URL=${{ secrets.IDENTITY_APP_URL }} \
+            --port 8081
+        env:
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
