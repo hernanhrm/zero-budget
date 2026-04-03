@@ -35,4 +35,6 @@ export interface CreateEmailTemplate {
   content: string;
   isActive?: boolean;
   locale?: string;
+  /** Whether this template should be duplicated for each new organization */
+  isOrganizationTemplate?: boolean;
 }

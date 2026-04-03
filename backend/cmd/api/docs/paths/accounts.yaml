@@ -23,7 +23,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Account'
+                  $ref: '../openapi.yaml#/components/schemas/Account'
     post:
       summary: Create a new account
       tags:
@@ -33,7 +33,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateAccount'
+              $ref: '../openapi.yaml#/components/schemas/CreateAccount'
       responses:
         '201':
           description: Account created successfully
@@ -56,7 +56,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Account'
+                $ref: '../openapi.yaml#/components/schemas/Account'
         '404':
           description: Account not found
 
@@ -76,7 +76,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UpdateAccount'
+              $ref: '../openapi.yaml#/components/schemas/UpdateAccount'
       responses:
         '204':
           description: Account updated successfully

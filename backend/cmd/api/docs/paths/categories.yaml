@@ -23,7 +23,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Category'
+                  $ref: '../openapi.yaml#/components/schemas/Category'
     post:
       summary: Create a new category
       tags:
@@ -33,7 +33,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateCategory'
+              $ref: '../openapi.yaml#/components/schemas/CreateCategory'
       responses:
         '201':
           description: Category created successfully
@@ -56,7 +56,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Category'
+                $ref: '../openapi.yaml#/components/schemas/Category'
         '404':
           description: Category not found
 
@@ -76,7 +76,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UpdateCategory'
+              $ref: '../openapi.yaml#/components/schemas/UpdateCategory'
       responses:
         '204':
           description: Category updated successfully

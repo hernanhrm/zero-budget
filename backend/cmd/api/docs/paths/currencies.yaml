@@ -23,7 +23,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Currency'
+                  $ref: '../openapi.yaml#/components/schemas/Currency'
 
   /v1/currencies/{code}:
     get:
@@ -42,6 +42,6 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Currency'
+                $ref: '../openapi.yaml#/components/schemas/Currency'
         '404':
           description: Currency not found

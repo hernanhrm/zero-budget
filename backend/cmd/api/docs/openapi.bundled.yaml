@@ -170,6 +170,516 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/EmailLog'
+  /v1/currencies:
+    get:
+      summary: Find all currencies
+      tags:
+        - Currencies
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: List of currencies
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Currency'
+  /v1/currencies/{code}:
+    get:
+      summary: Find currency by code
+      tags:
+        - Currencies
+      parameters:
+        - name: code
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Currency found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Currency'
+        '404':
+          description: Currency not found
+  /v1/organization-currencies:
+    get:
+      summary: Find all organization currencies
+      tags:
+        - Organization Currencies
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: List of organization currencies
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OrganizationCurrency'
+    post:
+      summary: Create a new organization currency
+      tags:
+        - Organization Currencies
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateOrganizationCurrency'
+      responses:
+        '201':
+          description: Organization currency created successfully
+  /v1/organization-currencies/{id}:
+    get:
+      summary: Find organization currency by ID
+      tags:
+        - Organization Currencies
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Organization currency found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizationCurrency'
+        '404':
+          description: Organization currency not found
+    put:
+      summary: Update organization currency
+      tags:
+        - Organization Currencies
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateOrganizationCurrency'
+      responses:
+        '204':
+          description: Organization currency updated successfully
+    delete:
+      summary: Delete organization currency
+      tags:
+        - Organization Currencies
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Organization currency deleted successfully
+  /v1/accounts:
+    get:
+      summary: Find all accounts
+      tags:
+        - Accounts
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: List of accounts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Account'
+    post:
+      summary: Create a new account
+      tags:
+        - Accounts
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAccount'
+      responses:
+        '201':
+          description: Account created successfully
+  /v1/accounts/{id}:
+    get:
+      summary: Find account by ID
+      tags:
+        - Accounts
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Account found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Account'
+        '404':
+          description: Account not found
+    put:
+      summary: Update account
+      tags:
+        - Accounts
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateAccount'
+      responses:
+        '204':
+          description: Account updated successfully
+    delete:
+      summary: Delete account
+      tags:
+        - Accounts
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Account deleted successfully
+  /v1/categories:
+    get:
+      summary: Find all categories
+      tags:
+        - Categories
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: List of categories
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Category'
+    post:
+      summary: Create a new category
+      tags:
+        - Categories
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCategory'
+      responses:
+        '201':
+          description: Category created successfully
+  /v1/categories/{id}:
+    get:
+      summary: Find category by ID
+      tags:
+        - Categories
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Category found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+        '404':
+          description: Category not found
+    put:
+      summary: Update category
+      tags:
+        - Categories
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateCategory'
+      responses:
+        '204':
+          description: Category updated successfully
+    delete:
+      summary: Delete category
+      tags:
+        - Categories
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Category deleted successfully
+  /v1/budgets:
+    get:
+      summary: Find all budgets
+      tags:
+        - Budgets
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: List of budgets
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Budget'
+    post:
+      summary: Create a new budget
+      tags:
+        - Budgets
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateBudget'
+      responses:
+        '201':
+          description: Budget created successfully
+  /v1/budgets/{id}:
+    get:
+      summary: Find budget by ID
+      tags:
+        - Budgets
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Budget found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Budget'
+        '404':
+          description: Budget not found
+    put:
+      summary: Update budget
+      tags:
+        - Budgets
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateBudget'
+      responses:
+        '204':
+          description: Budget updated successfully
+    delete:
+      summary: Delete budget
+      tags:
+        - Budgets
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Budget deleted successfully
+  /v1/transactions:
+    get:
+      summary: Find all transactions
+      tags:
+        - Transactions
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: List of transactions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Transaction'
+    post:
+      summary: Create a new transaction
+      tags:
+        - Transactions
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTransaction'
+      responses:
+        '201':
+          description: Transaction created successfully
+  /v1/transactions/{id}:
+    get:
+      summary: Find transaction by ID
+      tags:
+        - Transactions
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Transaction found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Transaction'
+        '404':
+          description: Transaction not found
+    put:
+      summary: Update transaction
+      tags:
+        - Transactions
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateTransaction'
+      responses:
+        '204':
+          description: Transaction updated successfully
+    delete:
+      summary: Delete transaction
+      tags:
+        - Transactions
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Transaction deleted successfully
 components:
   schemas:
     EmailTemplate:
@@ -372,8 +882,380 @@ components:
             - delivered
         errorMessage:
           type: string
+    Currency:
+      type: object
+      properties:
+        code:
+          type: string
+        name:
+          type: string
+        symbol:
+          type: string
+        decimalPlaces:
+          type: integer
+    CreateOrganizationCurrency:
+      type: object
+      required:
+        - id
+        - organizationId
+        - currencyCode
+        - isBase
+      properties:
+        id:
+          type: string
+          format: uuid
+        organizationId:
+          type: string
+        currencyCode:
+          type: string
+          minLength: 3
+          maxLength: 3
+        isBase:
+          type: boolean
+    UpdateOrganizationCurrency:
+      type: object
+      properties:
+        isBase:
+          type: boolean
+    OrganizationCurrency:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        organizationId:
+          type: string
+        currencyCode:
+          type: string
+        isBase:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    CreateAccount:
+      type: object
+      required:
+        - id
+        - organizationId
+        - name
+        - type
+        - currencyCode
+        - currentBalance
+        - isActive
+      properties:
+        id:
+          type: string
+          format: uuid
+        organizationId:
+          type: string
+        name:
+          type: string
+        type:
+          type: string
+        currencyCode:
+          type: string
+        currentBalance:
+          type: integer
+          format: int64
+        isActive:
+          type: boolean
+    UpdateAccount:
+      type: object
+      properties:
+        name:
+          type: string
+        type:
+          type: string
+        currencyCode:
+          type: string
+        currentBalance:
+          type: integer
+          format: int64
+        isActive:
+          type: boolean
+    Account:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        organizationId:
+          type: string
+        name:
+          type: string
+        type:
+          type: string
+        currencyCode:
+          type: string
+        currentBalance:
+          type: integer
+          format: int64
+        isActive:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    CreateCategory:
+      type: object
+      required:
+        - id
+        - organizationId
+        - name
+        - isActive
+      properties:
+        id:
+          type: string
+          format: uuid
+        organizationId:
+          type: string
+        parentId:
+          type: string
+          format: uuid
+          nullable: true
+        name:
+          type: string
+        icon:
+          type: string
+          nullable: true
+        color:
+          type: string
+          nullable: true
+        isActive:
+          type: boolean
+    UpdateCategory:
+      type: object
+      properties:
+        parentId:
+          type: string
+          format: uuid
+          nullable: true
+        name:
+          type: string
+        icon:
+          type: string
+          nullable: true
+        color:
+          type: string
+          nullable: true
+        isActive:
+          type: boolean
+    Category:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        organizationId:
+          type: string
+        parentId:
+          type: string
+          format: uuid
+          nullable: true
+        name:
+          type: string
+        icon:
+          type: string
+          nullable: true
+        color:
+          type: string
+          nullable: true
+        isActive:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    CreateBudget:
+      type: object
+      required:
+        - id
+        - organizationId
+        - name
+        - month
+        - year
+        - currencyCode
+        - isActive
+      properties:
+        id:
+          type: string
+          format: uuid
+        organizationId:
+          type: string
+        name:
+          type: string
+        month:
+          type: integer
+        year:
+          type: integer
+        currencyCode:
+          type: string
+        isActive:
+          type: boolean
+    UpdateBudget:
+      type: object
+      properties:
+        name:
+          type: string
+        isActive:
+          type: boolean
+    Budget:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        organizationId:
+          type: string
+        name:
+          type: string
+        month:
+          type: integer
+        year:
+          type: integer
+        currencyCode:
+          type: string
+        isActive:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    CreateTransaction:
+      type: object
+      required:
+        - id
+        - organizationId
+        - accountId
+        - type
+        - amount
+        - date
+      properties:
+        id:
+          type: string
+          format: uuid
+        organizationId:
+          type: string
+        accountId:
+          type: string
+          format: uuid
+        categoryId:
+          type: string
+          format: uuid
+          nullable: true
+        subcategoryId:
+          type: string
+          format: uuid
+          nullable: true
+        budgetId:
+          type: string
+          format: uuid
+          nullable: true
+        type:
+          type: string
+        amount:
+          type: integer
+          format: int64
+        description:
+          type: string
+          nullable: true
+        externalReferenceNumber:
+          type: string
+          nullable: true
+        date:
+          type: string
+          format: date
+    UpdateTransaction:
+      type: object
+      properties:
+        categoryId:
+          type: string
+          format: uuid
+          nullable: true
+        subcategoryId:
+          type: string
+          format: uuid
+          nullable: true
+        budgetId:
+          type: string
+          format: uuid
+          nullable: true
+        type:
+          type: string
+        amount:
+          type: integer
+          format: int64
+        description:
+          type: string
+          nullable: true
+        externalReferenceNumber:
+          type: string
+          nullable: true
+        date:
+          type: string
+          format: date
+    Transaction:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        organizationId:
+          type: string
+        accountId:
+          type: string
+          format: uuid
+        categoryId:
+          type: string
+          format: uuid
+          nullable: true
+        subcategoryId:
+          type: string
+          format: uuid
+          nullable: true
+        budgetId:
+          type: string
+          format: uuid
+          nullable: true
+        type:
+          type: string
+        amount:
+          type: integer
+          format: int64
+        description:
+          type: string
+          nullable: true
+        externalReferenceNumber:
+          type: string
+          nullable: true
+        date:
+          type: string
+          format: date
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
 x-tagGroups:
   - name: Notifications
     tags:
       - Email Templates
       - Email Logs
+  - name: Budget
+    tags:
+      - Currencies
+      - Organization Currencies
+      - Accounts
+      - Categories
+      - Budgets
+      - Transactions
