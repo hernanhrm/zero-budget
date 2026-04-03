@@ -33,6 +33,8 @@ export interface EmailTemplate {
    * @maxLength 10
    */
   locale?: string;
+  /** Whether this template is duplicated for each new organization */
+  isOrganizationTemplate?: boolean;
   createdAt?: string;
   updatedAt?: string;
 }

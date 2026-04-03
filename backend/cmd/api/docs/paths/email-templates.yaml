@@ -36,7 +36,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/EmailTemplate'
+                  $ref: '../openapi.yaml#/components/schemas/EmailTemplate'
     post:
       summary: Create a new email template
       tags:
@@ -46,7 +46,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateEmailTemplate'
+              $ref: '../openapi.yaml#/components/schemas/CreateEmailTemplate'
       responses:
         '201':
           description: Email template created successfully
@@ -69,7 +69,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/EmailTemplate'
+                $ref: '../openapi.yaml#/components/schemas/EmailTemplate'
         '404':
           description: Email template not found
 
@@ -89,7 +89,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UpdateEmailTemplate'
+              $ref: '../openapi.yaml#/components/schemas/UpdateEmailTemplate'
       responses:
         '204':
           description: Email template updated successfully
@@ -144,4 +144,4 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/EmailLog'
+                  $ref: '../openapi.yaml#/components/schemas/EmailLog'
