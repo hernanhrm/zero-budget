@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - 'backend/cmd/identity/**'
+      - '.github/workflows/deploy-identity.yml'
 
 env:
   SERVICE_NAME: identity
