@@ -14,11 +14,10 @@ type ConfigOptions struct {
 
 // LocalConfig holds the complete application configuration.
 type LocalConfig struct {
-	Service   Service
-	Database  Database
-	Resend    Resend
-	Identity  Identity
-	JWTSecret string
+	Service  Service
+	Database Database
+	Resend   Resend
+	Identity Identity
 }
 
 // Identity holds identity service configuration.
@@ -29,11 +28,9 @@ type Identity struct {
 
 // Service holds service-specific configuration.
 type Service struct {
-	Port           func() int
-	Name           string
-	DocsPath       string
-	MigrationsPath string
-	SkipMigrations bool
+	Port     func() int
+	Name     string
+	DocsPath string
 }
 
 // Database holds database connection configuration.
