@@ -1,0 +1,68 @@
+name: Deploy Identity Service
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'backend/cmd/identity/**'
+
+env:
+  SERVICE_NAME: identity
+  REGISTRY: registry.cloudflare.com
+  IMAGE_NAME: ${{ vars.CF_CONTAINER_REGISTRY_USER }}/identity
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Authenticate with Cloudflare Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: registry.cloudflare.com
+          username: ${{ vars.CF_CONTAINER_REGISTRY_USER }}
+          password: ${{ secrets.CF_API_TOKEN }}
+
+      - name: Extract metadata
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=sha,prefix=,format=sha-{{ raw }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./backend/cmd/identity
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Deploy to Cloudflare Container Apps
+        uses: cloudflare/container-apps-deploy-action@v1
+        with:
+          api-token: ${{ secrets.CF_API_TOKEN }}
+          account-id: 27e9f2a4e3fdc496a148943d85da0c5c
+          image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+          name: ${{ env.SERVICE_NAME }}
+          environment: production
+          region: us-east-1
+          env-vars: |
+            DATABASE_URL=${{ secrets.IDENTITY_DATABASE_URL }}
+            BETTER_AUTH_SECRET=${{ secrets.IDENTITY_BETTER_AUTH_SECRET }}
+            BETTER_AUTH_URL=${{ secrets.IDENTITY_BETTER_AUTH_URL }}
+            TRUSTED_ORIGINS=${{ secrets.IDENTITY_TRUSTED_ORIGINS }}
+            CORS_ORIGIN=${{ secrets.IDENTITY_CORS_ORIGIN }}
+            APP_URL=${{ secrets.IDENTITY_APP_URL }}
+            GOOGLE_CLIENT_ID=${{ secrets.IDENTITY_GOOGLE_CLIENT_ID }}
+            GOOGLE_CLIENT_SECRET=${{ secrets.IDENTITY_GOOGLE_CLIENT_SECRET }}
+            GITHUB_CLIENT_ID=${{ secrets.IDENTITY_GITHUB_CLIENT_ID }}
+            GITHUB_CLIENT_SECRET=${{ secrets.IDENTITY_GITHUB_CLIENT_SECRET }}
+          port: 8081
