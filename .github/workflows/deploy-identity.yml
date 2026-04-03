@@ -46,23 +46,24 @@ jobs:
           cache-to: type=gha,mode=max
 
       - name: Deploy to Cloudflare Container Apps
-        uses: cloudflare/container-apps-deploy-action@v1
-        with:
-          api-token: ${{ secrets.CF_API_TOKEN }}
-          account-id: 27e9f2a4e3fdc496a148943d85da0c5c
-          image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
-          name: ${{ env.SERVICE_NAME }}
-          environment: production
-          region: us-east-1
-          env-vars: |
-            DATABASE_URL=${{ secrets.IDENTITY_DATABASE_URL }}
-            BETTER_AUTH_SECRET=${{ secrets.IDENTITY_BETTER_AUTH_SECRET }}
-            BETTER_AUTH_URL=${{ secrets.IDENTITY_BETTER_AUTH_URL }}
-            TRUSTED_ORIGINS=${{ secrets.IDENTITY_TRUSTED_ORIGINS }}
-            CORS_ORIGIN=${{ secrets.IDENTITY_CORS_ORIGIN }}
-            APP_URL=${{ secrets.IDENTITY_APP_URL }}
-            GOOGLE_CLIENT_ID=${{ secrets.IDENTITY_GOOGLE_CLIENT_ID }}
-            GOOGLE_CLIENT_SECRET=${{ secrets.IDENTITY_GOOGLE_CLIENT_SECRET }}
-            GITHUB_CLIENT_ID=${{ secrets.IDENTITY_GITHUB_CLIENT_ID }}
-            GITHUB_CLIENT_SECRET=${{ secrets.IDENTITY_GITHUB_CLIENT_SECRET }}
-          port: 8081
+        run: |
+          IMAGE_TAG="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}"
+          
+          curl -s -X POST \
+            -H "Authorization: Bearer ${{ secrets.CF_API_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            "https://api.cloudflare.com/client/v4/accounts/${{ secrets.CF_ACCOUNT_ID }}/container/apps" \
+            -d '{
+              "name": "${{ env.SERVICE_NAME }}",
+              "image": "'"$IMAGE_TAG"'",
+              "region": "us-east-1",
+              "env_vars": {
+                "DATABASE_URL": {"value": "${{ secrets.IDENTITY_DATABASE_URL }}"},
+                "BETTER_AUTH_SECRET": {"value": "${{ secrets.IDENTITY_BETTER_AUTH_SECRET }}"},
+                "BETTER_AUTH_URL": {"value": "${{ secrets.IDENTITY_BETTER_AUTH_URL }}"},
+                "TRUSTED_ORIGINS": {"value": "${{ secrets.IDENTITY_TRUSTED_ORIGINS }}"},
+                "CORS_ORIGIN": {"value": "${{ secrets.IDENTITY_CORS_ORIGIN }}"},
+                "APP_URL": {"value": "${{ secrets.IDENTITY_APP_URL }}"},
+                "PORT": {"value": "8081"}
+              }
+            }' | jq .
