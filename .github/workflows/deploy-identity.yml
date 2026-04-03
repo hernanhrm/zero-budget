@@ -10,6 +10,7 @@ on:
 
 env:
   SERVICE_NAME: identity
+  IMAGE_TAG: registry.cloudflare.com/${{ secrets.CF_ACCOUNT_ID }}/identity:sha-${{ github.sha }}
 
 jobs:
   deploy:
@@ -29,27 +30,18 @@ jobs:
       - name: Install wrangler
         run: npm install -g wrangler
 
-      - name: Build identity service
+      - name: Build and push to Cloudflare Registry
         run: |
           cd backend/cmd/identity
-          npm install
-          npm run build
-        env:
-          DATABASE_URL: ${{ secrets.IDENTITY_DATABASE_URL }}
-
-      - name: Deploy to Cloudflare
-        run: |
-          cd backend/cmd/identity
-          wrangler deploy --account-id ${{ secrets.CF_ACCOUNT_ID }}
+          docker build -t ${{ env.IMAGE_TAG }} .
+          wrangler containers push ${{ env.IMAGE_TAG }}
         env:
           CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
-          DATABASE_URL: ${{ secrets.IDENTITY_DATABASE_URL }}
-          BETTER_AUTH_SECRET: ${{ secrets.IDENTITY_BETTER_AUTH_SECRET }}
-          BETTER_AUTH_URL: ${{ secrets.IDENTITY_BETTER_AUTH_URL }}
-          TRUSTED_ORIGINS: ${{ secrets.IDENTITY_TRUSTED_ORIGINS }}
-          CORS_ORIGIN: ${{ secrets.IDENTITY_CORS_ORIGIN }}
-          APP_URL: ${{ secrets.IDENTITY_APP_URL }}
-          GOOGLE_CLIENT_ID: ${{ secrets.IDENTITY_GOOGLE_CLIENT_ID }}
-          GOOGLE_CLIENT_SECRET: ${{ secrets.IDENTITY_GOOGLE_CLIENT_SECRET }}
-          GITHUB_CLIENT_ID: ${{ secrets.IDENTITY_GITHUB_CLIENT_ID }}
-          GITHUB_CLIENT_SECRET: ${{ secrets.IDENTITY_GITHUB_CLIENT_SECRET }}
+
+      - name: Display image info
+        run: |
+          echo "Image pushed to: ${{ env.IMAGE_TAG }}"
+          echo ""
+          echo "To deploy as a Container, create a Worker with this image in wrangler.toml:"
+          echo '[[containers]]'
+          echo 'image = "${{ env.IMAGE_TAG }}"'
