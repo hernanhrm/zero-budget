@@ -1,17 +1,9 @@
 import { useForm } from "@tanstack/react-form"
 import { Button } from "@workspace/ui/components/button"
-import {
-	Dialog,
-	DialogContent,
-	DialogHeader,
-	DialogTitle,
-	DialogDescription,
-} from "@workspace/ui/components/dialog"
-import {
-	Field,
-	FieldGroup,
-	FieldLabel,
-} from "@workspace/ui/components/field"
+import { Dialog, DialogContent } from "@workspace/ui/components/dialog"
+import { DialogPanelHeader } from "@workspace/ui/components/dialog-panel-header"
+import { Field, FieldGroup } from "@workspace/ui/components/field"
+import { FormFieldLabel } from "@workspace/ui/components/form-field-label"
 import { Input } from "@workspace/ui/components/input"
 
 interface AddCurrencyModalProps {
@@ -45,15 +37,12 @@ export function AddCurrencyModal({
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent className="sm:max-w-md">
-				<DialogHeader>
-					<DialogTitle className="font-space-grotesk text-sm font-bold uppercase tracking-[1px]">
-						ADD CURRENCY
-					</DialogTitle>
-					<DialogDescription className="font-ibm-plex-mono text-[10px] uppercase tracking-[1px]">
-						ADD A NEW CURRENCY AND EXCHANGE RATE
-					</DialogDescription>
-				</DialogHeader>
+			<DialogContent className="gap-0 p-0 sm:max-w-md" showCloseButton={false}>
+				<DialogPanelHeader
+					title="ADD CURRENCY"
+					titleClassName="text-sm uppercase"
+					description="ADD A NEW CURRENCY AND EXCHANGE RATE"
+				/>
 
 				<form
 					onSubmit={(e) => {
@@ -61,14 +50,11 @@ export function AddCurrencyModal({
 						form.handleSubmit()
 					}}
 				>
-					<FieldGroup>
-						<form.Field
-							name="name"
-							children={(field) => (
+					<FieldGroup className="form-panel-body">
+						<form.Field name="name">
+							{(field) => (
 								<Field>
-									<FieldLabel className="font-space-grotesk text-[11px] font-bold tracking-[1px] text-muted-foreground">
-										CURRENCY NAME
-									</FieldLabel>
+									<FormFieldLabel>CURRENCY NAME</FormFieldLabel>
 									<Input
 										placeholder="e.g. Japanese Yen"
 										value={field.state.value}
@@ -77,15 +63,12 @@ export function AddCurrencyModal({
 									/>
 								</Field>
 							)}
-						/>
+						</form.Field>
 
-						<form.Field
-							name="code"
-							children={(field) => (
+						<form.Field name="code">
+							{(field) => (
 								<Field>
-									<FieldLabel className="font-space-grotesk text-[11px] font-bold tracking-[1px] text-muted-foreground">
-										CURRENCY CODE
-									</FieldLabel>
+									<FormFieldLabel>CURRENCY CODE</FormFieldLabel>
 									<Input
 										placeholder="e.g. JPY"
 										value={field.state.value}
@@ -95,15 +78,12 @@ export function AddCurrencyModal({
 									/>
 								</Field>
 							)}
-						/>
+						</form.Field>
 
-						<form.Field
-							name="rate"
-							children={(field) => (
+						<form.Field name="rate">
+							{(field) => (
 								<Field>
-									<FieldLabel className="font-space-grotesk text-[11px] font-bold tracking-[1px] text-muted-foreground">
-										EXCHANGE RATE
-									</FieldLabel>
+									<FormFieldLabel>EXCHANGE RATE</FormFieldLabel>
 									<Input
 										placeholder="e.g. 149.50"
 										value={field.state.value}
@@ -114,7 +94,7 @@ export function AddCurrencyModal({
 									/>
 								</Field>
 							)}
-						/>
+						</form.Field>
 
 						<Button
 							type="submit"

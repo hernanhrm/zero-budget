@@ -1,29 +1,24 @@
+import { ModulePageHeader } from "@workspace/ui/components/module-page-header"
 import {
 	Tabs,
 	TabsContent,
 	TabsList,
 	TabsTrigger,
 } from "@workspace/ui/components/tabs"
+import { CurrencyTab } from "./components/currency-tab"
+import { DangerZoneTab } from "./components/danger-zone-tab"
+import { NotificationsTab } from "./components/notifications-tab"
 import { ProfileTab } from "./components/profile-tab"
 import { SecurityTab } from "./components/security-tab"
-import { CurrencyTab } from "./components/currency-tab"
-import { NotificationsTab } from "./components/notifications-tab"
-import { DangerZoneTab } from "./components/danger-zone-tab"
 
 export function SettingsPage() {
 	return (
 		<div className="flex h-full flex-col overflow-auto p-10">
 			<Tabs defaultValue="profile" className="flex-col gap-0">
-				<div className="flex w-full items-center justify-between">
-					<div className="flex flex-col gap-2">
-						<h1 className="font-space-grotesk text-4xl font-bold tracking-[1px] text-foreground">
-							SETTINGS
-						</h1>
-						<p className="font-ibm-plex-mono text-[13px] tracking-[1px] text-muted-foreground">
-							CONFIGURE YOUR ACCOUNT AND PREFERENCES
-						</p>
-					</div>
-				</div>
+				<ModulePageHeader
+					title="SETTINGS"
+					description="CONFIGURE YOUR ACCOUNT AND PREFERENCES"
+				/>
 
 				<TabsList
 					variant="line"

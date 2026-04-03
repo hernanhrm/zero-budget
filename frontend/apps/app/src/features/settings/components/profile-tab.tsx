@@ -1,20 +1,14 @@
 import { useForm } from "@tanstack/react-form"
 import { useRouter } from "@tanstack/react-router"
 import { Button } from "@workspace/ui/components/button"
-import {
-	Field,
-	FieldError,
-	FieldGroup,
-	FieldLabel,
-} from "@workspace/ui/components/field"
+import { Field, FieldError, FieldGroup } from "@workspace/ui/components/field"
+import { FormFieldLabel } from "@workspace/ui/components/form-field-label"
 import { Input } from "@workspace/ui/components/input"
 import { useState } from "react"
 import { authClient } from "#/lib/auth-client"
 import { Route } from "#/routes/_protected/settings"
 import { profileSchema } from "../schema"
 
-const labelClassName =
-	"font-space-grotesk text-[11px] font-bold tracking-[1px] text-muted-foreground"
 const inputClassName =
 	"h-10 rounded-sm border-border bg-transparent px-4 font-space-grotesk text-sm text-foreground"
 
@@ -77,16 +71,15 @@ export function ProfileTab() {
 		>
 			<FieldGroup className="max-w-2xl gap-6">
 				<div className="flex w-full gap-4">
-					<form.Field
-						name="firstName"
-						children={(field) => {
+					<form.Field name="firstName">
+						{(field) => {
 							const isInvalid =
 								field.state.meta.isTouched && field.state.meta.errors.length > 0
 							return (
 								<Field data-invalid={isInvalid || undefined} className="flex-1">
-									<FieldLabel htmlFor={field.name} className={labelClassName}>
+									<FormFieldLabel htmlFor={field.name}>
 										FIRST NAME
-									</FieldLabel>
+									</FormFieldLabel>
 									<Input
 										id={field.name}
 										name={field.name}
@@ -100,18 +93,17 @@ export function ProfileTab() {
 								</Field>
 							)
 						}}
-					/>
+					</form.Field>
 
-					<form.Field
-						name="lastName"
-						children={(field) => {
+					<form.Field name="lastName">
+						{(field) => {
 							const isInvalid =
 								field.state.meta.isTouched && field.state.meta.errors.length > 0
 							return (
 								<Field data-invalid={isInvalid || undefined} className="flex-1">
-									<FieldLabel htmlFor={field.name} className={labelClassName}>
+									<FormFieldLabel htmlFor={field.name}>
 										LAST NAME
-									</FieldLabel>
+									</FormFieldLabel>
 									<Input
 										id={field.name}
 										name={field.name}
@@ -125,11 +117,11 @@ export function ProfileTab() {
 								</Field>
 							)
 						}}
-					/>
+					</form.Field>
 				</div>
 
 				<Field>
-					<FieldLabel className={labelClassName}>EMAIL ADDRESS</FieldLabel>
+					<FormFieldLabel>EMAIL ADDRESS</FormFieldLabel>
 					<Input
 						value={user?.email ?? ""}
 						disabled
