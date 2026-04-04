@@ -941,6 +941,7 @@ components:
         - name
         - type
         - currencyCode
+        - currentBalance
         - isActive
       properties:
         id:
@@ -961,13 +962,10 @@ components:
         currencyCode:
           type: string
         currentBalance:
-          type: integer
-          format: int64
-          description: Minor units (smallest currency unit), e.g. USD cents; see backend/infra/money
-        currentBalanceDecimal:
-          type: string
-          maxLength: 64
-          description: When non-empty, parsed as a decimal major-unit amount (e.g. "12.34") and converted to minor units; overrides currentBalance
+          type: number
+          format: double
+          description: |
+            Create request: amount in major display units (e.g. 40 = 40.00 USD); converted to minor units (half-up, 2 decimal places by default) via backend/infra/money MajorAmount. List/get responses use integer minor units (money.Minor).
         isActive:
           type: boolean
     UpdateAccount:

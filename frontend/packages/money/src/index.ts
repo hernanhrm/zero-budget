@@ -1,6 +1,7 @@
 /**
- * Client types for monetary amounts serialized as integer minor units on the API
- * (see `backend/infra/money` and https://github.com/techforge-lat/money-as-integer).
+ * Client types for monetary amounts. List/detail responses use integer minor units.
+ * Create-account `currentBalance` is in major display units (e.g. 40 = $40.00); the API stores minor units
+ * (see `backend/infra/money` MajorAmount).
  */
 
 declare const minorUnitsBrand: unique symbol

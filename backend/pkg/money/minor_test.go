@@ -8,6 +8,18 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestMinor_UnmarshalJSON_rejectsNonInteger(t *testing.T) {
+	var m Minor
+	err := json.Unmarshal([]byte(`12.34`), &m)
+	require.Error(t, err)
+}
+
+func TestMinor_UnmarshalJSON_integerMinor(t *testing.T) {
+	var m Minor
+	require.NoError(t, json.Unmarshal([]byte(`1234`), &m))
+	assert.Equal(t, Minor(1234), m)
+}
+
 func TestMinor_JSONRoundTrip(t *testing.T) {
 	type row struct {
 		Balance Minor `json:"currentBalance"`

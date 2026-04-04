@@ -16,12 +16,8 @@ export interface CreateAccount {
   /** @maxLength 64 */
   accountNumber?: string;
   currencyCode: string;
-  /** Minor units (smallest currency unit), e.g. USD cents; see backend/infra/money */
-  currentBalance?: number;
-  /**
-   * When non-empty, parsed as a decimal major-unit amount (e.g. "12.34") and converted to minor units; overrides currentBalance
-   * @maxLength 64
-   */
-  currentBalanceDecimal?: string;
+  /** Create request: amount in major display units (e.g. 40 = 40.00 USD); converted to minor units (half-up, 2 decimal places by default) via backend/infra/money MajorAmount. List/get responses use integer minor units (money.Minor).
+ */
+  currentBalance: number;
   isActive: boolean;
 }

@@ -24,7 +24,8 @@ func (m Minor) MarshalJSON() ([]byte, error) {
 	return json.Marshal(int64(m))
 }
 
-// UnmarshalJSON decodes a JSON number into Minor.
+// UnmarshalJSON decodes a JSON integer into minor units (API responses and internal use).
+// For create-account bodies that send major units (e.g. 40 dollars), use MajorAmount instead.
 func (m *Minor) UnmarshalJSON(data []byte) error {
 	if string(data) == "null" {
 		*m = 0
@@ -32,7 +33,7 @@ func (m *Minor) UnmarshalJSON(data []byte) error {
 	}
 	var n int64
 	if err := json.Unmarshal(data, &n); err != nil {
-		return err
+		return fmt.Errorf("money: UnmarshalJSON Minor: %w", err)
 	}
 	*m = Minor(n)
 	return nil

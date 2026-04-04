@@ -66,6 +66,13 @@ export function AddAccountForm({
 			const institution = value.institution.trim()
 			const accountNumber = value.accountNumber.trim()
 
+			const balanceRaw = value.startingBalance.replace(/,/g, "").trim()
+			const balanceNum = Number.parseFloat(balanceRaw === "" ? "0" : balanceRaw)
+			if (!Number.isFinite(balanceNum)) {
+				toast.error("Enter a valid starting balance.")
+				return
+			}
+
 			try {
 				const result = await postAccount.mutateAsync({
 					data: {
@@ -76,9 +83,7 @@ export function AddAccountForm({
 						...(institution !== "" ? { institution } : {}),
 						...(accountNumber !== "" ? { accountNumber } : {}),
 						currencyCode,
-						currentBalanceDecimal: value.startingBalance
-							.replace(/,/g, "")
-							.trim(),
+						currentBalance: balanceNum,
 						isActive: true,
 					},
 				})

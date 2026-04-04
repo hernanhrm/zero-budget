@@ -10,15 +10,15 @@ import (
 )
 
 type CreateAccount struct {
-	ID             uuid.UUID   `json:"id"`
-	OrganizationID string      `json:"organizationId"`
-	Name           string      `json:"name"`
-	Type           string      `json:"type"`
-	Institution    string      `json:"institution"`
-	AccountNumber  string      `json:"accountNumber"`
-	CurrencyCode   string      `json:"currencyCode"`
-	CurrentBalance money.Minor `json:"currentBalance"`
-	IsActive       bool        `json:"isActive"`
+	ID             uuid.UUID         `json:"id"`
+	OrganizationID string            `json:"organizationId"`
+	Name           string            `json:"name"`
+	Type           string            `json:"type"`
+	Institution    string            `json:"institution"`
+	AccountNumber  string            `json:"accountNumber"`
+	CurrencyCode   string            `json:"currencyCode"`
+	CurrentBalance money.MajorAmount `json:"currentBalance"`
+	IsActive       bool              `json:"isActive"`
 }
 
 func (c CreateAccount) Validate(ctx context.Context) error {
