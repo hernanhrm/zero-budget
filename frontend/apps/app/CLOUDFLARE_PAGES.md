@@ -11,17 +11,34 @@ In Cloudflare **Workers & Pages** → **Create** → **Pages** → connect your 
 | **Root directory** | `frontend` |
 | **Build command** | `pnpm install --frozen-lockfile && pnpm --filter app build` |
 | **Build output directory** | `apps/app/dist` |
-| **Deploy command** | **Leave empty.** After a successful build, Pages uploads the build output directory automatically ([build configuration](https://developers.cloudflare.com/pages/configuration/build-configuration/)). |
+| **Deploy command** | **Leave empty** (recommended). Pages uploads **Build output directory** after a successful build ([build configuration](https://developers.cloudflare.com/pages/configuration/build-configuration/)). |
 
-**Do not** set the deploy command to `npx wrangler versions upload` unless you mean to publish via **Workers** [static assets](https://developers.cloudflare.com/workers/static-assets/). That command does **not** read `pages_build_output_dir`; it needs a Worker `main` script or an `assets.directory` in [`wrangler.jsonc`](../../wrangler.jsonc). This repo sets both `pages_build_output_dir` and `assets.directory` to `./apps/app/dist` so `versions upload` can resolve the folder—but **clearing the deploy command** is still the right setup for a normal **Pages** Git project (Pages uploads the build output for you).
+**Wrangler and this monorepo**
 
-If you truly need Wrangler in the deploy step (unusual for Git-connected Pages), use **Pages** deploy instead, from the repo root `frontend/`:
+- **Do not** run `npx wrangler deploy` for a **Pages** project. Wrangler will error with *It looks like you've run a Workers-specific command in a Pages project* and tell you to use `wrangler pages deploy` instead.
+- **Do not** run Wrangler from the pnpm workspace root (`frontend/`) without scoping the app package. You will get: *The Wrangler application detection logic has been run in the root of a workspace…* Use **`--cwd apps/app`** so the config under this app is used.
+
+[`./wrangler.jsonc`](./wrangler.jsonc) lives next to this package and sets `pages_build_output_dir` to `./dist`. It intentionally **does not** define `assets`; a Pages-linked `wrangler pages deploy` run validates the config and **rejects** an `assets` block.
+
+If you insist on a **custom deploy command** (unusual for Git-connected Pages), from root directory `frontend/` use **Pages** deploy, for example:
+
+```bash
+npx wrangler pages deploy --cwd apps/app
+```
+
+Add `--project-name=<your-pages-project-name>` if Wrangler does not pick up the linked project. Equivalent explicit path:
 
 ```bash
 npx wrangler pages deploy apps/app/dist --project-name=<your-pages-project-name>
 ```
 
-Or rely on [`../../wrangler.jsonc`](../../wrangler.jsonc) (`pages_build_output_dir` + `name`) and run `npx wrangler pages deploy` with no positional path—after setting `"name"` to match your dashboard project.
+If you truly need **Workers** `versions upload` with static files (not the same as Pages publish), run from `frontend/`:
+
+```bash
+npx wrangler versions upload --cwd apps/app --assets=./dist
+```
+
+(Pass assets on the CLI; do not add `assets` to `wrangler.jsonc` if you also rely on that file for Pages.)
 
 ### Environment variables
 

@@ -1,0 +1,8 @@
+{
+	// Match your Cloudflare Pages project name (Workers & Pages → Pages → project).
+	// From repo root `frontend/`: npx wrangler pages download config --cwd apps/app
+	"$schema": "../../node_modules/wrangler/config-schema.json",
+	"name": "zero-budget",
+	"compatibility_date": "2026-04-04",
+	"pages_build_output_dir": "./dist"
+}
