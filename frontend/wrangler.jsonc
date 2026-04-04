@@ -1,0 +1,10 @@
+{
+	// Used when the Pages dashboard runs `npx wrangler versions upload` with cwd `frontend/`.
+	// Pages-oriented settings live in apps/app/wrangler.jsonc (`pages_build_output_dir`, etc.).
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "zero-budget-app",
+	"compatibility_date": "2026-04-04",
+	"assets": {
+		"directory": "./apps/app/dist"
+	}
+}
