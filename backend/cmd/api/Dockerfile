@@ -1,5 +1,5 @@
-# Build context must be backend/ (go.work, cmd/, internal/, pkg/).
-# Used by Cloudflare Wrangler (default context = this file's directory) and Railway via dockerfilePath.
+# Docker build context must be backend/ (see wrangler.jsonc image_build_context).
+# Paths below are relative to backend/: go.work, cmd/, internal/, pkg/.
 FROM golang:1.24-alpine AS builder
 
 WORKDIR /app
