@@ -13,6 +13,9 @@ RUN go build -o /api .
 
 FROM alpine:latest
 RUN apk add --no-cache ca-certificates
+WORKDIR /app
 COPY --from=builder /api /api
+COPY cmd/api/docs /app/docs
+ENV DOCS_PATH=/app/docs
 EXPOSE 8080
 CMD ["/api"]

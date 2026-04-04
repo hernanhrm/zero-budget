@@ -58,13 +58,17 @@ fly secrets set \
 
 In Google/GitHub developer consoles, add callback URLs that match Better Auth’s expectations for your `BETTER_AUTH_URL`.
 
-## Scale to zero (cost)
+## Scale to zero and at most one Machine (cost)
 
-`fly.toml` sets `auto_stop_machines = "stop"`, `auto_start_machines = true`, and `min_machines_running = 0`. After idle periods, Fly Proxy can stop all Machines in the region; you are not billed for CPU/RAM while they are stopped ([stopped Machines pricing](https://fly.io/docs/about/pricing/#stopped-fly-machines)). The next request triggers a **cold start** (several seconds of latency) while a Machine boots.
+`fly.toml` sets `auto_stop_machines = "stop"`, `auto_start_machines = true`, `min_machines_running = 0`, and `[deploy] ha = false` so Fly does not add a second redundant Machine on deploy. After idle periods, Fly Proxy can stop all Machines in the region; you are not billed for CPU/RAM while they are stopped ([stopped Machines pricing](https://fly.io/docs/about/pricing/#stopped-fly-machines)). The next request triggers a **cold start** (several seconds of latency) while a Machine boots.
 
 Keep the generous `[[http_service.checks]]` `grace_period` / `timeout` so new Machines can pass checks after autostart. Expect occasional health-check log noise while Machines are stopped or booting.
 
-Use a **single** Machine (`fly scale count 1 -a <app>`) unless you need HA; extra Machines are extra capacity to stop/start, not required for scale-to-zero.
+If an older deploy left two Machines in the pool, run:
+
+```bash
+fly scale count 1 -a zero-budget-identity --yes
+```
 
 Fly Postgres and other resources bill separately from this app’s Machines.
 
