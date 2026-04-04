@@ -1,9 +1,12 @@
-import { TanStackDevtools } from "@tanstack/react-devtools"
+import { lazy, Suspense } from "react"
 import { createRootRouteWithContext, Outlet } from "@tanstack/react-router"
-import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools"
 
 import { authClient } from "#/lib/auth-client"
 import "@workspace/ui/styles/globals.css"
+
+const RootDevtools = import.meta.env.DEV
+	? lazy(() => import("./-__root-devtools"))
+	: null
 
 export const Route = createRootRouteWithContext<{
 	session: Awaited<ReturnType<typeof authClient.getSession>> | null
@@ -19,17 +22,11 @@ function RootComponent() {
 	return (
 		<>
 			<Outlet />
-			<TanStackDevtools
-				config={{
-					position: "bottom-right",
-				}}
-				plugins={[
-					{
-						name: "TanStack Router",
-						render: <TanStackRouterDevtoolsPanel />,
-					},
-				]}
-			/>
+			{RootDevtools ? (
+				<Suspense fallback={null}>
+					<RootDevtools />
+				</Suspense>
+			) : null}
 		</>
 	)
 }

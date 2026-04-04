@@ -1,0 +1,43 @@
+# Fly.io app for the Go API. Build context MUST be this directory (backend/).
+# Deploy: cd backend && fly deploy
+# Or from repo root: fly deploy ./backend
+
+app = "zero-budget-api"
+primary_region = "iad"
+
+[build]
+  dockerfile = "cmd/api/Dockerfile"
+
+# Single Machine in the pool (no spare for HA). Use with min_machines_running = 0 for scale-to-zero.
+# If an extra Machine already exists: fly scale count 1 -a zero-budget-api
+[deploy]
+  ha = false
+
+[env]
+  SERVICE_PORT = "8080"
+  SERVICE_NAME = "zero-budget-api"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0
+
+  [http_service.concurrency]
+    type = "requests"
+    soft_limit = 200
+    hard_limit = 250
+
+  # Use /ping (always 2xx). /health can return 503 when DB checks fail.
+  [[http_service.checks]]
+    grace_period = "60s"
+    interval = "30s"
+    method = "GET"
+    timeout = "15s"
+    path = "/ping"
+
+[[vm]]
+  memory = "1gb"
+  cpu_kind = "shared"
+  cpus = 1

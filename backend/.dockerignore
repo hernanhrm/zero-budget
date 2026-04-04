@@ -1,0 +1,10 @@
+# Build context is backend/ when deploying the API (see fly.toml).
+.git
+.gitignore
+**/.env
+**/.env.*
+**/node_modules
+cmd/identity/node_modules
+cmd/identity/dist
+**/*_test.go
+**/testdata
