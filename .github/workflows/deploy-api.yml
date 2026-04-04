@@ -6,7 +6,6 @@ on:
       - main
     paths:
       - "backend/cmd/api/**"
-      - "backend/Dockerfile.api"
       - "backend/internal/**"
       - "backend/pkg/**"
       - "backend/go.work"

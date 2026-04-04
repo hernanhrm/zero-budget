@@ -8,7 +8,8 @@
   "containers": [
     {
       "class_name": "ApiContainer",
-      "image": "../Dockerfile.api",
+      "image": "./Dockerfile",
+      "image_build_context": "..",
       "max_instances": 10,
       "instance_type": "standard-1"
     }
