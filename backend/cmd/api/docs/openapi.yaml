@@ -358,6 +358,7 @@ components:
         currentBalance:
           type: integer
           format: int64
+          description: Minor units (smallest currency unit), e.g. USD cents; see backend/infra/money
         isActive:
           type: boolean
 
@@ -379,6 +380,7 @@ components:
         currentBalance:
           type: integer
           format: int64
+          description: Minor units (smallest currency unit), e.g. USD cents; see backend/infra/money
         isActive:
           type: boolean
 
@@ -405,6 +407,7 @@ components:
         currentBalance:
           type: integer
           format: int64
+          description: Minor units (smallest currency unit), e.g. USD cents; see backend/infra/money
         isActive:
           type: boolean
         createdAt:

@@ -26,5 +26,6 @@ use (
 	./internal/port/ternary
 	./pkg/dafi
 	./pkg/httpresponse
+	./pkg/money
 	./pkg/sqlcraft
 )

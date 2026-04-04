@@ -154,11 +154,21 @@ Dependencies flow downward (handler -> service -> repository -> infrastructure).
 ### Testing
 
 - Use table-driven tests with the `tests` struct pattern
-- Use `stretchr/testify/assert` for assertions
+- Use **`github.com/stretchr/testify/assert`** for value checks
+- Use **`github.com/stretchr/testify/require`** when a failure must stop the test (e.g. after setup or `json.Unmarshal`); prefer `require.NoError` / `require.NotNil` instead of `if err != nil { t.Fatal(...) }`
+- Use **`github.com/stretchr/testify/mock`** to mock **interfaces** in unit tests: define a small `MockRepository` (or similar) embedding `mock.Mock`, implement the interface with `m.Called(...)` / `Return` / `Run`, and call `m.AssertExpectations(t)` (or use generated `EXPECT()` helpers if you adopt mockery)
+- Pin `testify` in each module’s `go.mod` (e.g. `v1.11.1`, consistent with sibling packages); run `go mod tidy` after adding tests
 - Name test files `*_test.go` in the same package
 - Example structure:
 
 ```go
+import (
+    "testing"
+
+    "github.com/stretchr/testify/assert"
+    "github.com/stretchr/testify/require"
+)
+
 func TestSlogAdapter_JSONFormat(t *testing.T) {
     tests := []struct {
         name      string
@@ -172,9 +182,35 @@ func TestSlogAdapter_JSONFormat(t *testing.T) {
     for _, tt := range tests {
         t.Run(tt.name, func(t *testing.T) {
             // test logic...
+            require.NoError(t, err)
+            assert.Equal(t, want, got)
         })
     }
 }
+```
+
+Minimal mock example:
+
+```go
+import (
+    "context"
+
+    "github.com/stretchr/testify/mock"
+)
+
+type MockUserRepo struct {
+    mock.Mock
+}
+
+func (m *MockUserRepo) FindByID(ctx context.Context, id string) (User, error) {
+    args := m.Called(ctx, id)
+    return args.Get(0).(User), args.Error(1)
+}
+
+// in test:
+// repo := new(MockUserRepo)
+// repo.On("FindByID", mock.Anything, "1").Return(User{ID: "1"}, nil)
+// defer repo.AssertExpectations(t)
 ```
 
 ### Configuration and Logging

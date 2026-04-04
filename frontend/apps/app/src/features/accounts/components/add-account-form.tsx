@@ -4,6 +4,7 @@ import {
 	getGetV1AccountsQueryKey,
 	usePostV1Accounts,
 } from "@workspace/api/hooks/accounts/accounts"
+import { parseDecimalToMinorUnits } from "@workspace/money"
 import { Button } from "@workspace/ui/components/button"
 import { DialogClose, DialogFooter } from "@workspace/ui/components/dialog"
 import { Field, FieldError, FieldGroup } from "@workspace/ui/components/field"
@@ -24,18 +25,6 @@ export interface AddAccountFormProps {
 	open: boolean
 	onComplete: () => void
 	organizationId: string | undefined
-}
-
-function parseBalanceMinor(raw: string): number | null {
-	const normalized = raw.replace(/,/g, "").trim()
-	if (normalized === "") {
-		return 0
-	}
-	const n = Number.parseFloat(normalized)
-	if (!Number.isFinite(n)) {
-		return null
-	}
-	return Math.round(n * 100)
 }
 
 export function AddAccountForm({
@@ -72,7 +61,7 @@ export function AddAccountForm({
 				return
 			}
 
-			const minor = parseBalanceMinor(value.startingBalance)
+			const minor = parseDecimalToMinorUnits(value.startingBalance)
 			if (minor === null) {
 				toast.error("Enter a valid starting balance.")
 				return

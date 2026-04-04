@@ -41,6 +41,9 @@ importers:
       '@workspace/api':
         specifier: workspace:*
         version: link:../../packages/api
+      '@workspace/money':
+        specifier: workspace:*
+        version: link:../../packages/money
       '@workspace/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -178,6 +181,12 @@ importers:
       react:
         specifier: ^19.2.4
         version: 19.2.4
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+
+  packages/money:
+    devDependencies:
       typescript:
         specifier: ^5.9.3
         version: 5.9.3

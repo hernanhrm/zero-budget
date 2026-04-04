@@ -5,12 +5,12 @@ import (
 	"errors"
 	"time"
 
+	"backend/adapter/database"
 	"backend/core/budget/account/port"
+	"backend/infra/dafi"
+	"backend/infra/sqlcraft"
 	basedomain "backend/port"
 	apperrors "backend/port/errors"
-	"backend/infra/dafi"
-	"backend/adapter/database"
-	"backend/infra/sqlcraft"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
@@ -30,6 +30,8 @@ var columns = []string{
 	"organization_id",
 	"name",
 	"type",
+	"institution",
+	"account_number",
 	"currency_code",
 	"current_balance",
 	"is_active",
@@ -42,6 +44,8 @@ var sqlColumnByDomainField = map[string]string{
 	"organizationId": "organization_id",
 	"name":           "name",
 	"type":           "type",
+	"institution":    "institution",
+	"accountNumber":  "account_number",
 	"currencyCode":   "currency_code",
 	"currentBalance": "current_balance",
 	"isActive":       "is_active",
@@ -90,6 +94,8 @@ func (r postgres) FindOne(ctx context.Context, criteria dafi.Criteria) (port.Acc
 		&acct.OrganizationID,
 		&acct.Name,
 		&acct.Type,
+		&acct.Institution,
+		&acct.AccountNumber,
 		&acct.CurrencyCode,
 		&acct.CurrentBalance,
 		&acct.IsActive,
@@ -136,6 +142,8 @@ func (r postgres) FindAll(ctx context.Context, criteria dafi.Criteria) (basedoma
 			&acct.OrganizationID,
 			&acct.Name,
 			&acct.Type,
+			&acct.Institution,
+			&acct.AccountNumber,
 			&acct.CurrencyCode,
 			&acct.CurrentBalance,
 			&acct.IsActive,
@@ -161,6 +169,8 @@ func (r postgres) Create(ctx context.Context, input port.CreateAccount) error {
 			input.OrganizationID,
 			input.Name,
 			input.Type,
+			input.Institution,
+			input.AccountNumber,
 			input.CurrencyCode,
 			input.CurrentBalance,
 			input.IsActive,
@@ -197,6 +207,8 @@ func (r postgres) CreateBulk(ctx context.Context, inputs basedomain.List[port.Cr
 			input.OrganizationID,
 			input.Name,
 			input.Type,
+			input.Institution,
+			input.AccountNumber,
 			input.CurrencyCode,
 			input.CurrentBalance,
 			input.IsActive,
@@ -222,10 +234,12 @@ func (r postgres) CreateBulk(ctx context.Context, inputs basedomain.List[port.Cr
 
 func (r postgres) Update(ctx context.Context, input port.UpdateAccount, filters ...dafi.Filter) error {
 	query := sqlcraft.Update(tableName).
-		WithColumns("name", "type", "currency_code", "current_balance", "is_active", "updated_at").
+		WithColumns("name", "type", "institution", "account_number", "currency_code", "current_balance", "is_active", "updated_at").
 		WithValues(
 			input.Name,
 			input.Type,
+			input.Institution,
+			input.AccountNumber,
 			input.CurrencyCode,
 			input.CurrentBalance,
 			input.IsActive,
