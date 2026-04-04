@@ -14,6 +14,7 @@ export interface UpdateAccount {
   /** @maxLength 64 */
   accountNumber?: string;
   currencyCode?: string;
+  /** Minor units (smallest currency unit), e.g. USD cents; see backend/infra/money */
   currentBalance?: number;
   isActive?: boolean;
 }

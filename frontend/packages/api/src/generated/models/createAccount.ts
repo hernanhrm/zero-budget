@@ -16,6 +16,12 @@ export interface CreateAccount {
   /** @maxLength 64 */
   accountNumber?: string;
   currencyCode: string;
-  currentBalance: number;
+  /** Minor units (smallest currency unit), e.g. USD cents; see backend/infra/money */
+  currentBalance?: number;
+  /**
+   * When non-empty, parsed as a decimal major-unit amount (e.g. "12.34") and converted to minor units; overrides currentBalance
+   * @maxLength 64
+   */
+  currentBalanceDecimal?: string;
   isActive: boolean;
 }

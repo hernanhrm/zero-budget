@@ -4,7 +4,6 @@ import {
 	getGetV1AccountsQueryKey,
 	usePostV1Accounts,
 } from "@workspace/api/hooks/accounts/accounts"
-import { parseDecimalToMinorUnits } from "@workspace/money"
 import { Button } from "@workspace/ui/components/button"
 import { DialogClose, DialogFooter } from "@workspace/ui/components/dialog"
 import { Field, FieldError, FieldGroup } from "@workspace/ui/components/field"
@@ -61,12 +60,6 @@ export function AddAccountForm({
 				return
 			}
 
-			const minor = parseDecimalToMinorUnits(value.startingBalance)
-			if (minor === null) {
-				toast.error("Enter a valid starting balance.")
-				return
-			}
-
 			const type = value.accountType === "checking" ? "CHECKING" : "SAVINGS"
 			const currencyCode = "USD"
 
@@ -83,7 +76,9 @@ export function AddAccountForm({
 						...(institution !== "" ? { institution } : {}),
 						...(accountNumber !== "" ? { accountNumber } : {}),
 						currencyCode,
-						currentBalance: minor,
+						currentBalanceDecimal: value.startingBalance
+							.replace(/,/g, "")
+							.trim(),
 						isActive: true,
 					},
 				})
