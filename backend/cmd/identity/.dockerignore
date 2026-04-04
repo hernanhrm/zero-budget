@@ -5,6 +5,3 @@ dist
 .git
 .gitignore
 *.md
-.wrangler
-worker
-wrangler.jsonc

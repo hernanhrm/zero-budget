@@ -5,10 +5,6 @@
       "type": "remote",
       "url": "https://mcp.tigerdata.com/docs"
     },
-    "railway": {
-      "type": "local",
-      "command": ["npx", "-y", "@railway/mcp-server"]
-    },
     "shadcn": {
       "type": "local",
       "command": ["npx", "shadcn@latest", "mcp"],

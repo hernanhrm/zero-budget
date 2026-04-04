@@ -1,5 +1,3 @@
-# Docker build context must be backend/ (see wrangler.jsonc image_build_context).
-# Paths below are relative to backend/: go.work, cmd/, internal/, pkg/.
 FROM golang:1.24-alpine AS builder
 
 WORKDIR /app
