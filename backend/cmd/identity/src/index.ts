@@ -77,7 +77,7 @@ app.get("/health", (c) => {
 });
 
 const port = Number(process.env.PORT) || 8081;
-// Cloudflare Containers probe the app on the instance network (e.g. 10.0.0.1), not loopback.
+// Bind all interfaces so Docker / platform health checks can reach the server.
 const hostname = process.env.HOST ?? "0.0.0.0";
 
 console.log(`Identity server listening on http://${hostname}:${port}`);

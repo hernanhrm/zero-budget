@@ -12,13 +12,11 @@ import { eq } from "drizzle-orm";
 
 if (process.env.NODE_ENV === "production") {
   if (!process.env.BETTER_AUTH_SECRET?.trim()) {
-    throw new Error(
-      "BETTER_AUTH_SECRET is required. Set a Worker secret: npx wrangler secret put BETTER_AUTH_SECRET",
-    );
+    throw new Error("BETTER_AUTH_SECRET is required in production.");
   }
   if (!process.env.BETTER_AUTH_URL?.trim()) {
     throw new Error(
-      "BETTER_AUTH_URL is required (public Worker URL). npx wrangler secret put BETTER_AUTH_URL",
+      "BETTER_AUTH_URL is required in production (public base URL of this service).",
     );
   }
 }
