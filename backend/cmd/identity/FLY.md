@@ -38,19 +38,20 @@ Set with `fly secrets set` only if you prefer; these are not inherently secret:
 | Name | Notes |
 |------|--------|
 | `GO_API_URL` | See `.env.example` — use internal URL on Fly when calling sibling apps: `http://<go-app>.internal:<port>`. |
-| `TRUSTED_ORIGINS` | Comma-separated browser origins for Better Auth (`trustedOrigins`). |
-| `CORS_ORIGIN` | CORS origin for Hono (see `src/index.ts`). |
+| `TRUSTED_ORIGINS` | Comma-separated **browser** origins (scheme + host + port, no path). Used by Better Auth **and** by Hono CORS when `CORS_ORIGIN` is unset. List the SPA URL(s) users load in the browser (e.g. `https://zero-budget-web.fly.dev`). You do **not** need the Go API URL here for normal SPA requests—the browser’s `Origin` header is always the page’s site, not the API. |
+| `CORS_ORIGIN` | Optional. Comma-separated allowed origins for Hono CORS only. If unset, `TRUSTED_ORIGINS` is used so CORS matches Better Auth. Set this only if CORS must differ from `TRUSTED_ORIGINS`. |
 | `APP_URL` | Public frontend URL for invitation links. |
 
 Example:
 
 ```bash
 fly secrets set \
-  TRUSTED_ORIGINS='https://app.example.com' \
-  CORS_ORIGIN='https://app.example.com' \
-  APP_URL='https://app.example.com' \
+  TRUSTED_ORIGINS='https://zero-budget-web.fly.dev' \
+  APP_URL='https://zero-budget-web.fly.dev' \
   GO_API_URL='http://zero-budget-api.internal:8080'
 ```
+
+(`CORS_ORIGIN` omitted—Hono reuses `TRUSTED_ORIGINS`.)
 
 (Adjust app hostnames and ports to match your Fly apps.)
 

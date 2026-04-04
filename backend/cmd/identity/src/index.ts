@@ -7,10 +7,30 @@ import { db } from "./db.js";
 import { invitations } from "./schema.js";
 import { publishOrganizationInvitationCreated } from "./lib/events.js";
 
+function parseCommaOrigins(value: string | undefined): string[] {
+  if (!value?.trim()) {
+    return [];
+  }
+  return value.split(",").map((o) => o.trim()).filter(Boolean);
+}
+
+const trustedOriginsParsed = parseCommaOrigins(process.env.TRUSTED_ORIGINS);
+const trustedOriginsList =
+  trustedOriginsParsed.length > 0
+    ? trustedOriginsParsed
+    : ["http://localhost:3000"];
+
+const corsOverride = parseCommaOrigins(process.env.CORS_ORIGIN);
+const corsAllowedOrigins =
+  corsOverride.length > 0 ? corsOverride : trustedOriginsList;
+
 const app = new Hono();
 
 const corsConfig = cors({
-  origin: process.env.CORS_ORIGIN ?? "http://localhost:3000",
+  origin:
+    corsAllowedOrigins.length === 1
+      ? corsAllowedOrigins[0]
+      : corsAllowedOrigins,
   allowHeaders: ["Content-Type", "Authorization"],
   allowMethods: ["POST", "GET", "DELETE", "OPTIONS"],
   exposeHeaders: ["Content-Length"],

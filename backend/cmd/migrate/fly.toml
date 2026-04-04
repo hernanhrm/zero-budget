@@ -1,0 +1,3 @@
+# One-shot migrations: use `fly machine run` (see FLY.md). Not a long-running HTTP app.
+app = "zero-budget-migrate"
+primary_region = "iad"
