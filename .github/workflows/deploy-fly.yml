@@ -1,0 +1,143 @@
+# Deploy to Fly.io with path filters. Manual workflow_dispatch runs all four targets.
+#
+# Required: repository secret FLY_API_TOKEN (fly tokens create deploy).
+# Recommended: repository variable VITE_IDENTITY_URL (e.g. https://zero-budget-identity.fly.dev).
+# Fly: DATABASE_URL on app zero-budget-migrate (see backend/cmd/migrate/FLY.md).
+
+name: Deploy (Fly.io)
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: fly-deploy-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      api: ${{ steps.pick.outputs.api }}
+      identity: ${{ steps.pick.outputs.identity }}
+      migrate: ${{ steps.pick.outputs.migrate }}
+      frontend: ${{ steps.pick.outputs.frontend }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: dorny/paths-filter@v3
+        id: filter
+        if: github.event_name == 'push'
+        with:
+          filters: |
+            migrate:
+              - 'backend/cmd/migrate/**'
+            identity:
+              - 'backend/cmd/identity/**'
+            api:
+              - 'backend/**'
+              - '!backend/cmd/identity/**'
+              - '!backend/cmd/migrate/**'
+            frontend:
+              - 'frontend/apps/app/**'
+              - 'frontend/packages/**'
+              - 'frontend/Dockerfile'
+              - 'frontend/fly.toml'
+              - 'frontend/nginx/**'
+              - 'frontend/package.json'
+              - 'frontend/pnpm-lock.yaml'
+              - 'frontend/pnpm-workspace.yaml'
+
+      - name: Set deploy flags
+        id: pick
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "api=true" >> "$GITHUB_OUTPUT"
+            echo "identity=true" >> "$GITHUB_OUTPUT"
+            echo "migrate=true" >> "$GITHUB_OUTPUT"
+            echo "frontend=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "api=${{ steps.filter.outputs.api }}" >> "$GITHUB_OUTPUT"
+            echo "identity=${{ steps.filter.outputs.identity }}" >> "$GITHUB_OUTPUT"
+            echo "migrate=${{ steps.filter.outputs.migrate }}" >> "$GITHUB_OUTPUT"
+            echo "frontend=${{ steps.filter.outputs.frontend }}" >> "$GITHUB_OUTPUT"
+          fi
+
+  migrate:
+    needs: changes
+    runs-on: ubuntu-latest
+    steps:
+      # At least one step must run; otherwise the job fails when migrate is skipped.
+      - name: Migration path check
+        run: |
+          if [ "${{ needs.changes.outputs.migrate }}" = "true" ]; then
+            echo "Running Fly migrations (machine run)."
+          else
+            echo "No backend/cmd/migrate changes; skipping fly machine run."
+          fi
+
+      - uses: actions/checkout@v4
+        if: needs.changes.outputs.migrate == 'true'
+
+      - uses: superfly/flyctl-actions/setup-flyctl@v1
+        if: needs.changes.outputs.migrate == 'true'
+
+      - name: Run database migrations (Fly machine run)
+        if: needs.changes.outputs.migrate == 'true'
+        working-directory: backend
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          flyctl machine run . --dockerfile cmd/migrate/Dockerfile --app zero-budget-migrate \
+            --region iad --rm
+
+  deploy_api:
+    needs: [changes, migrate]
+    if: needs.changes.outputs.api == 'true' && needs.migrate.result == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: superfly/flyctl-actions/setup-flyctl@v1
+
+      - name: Deploy API
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: flyctl deploy ./backend --remote-only
+
+  deploy_identity:
+    needs: [changes, migrate]
+    if: needs.changes.outputs.identity == 'true' && needs.migrate.result == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: superfly/flyctl-actions/setup-flyctl@v1
+
+      - name: Deploy identity
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: flyctl deploy ./backend/cmd/identity --remote-only
+
+  deploy_frontend:
+    needs: changes
+    if: needs.changes.outputs.frontend == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: superfly/flyctl-actions/setup-flyctl@v1
+
+      - name: Deploy frontend (SPA)
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          flyctl deploy ./frontend --remote-only \
+            --build-arg "VITE_IDENTITY_URL=${{ vars.VITE_IDENTITY_URL }}"
