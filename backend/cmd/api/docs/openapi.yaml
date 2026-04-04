@@ -347,11 +347,19 @@ components:
           type: string
         type:
           type: string
+        institution:
+          type: string
+          maxLength: 255
+        accountNumber:
+          type: string
+          maxLength: 64
         currencyCode:
           type: string
         currentBalance:
-          type: integer
-          format: int64
+          type: number
+          format: double
+          description: |
+            Create request: amount in major display units (e.g. 40 = 40.00 USD); converted to minor units (half-up, 2 decimal places by default) via backend/infra/money MajorAmount. List/get responses use integer minor units (money.Minor).
         isActive:
           type: boolean
 
@@ -362,11 +370,18 @@ components:
           type: string
         type:
           type: string
+        institution:
+          type: string
+          maxLength: 255
+        accountNumber:
+          type: string
+          maxLength: 64
         currencyCode:
           type: string
         currentBalance:
           type: integer
           format: int64
+          description: Minor units (smallest currency unit), e.g. USD cents; see backend/infra/money
         isActive:
           type: boolean
 
@@ -382,11 +397,18 @@ components:
           type: string
         type:
           type: string
+        institution:
+          type: string
+          maxLength: 255
+        accountNumber:
+          type: string
+          maxLength: 64
         currencyCode:
           type: string
         currentBalance:
           type: integer
           format: int64
+          description: Minor units (smallest currency unit), e.g. USD cents; see backend/infra/money
         isActive:
           type: boolean
         createdAt:

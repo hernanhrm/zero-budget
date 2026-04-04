@@ -37,12 +37,16 @@ export function getTimeAgo(dateString: string): string {
 
 export function mapApiInvitation(invitation: ApiInvitation): PendingInvitation {
 	const emailPrefix = invitation.email.split("@")[0]
+	const createdAt =
+		typeof invitation.createdAt === "string"
+			? invitation.createdAt
+			: invitation.createdAt.toISOString()
 	return {
 		id: invitation.id,
 		email: invitation.email.toUpperCase(),
 		initials: getInitials(emailPrefix),
 		role: invitation.role.toUpperCase(),
-		invitedAgo: getTimeAgo(invitation.createdAt),
+		invitedAgo: getTimeAgo(createdAt),
 	}
 }
 

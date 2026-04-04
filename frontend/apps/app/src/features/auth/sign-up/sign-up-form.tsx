@@ -45,9 +45,8 @@ export function SignUpForm({
 					email: value.email,
 					password: value.password,
 					callbackURL: redirect
-					? `${window.location.origin}${redirect}`
-					: window.location.origin,
-					rememberMe: true,
+						? `${window.location.origin}${redirect}`
+						: window.location.origin,
 				})
 				if (error) {
 					onServerError(error.message ?? "Something went wrong")

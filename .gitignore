@@ -17,6 +17,9 @@ apps/api/api
 # dependencies
 node_modules
 
+# pnpm store must not live inside the repo (causes huge bogus diffs in the IDE)
+.pnpm-store
+
 # IDEs and editors
 /.idea
 .project

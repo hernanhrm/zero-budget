@@ -4,6 +4,9 @@ import { routeTree } from "./routeTree.gen"
 
 const router = createRouter({
 	routeTree,
+	context: {
+		session: null,
+	},
 	defaultPreload: "intent",
 	scrollRestoration: true,
 })

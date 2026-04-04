@@ -11,7 +11,13 @@ export interface CreateAccount {
   organizationId: string;
   name: string;
   type: string;
+  /** @maxLength 255 */
+  institution?: string;
+  /** @maxLength 64 */
+  accountNumber?: string;
   currencyCode: string;
+  /** Create request: amount in major display units (e.g. 40 = 40.00 USD); converted to minor units (half-up, 2 decimal places by default) via backend/infra/money MajorAmount. List/get responses use integer minor units (money.Minor).
+ */
   currentBalance: number;
   isActive: boolean;
 }

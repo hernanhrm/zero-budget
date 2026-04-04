@@ -1,4 +1,9 @@
 import { useForm } from "@tanstack/react-form"
+import { useQueryClient } from "@tanstack/react-query"
+import {
+	getGetV1AccountsQueryKey,
+	usePostV1Accounts,
+} from "@workspace/api/hooks/accounts/accounts"
 import { Button } from "@workspace/ui/components/button"
 import { DialogClose, DialogFooter } from "@workspace/ui/components/dialog"
 import { Field, FieldError, FieldGroup } from "@workspace/ui/components/field"
@@ -11,15 +16,27 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@workspace/ui/components/select"
+import { toast } from "@workspace/ui/lib/toast"
 import { Check } from "lucide-react"
 import { useEffect } from "react"
 
 export interface AddAccountFormProps {
 	open: boolean
 	onComplete: () => void
+	organizationId: string | undefined
 }
 
-export function AddAccountForm({ open, onComplete }: AddAccountFormProps) {
+export function AddAccountForm({
+	open,
+	onComplete,
+	organizationId,
+}: AddAccountFormProps) {
+	const queryClient = useQueryClient()
+
+	const postAccount = usePostV1Accounts({
+		fetch: { credentials: "include" },
+	})
+
 	const form = useForm({
 		defaultValues: {
 			accountName: "",
@@ -29,9 +46,62 @@ export function AddAccountForm({ open, onComplete }: AddAccountFormProps) {
 			accountNumber: "",
 			currency: "usd",
 		},
-		onSubmit: async () => {
-			form.reset()
-			onComplete()
+		onSubmit: async ({ value }) => {
+			if (!organizationId) {
+				toast.error(
+					"No active organization. Open the app from your workspace and try again.",
+				)
+				return
+			}
+
+			const name = value.accountName.trim()
+			if (name.length < 2) {
+				toast.error("Account name must be at least 2 characters.")
+				return
+			}
+
+			const type = value.accountType === "checking" ? "CHECKING" : "SAVINGS"
+			const currencyCode = "USD"
+
+			const institution = value.institution.trim()
+			const accountNumber = value.accountNumber.trim()
+
+			const balanceRaw = value.startingBalance.replace(/,/g, "").trim()
+			const balanceNum = Number.parseFloat(balanceRaw === "" ? "0" : balanceRaw)
+			if (!Number.isFinite(balanceNum)) {
+				toast.error("Enter a valid starting balance.")
+				return
+			}
+
+			try {
+				const result = await postAccount.mutateAsync({
+					data: {
+						id: crypto.randomUUID(),
+						organizationId,
+						name,
+						type,
+						...(institution !== "" ? { institution } : {}),
+						...(accountNumber !== "" ? { accountNumber } : {}),
+						currencyCode,
+						currentBalance: balanceNum,
+						isActive: true,
+					},
+				})
+
+				if (result.status !== 201) {
+					toast.error(`Could not create account (${result.status}).`)
+					return
+				}
+
+				await queryClient.invalidateQueries({
+					queryKey: getGetV1AccountsQueryKey(),
+				})
+				form.reset()
+				toast.success("Account created.")
+				onComplete()
+			} catch (e) {
+				toast.error(e instanceof Error ? e.message : "Something went wrong.")
+			}
 		},
 	})
 
@@ -215,11 +285,17 @@ export function AddAccountForm({ open, onComplete }: AddAccountFormProps) {
 						CANCEL
 					</Button>
 				</DialogClose>
-				<form.Subscribe selector={(state) => state.isSubmitting}>
-					{(isSubmitting) => (
+				<form.Subscribe
+					selector={(state) => ({
+						isSubmitting: state.isSubmitting,
+					})}
+				>
+					{({ isSubmitting }) => (
 						<Button
 							type="submit"
-							disabled={isSubmitting}
+							disabled={
+								isSubmitting || postAccount.isPending || !organizationId
+							}
 							className="gap-2 rounded-none"
 						>
 							<Check className="size-3.5" />

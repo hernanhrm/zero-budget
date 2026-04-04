@@ -5,6 +5,7 @@ go 1.24.0
 toolchain go1.24.12
 
 require (
+	backend/infra/money v0.0.0
 	github.com/google/uuid v1.6.0
 	github.com/guregu/null/v6 v6.0.0
 	github.com/jackc/pgx/v5 v5.8.0
@@ -12,6 +13,8 @@ require (
 	github.com/samber/do/v2 v2.0.0
 	github.com/samber/oops v1.21.0
 )
+
+replace backend/infra/money => ../../../../pkg/money
 
 require (
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect

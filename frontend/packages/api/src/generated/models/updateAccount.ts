@@ -9,7 +9,12 @@
 export interface UpdateAccount {
   name?: string;
   type?: string;
+  /** @maxLength 255 */
+  institution?: string;
+  /** @maxLength 64 */
+  accountNumber?: string;
   currencyCode?: string;
+  /** Minor units (smallest currency unit), e.g. USD cents; see backend/infra/money */
   currentBalance?: number;
   isActive?: boolean;
 }

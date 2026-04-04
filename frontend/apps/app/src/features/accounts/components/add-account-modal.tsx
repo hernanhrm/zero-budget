@@ -5,9 +5,14 @@ import { AddAccountForm } from "./add-account-form"
 interface AddAccountModalProps {
 	open: boolean
 	onOpenChange: (open: boolean) => void
+	organizationId: string | undefined
 }
 
-export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
+export function AddAccountModal({
+	open,
+	onOpenChange,
+	organizationId,
+}: AddAccountModalProps) {
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
 			<DialogContent
@@ -15,7 +20,11 @@ export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
 				showCloseButton={false}
 			>
 				<DialogPanelHeader title="ADD ACCOUNT" />
-				<AddAccountForm open={open} onComplete={() => onOpenChange(false)} />
+				<AddAccountForm
+					open={open}
+					onComplete={() => onOpenChange(false)}
+					organizationId={organizationId}
+				/>
 			</DialogContent>
 		</Dialog>
 	)

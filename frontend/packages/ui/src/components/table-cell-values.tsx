@@ -90,9 +90,41 @@ function TableCellAmountValue({
 	)
 }
 
+function TableCellStatusBadge({
+	active,
+	className,
+	...props
+}: React.ComponentProps<"div"> & { active: boolean }) {
+	return (
+		<div
+			data-slot="table-cell-status-badge"
+			className={cn("flex h-6 items-center justify-center", className)}
+			{...props}
+		>
+			<div className="flex items-center gap-1.5">
+				<span
+					className={cn(
+						"size-1.5 shrink-0 rounded-full",
+						active ? "bg-success" : "bg-muted-foreground",
+					)}
+				/>
+				<span
+					className={cn(
+						"font-space-grotesk text-[10px] font-bold tracking-[1px]",
+						active ? "text-success" : "text-muted-foreground",
+					)}
+				>
+					{active ? "ACTIVE" : "INACTIVE"}
+				</span>
+			</div>
+		</div>
+	)
+}
+
 export {
 	TableCellAmountValue,
 	TableCellMonoValue,
+	TableCellStatusBadge,
 	TableCellValuePrimary,
 	TableCellValueSecondary,
 	TableCellValueStack,
