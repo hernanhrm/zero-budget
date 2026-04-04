@@ -1,13 +1,22 @@
 import { Button } from "@workspace/ui/components/button"
 import { ModulePageHeader } from "@workspace/ui/components/module-page-header"
 import { Plus } from "lucide-react"
-import { useState } from "react"
-import { AccountsTable } from "./components/accounts-table"
+import { Suspense, useState } from "react"
+import { Route } from "#/routes/__root"
+import { AccountsContent } from "./components/accounts-content"
+import { AccountsDataFallback } from "./components/accounts-data-fallback"
 import { AddAccountModal } from "./components/add-account-modal"
-import { MetricCards } from "./components/metric-cards"
 
 export function AccountsPage() {
 	const [addOpen, setAddOpen] = useState(false)
+	const { session } = Route.useRouteContext()
+	const sessionData = session?.data as
+		| {
+				session?: { activeOrganizationId?: string | null }
+		  }
+		| null
+		| undefined
+	const organizationId = sessionData?.session?.activeOrganizationId ?? undefined
 
 	return (
 		<div className="flex h-full flex-col gap-8 overflow-auto p-10">
@@ -21,13 +30,15 @@ export function AccountsPage() {
 				</Button>
 			</ModulePageHeader>
 
-			<MetricCards />
+			<Suspense fallback={<AccountsDataFallback />}>
+				<AccountsContent />
+			</Suspense>
 
-			<div className="min-w-0 overflow-x-auto">
-				<AccountsTable />
-			</div>
-
-			<AddAccountModal open={addOpen} onOpenChange={setAddOpen} />
+			<AddAccountModal
+				open={addOpen}
+				onOpenChange={setAddOpen}
+				organizationId={organizationId}
+			/>
 		</div>
 	)
 }

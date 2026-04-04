@@ -11,6 +11,10 @@ export interface Account {
   organizationId?: string;
   name?: string;
   type?: string;
+  /** @maxLength 255 */
+  institution?: string;
+  /** @maxLength 64 */
+  accountNumber?: string;
   currencyCode?: string;
   currentBalance?: number;
   isActive?: boolean;

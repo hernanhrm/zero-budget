@@ -17,11 +17,12 @@ export function MembersPage() {
 	const [inviteOpen, setInviteOpen] = useState(false)
 
 	const currentUserId = session?.data?.user?.id ?? ""
-	const apiMembers = loaderData?.members?.members || []
+	const membersResult = loaderData?.members
+	const apiMembers = membersResult?.data?.members ?? []
 	const members = apiMembers.map(mapApiMember)
 	const isLoading = !loaderData
-	const error = loaderData?.members?.error
-		? String(loaderData.members.error)
+	const error = membersResult?.error
+		? String(membersResult.error.message ?? membersResult.error)
 		: null
 
 	const apiInvitations = (loaderData?.invitations ?? []) as ApiInvitation[]

@@ -10,7 +10,7 @@ export const Route = createFileRoute("/_protected/members")({
 			}),
 			authClient.organization.listInvitations(),
 		])
-		return { members: membersRes.data, invitations: invitationsRes.data }
+		return { members: membersRes, invitations: invitationsRes.data }
 	},
 	component: MembersPage,
 })

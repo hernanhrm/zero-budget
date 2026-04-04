@@ -5,7 +5,7 @@ import {
 	TableCellValueStack,
 } from "@workspace/ui/components/table-cell-values"
 import { TableColumnHeader } from "@workspace/ui/components/table-column-header"
-import type { AccountRow } from "../mock-rows"
+import type { AccountRow } from "../account-row"
 
 type AccountColumnMeta = {
 	headerClassName?: string
@@ -72,15 +72,30 @@ export const accountsColumns: ColumnDef<AccountRow, unknown>[] = [
 			cellClassName: "w-[100px] px-6 py-4 text-center",
 		} satisfies AccountColumnMeta,
 		header: () => <TableColumnHeader>STATUS</TableColumnHeader>,
-		cell: () => (
-			<div className="flex h-6 items-center justify-center">
-				<div className="flex items-center gap-1.5">
-					<span className="size-1.5 shrink-0 rounded-full bg-success" />
-					<span className="font-space-grotesk text-[10px] font-bold tracking-[1px] text-success">
-						ACTIVE
-					</span>
+		cell: ({ row }) => {
+			const active = row.original.isActive
+			return (
+				<div className="flex h-6 items-center justify-center">
+					<div className="flex items-center gap-1.5">
+						<span
+							className={
+								active
+									? "size-1.5 shrink-0 rounded-full bg-success"
+									: "size-1.5 shrink-0 rounded-full bg-muted-foreground"
+							}
+						/>
+						<span
+							className={
+								active
+									? "font-space-grotesk text-[10px] font-bold tracking-[1px] text-success"
+									: "font-space-grotesk text-[10px] font-bold tracking-[1px] text-muted-foreground"
+							}
+						>
+							{active ? "ACTIVE" : "INACTIVE"}
+						</span>
+					</div>
 				</div>
-			</div>
-		),
+			)
+		},
 	},
 ]

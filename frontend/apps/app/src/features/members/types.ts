@@ -33,8 +33,8 @@ export interface ApiInvitation {
 	role: string
 	status: string
 	inviterId: string
-	createdAt: string
-	expiresAt: string
+	createdAt: string | Date
+	expiresAt: string | Date
 }
 
 export interface ApiMember {

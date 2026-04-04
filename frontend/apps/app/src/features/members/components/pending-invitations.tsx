@@ -17,7 +17,7 @@ export function PendingInvitations({
 	const handleResend = useCallback(async (invitation: PendingInvitation) => {
 		const { error } = await authClient.organization.inviteMember({
 			email: invitation.email.toLowerCase(),
-			role: invitation.role.toLowerCase(),
+			role: invitation.role.toLowerCase() as "member" | "admin" | "owner",
 			resend: true,
 		})
 

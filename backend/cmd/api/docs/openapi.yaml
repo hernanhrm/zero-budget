@@ -347,6 +347,12 @@ components:
           type: string
         type:
           type: string
+        institution:
+          type: string
+          maxLength: 255
+        accountNumber:
+          type: string
+          maxLength: 64
         currencyCode:
           type: string
         currentBalance:
@@ -362,6 +368,12 @@ components:
           type: string
         type:
           type: string
+        institution:
+          type: string
+          maxLength: 255
+        accountNumber:
+          type: string
+          maxLength: 64
         currencyCode:
           type: string
         currentBalance:
@@ -382,6 +394,12 @@ components:
           type: string
         type:
           type: string
+        institution:
+          type: string
+          maxLength: 255
+        accountNumber:
+          type: string
+          maxLength: 64
         currencyCode:
           type: string
         currentBalance:
