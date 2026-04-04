@@ -1,0 +1,8 @@
+{
+	// Must match the Pages project name in Cloudflare (Workers & Pages → your Pages project).
+	// Or run: npx wrangler pages download config
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "zero-budget",
+	"compatibility_date": "2026-04-04",
+	"pages_build_output_dir": "./apps/app/dist"
+}

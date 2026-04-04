@@ -11,6 +11,17 @@ In Cloudflare **Workers & Pages** → **Create** → **Pages** → connect your 
 | **Root directory** | `frontend` |
 | **Build command** | `pnpm install --frozen-lockfile && pnpm --filter app build` |
 | **Build output directory** | `apps/app/dist` |
+| **Deploy command** | **Leave empty.** After a successful build, Pages uploads the build output directory automatically ([build configuration](https://developers.cloudflare.com/pages/configuration/build-configuration/)). |
+
+**Do not** set the deploy command to `npx wrangler versions upload`. That command is for **Workers** (new version uploads) and expects a Worker entry point or Workers [static assets](https://developers.cloudflare.com/workers/static-assets/) config—not a Pages project. You will see: *Missing entry-point to Worker script or to assets directory*.
+
+If you truly need Wrangler in the deploy step (unusual for Git-connected Pages), use **Pages** deploy instead, from the repo root `frontend/`:
+
+```bash
+npx wrangler pages deploy apps/app/dist --project-name=<your-pages-project-name>
+```
+
+Or rely on [`../../wrangler.jsonc`](../../wrangler.jsonc) (`pages_build_output_dir` + `name`) and run `npx wrangler pages deploy` with no positional path—after setting `"name"` to match your dashboard project.
 
 ### Environment variables
 
