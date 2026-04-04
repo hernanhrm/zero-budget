@@ -13,7 +13,7 @@ In Cloudflare **Workers & Pages** → **Create** → **Pages** → connect your 
 | **Build output directory** | `apps/app/dist` |
 | **Deploy command** | **Leave empty.** After a successful build, Pages uploads the build output directory automatically ([build configuration](https://developers.cloudflare.com/pages/configuration/build-configuration/)). |
 
-**Do not** set the deploy command to `npx wrangler versions upload`. That command is for **Workers** (new version uploads) and expects a Worker entry point or Workers [static assets](https://developers.cloudflare.com/workers/static-assets/) config—not a Pages project. You will see: *Missing entry-point to Worker script or to assets directory*.
+**Do not** set the deploy command to `npx wrangler versions upload` unless you mean to publish via **Workers** [static assets](https://developers.cloudflare.com/workers/static-assets/). That command does **not** read `pages_build_output_dir`; it needs a Worker `main` script or an `assets.directory` in [`wrangler.jsonc`](../../wrangler.jsonc). This repo sets both `pages_build_output_dir` and `assets.directory` to `./apps/app/dist` so `versions upload` can resolve the folder—but **clearing the deploy command** is still the right setup for a normal **Pages** Git project (Pages uploads the build output for you).
 
 If you truly need Wrangler in the deploy step (unusual for Git-connected Pages), use **Pages** deploy instead, from the repo root `frontend/`:
 
