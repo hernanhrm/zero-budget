@@ -9,7 +9,7 @@ In Cloudflare **Workers & Pages** → **Create** → **Pages** → connect your 
 | Setting | Value |
 |--------|--------|
 | **Root directory** | `frontend` |
-| **Build command** | `pnpm install --frozen-lockfile && pnpm --filter app build` |
+| **Build command** | `pnpm install --frozen-lockfile && pnpm --filter app build` (**required** — if this is empty, `dist` is never created) |
 | **Build output directory** | `apps/app/dist` |
 | **Deploy command** | **Leave empty** (recommended). Pages uploads **Build output directory** after a successful build ([build configuration](https://developers.cloudflare.com/pages/configuration/build-configuration/)). |
 
