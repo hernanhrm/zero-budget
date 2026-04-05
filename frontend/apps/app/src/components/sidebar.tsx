@@ -1,5 +1,7 @@
 import { Link, useMatchRoute } from "@tanstack/react-router"
 
+import { ThemeToggle } from "#/components/theme-toggle"
+
 const navItems = [
 	{ label: "BUDGET", to: "/" },
 	{ label: "TRANSACTIONS", to: "/transactions" },
@@ -16,9 +18,7 @@ function NavItem({ label, to }: { label: string; to: string }) {
 		<Link
 			to={to}
 			className={`flex h-12 items-center gap-4 px-6 ${
-				isActive
-					? "border-l-[3px] border-primary"
-					: ""
+				isActive ? "border-l-[3px] border-primary" : ""
 			}`}
 		>
 			<div
@@ -43,7 +43,7 @@ export function Sidebar() {
 			<div className="flex flex-col">
 				<div className="flex items-center gap-3 border-b border-border px-6 py-6">
 					<div className="flex h-9 w-9 items-center justify-center bg-primary">
-						<span className="font-space-grotesk text-lg font-bold text-primary-foreground">
+						<span className="font-space-grotesk text-lg font-bold text-white dark:text-primary-foreground">
 							B
 						</span>
 					</div>
@@ -53,20 +53,19 @@ export function Sidebar() {
 				</div>
 				<nav className="flex flex-col gap-0.5 py-6">
 					{navItems.map((item) => (
-						<NavItem
-							key={item.label}
-							label={item.label}
-							to={item.to}
-						/>
+						<NavItem key={item.label} label={item.label} to={item.to} />
 					))}
 				</nav>
 			</div>
 			<div className="border-t border-border px-6 pb-6">
-				<div className="flex h-16 items-center gap-3 pt-4">
-					<div className="h-2.5 w-2.5 bg-primary" />
-					<span className="font-space-grotesk text-xs font-bold tracking-[1px] text-foreground">
-						JOHN.DOE
-					</span>
+				<div className="flex h-16 items-center justify-between gap-3 pt-4">
+					<div className="flex min-w-0 items-center gap-3">
+						<div className="h-2.5 w-2.5 shrink-0 bg-primary" />
+						<span className="truncate font-space-grotesk text-xs font-bold tracking-[1px] text-foreground">
+							JOHN.DOE
+						</span>
+					</div>
+					<ThemeToggle />
 				</div>
 			</div>
 		</aside>

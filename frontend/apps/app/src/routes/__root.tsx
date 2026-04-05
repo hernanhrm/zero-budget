@@ -1,6 +1,7 @@
 import { QueryClientProvider } from "@tanstack/react-query"
 import { createRootRouteWithContext, Outlet } from "@tanstack/react-router"
 import { Toaster } from "@workspace/ui/components/toaster"
+import { ThemeProvider } from "next-themes"
 import { lazy, Suspense } from "react"
 import { authClient } from "#/lib/auth-client"
 import { queryClient } from "#/lib/query-client"
@@ -22,14 +23,21 @@ export const Route = createRootRouteWithContext<{
 
 function RootComponent() {
 	return (
-		<QueryClientProvider client={queryClient}>
-			<Outlet />
-			<Toaster />
-			{RootDevtools ? (
-				<Suspense fallback={null}>
-					<RootDevtools />
-				</Suspense>
-			) : null}
-		</QueryClientProvider>
+		<ThemeProvider
+			attribute="class"
+			defaultTheme="dark"
+			enableSystem
+			disableTransitionOnChange
+		>
+			<QueryClientProvider client={queryClient}>
+				<Outlet />
+				<Toaster />
+				{RootDevtools ? (
+					<Suspense fallback={null}>
+						<RootDevtools />
+					</Suspense>
+				) : null}
+			</QueryClientProvider>
+		</ThemeProvider>
 	)
 }
