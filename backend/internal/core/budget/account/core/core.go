@@ -4,28 +4,33 @@ import (
 	"context"
 
 	"backend/core/budget/account/port"
+	transactionport "backend/core/budget/transaction/port"
+	"backend/infra/dafi"
 	basedomain "backend/port"
 	apperrors "backend/port/errors"
-	"backend/infra/dafi"
+
 	"github.com/samber/oops"
 )
 
 type service struct {
-	repo   port.Repository
-	logger basedomain.Logger
+	repo                  port.Repository
+	transactionRepository transactionport.Repository
+	logger                basedomain.Logger
 }
 
-func New(repo port.Repository, logger basedomain.Logger) port.Service {
+func New(repo port.Repository, transactionRepository transactionport.Repository, logger basedomain.Logger) port.Service {
 	return service{
-		repo:   repo,
-		logger: logger.With("component", "account.service"),
+		repo:                  repo,
+		transactionRepository: transactionRepository,
+		logger:                logger.With("component", "account.service"),
 	}
 }
 
 func (s service) WithTx(tx basedomain.Transaction) port.Service {
 	return service{
-		repo:   s.repo.WithTx(tx),
-		logger: s.logger,
+		repo:                  s.repo.WithTx(tx),
+		transactionRepository: s.transactionRepository.WithTx(tx),
+		logger:                s.logger,
 	}
 }
 
@@ -86,6 +91,25 @@ func (s service) Update(ctx context.Context, input port.UpdateAccount, filters .
 }
 
 func (s service) Delete(ctx context.Context, filters ...dafi.Filter) error {
+	criteria := dafi.Criteria{Filters: filters}
+
+	acct, err := s.repo.FindOne(ctx, criteria)
+	if err != nil {
+		return oops.WithContext(ctx).In(apperrors.LayerService).Wrap(err)
+	}
+
+	n, err := s.transactionRepository.CountByAccountID(ctx, acct.ID)
+	if err != nil {
+		return oops.WithContext(ctx).In(apperrors.LayerService).Wrap(err)
+	}
+
+	if n > 0 {
+		return oops.WithContext(ctx).In(apperrors.LayerService).
+			Code(apperrors.CodeConflict).
+			Public("This account has transactions. Disable it instead of deleting.").
+			Errorf("account %s has %d transaction(s)", acct.ID, n)
+	}
+
 	if err := s.repo.Delete(ctx, filters...); err != nil {
 		return oops.WithContext(ctx).In(apperrors.LayerService).Wrap(err)
 	}

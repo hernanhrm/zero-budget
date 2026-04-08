@@ -15,7 +15,7 @@ This skill orchestrates the creation of a new backend feature module. It enforce
 
 Every `adapter/postgres` `Update` method that uses `sqlcraft.Update` must chain **`.WithPartialUpdate()`** after `.SQLColumnByDomainField(...)`. That emits `SET column = COALESCE($n, column)` so nullable / unset DTO fields (for example `guregu/null`) keep the existing row value instead of overwriting with SQL `NULL`.
 
-List every updatable column in `.WithColumns` / `.WithValues` in a fixed order; do not build dynamic column slices for partial updates.
+The scaffold template below builds `cols` and `vals` from optional fields, then passes them to `.WithColumns(cols...)` and `.WithValues(vals...)`. In mature modules you may instead list every updatable column in a fixed order; keep `.WithPartialUpdate()` in either style.
 
 ## Important: Client-Provided IDs
 
@@ -488,9 +488,18 @@ func (r postgres) CreateBulk(ctx context.Context, inputs baseport.List[port.Crea
 }
 
 func (r postgres) Update(ctx context.Context, input port.Update{{Module}}, filters ...dafi.Filter) error {
+	cols := []string{}
+	vals := []any{}
+	if input.Name.Valid {
+		cols = append(cols, "name")
+		vals = append(vals, input.Name.String)
+	}
+	cols = append(cols, "updated_at")
+	vals = append(vals, time.Now())
+
 	query := sqlcraft.Update(tableName).
-		WithColumns("name", "updated_at").
-		WithValues(input.Name, time.Now()).
+		WithColumns(cols...).
+		WithValues(vals...).
 		Where(filters...).
 		SQLColumnByDomainField(sqlColumnByDomainField).
 		WithPartialUpdate()

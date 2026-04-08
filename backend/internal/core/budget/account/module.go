@@ -21,9 +21,9 @@ func Module(i do.Injector) {
 
 	di.Provide(i, func(i do.Injector) (port.Service, error) {
 		repo := di.MustInvoke[port.Repository](i)
-		txnRepo := di.MustInvoke[transactionport.Repository](i)
+		transactionRepository := di.MustInvoke[transactionport.Repository](i)
 		logger := di.MustInvoke[basedomain.Logger](i)
-		return core.New(repo, txnRepo, logger), nil
+		return core.New(repo, transactionRepository, logger), nil
 	})
 
 	di.Provide(i, func(i do.Injector) (handler.HTTP, error) {

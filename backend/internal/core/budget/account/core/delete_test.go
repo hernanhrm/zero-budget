@@ -141,9 +141,9 @@ func TestService_Delete_NoTransactions_Deletes(t *testing.T) {
 			UpdatedAt:      time.Now(),
 		},
 	}
-	txnRepo := &stubTxnRepo{count: 0}
+	transactionRepository := &stubTxnRepo{count: 0}
 
-	svc := New(acctRepo, txnRepo, noopLogger{})
+	svc := New(acctRepo, transactionRepository, noopLogger{})
 
 	err := svc.Delete(context.Background(), dafi.FilterBy("id", dafi.Equal, id.String())...)
 	require.NoError(t, err)
@@ -167,9 +167,9 @@ func TestService_Delete_HasTransactions_Conflict(t *testing.T) {
 			UpdatedAt:      time.Now(),
 		},
 	}
-	txnRepo := &stubTxnRepo{count: 3}
+	transactionRepository := &stubTxnRepo{count: 3}
 
-	svc := New(acctRepo, txnRepo, noopLogger{})
+	svc := New(acctRepo, transactionRepository, noopLogger{})
 
 	err := svc.Delete(context.Background(), dafi.FilterBy("id", dafi.Equal, id.String())...)
 	require.Error(t, err)
@@ -186,9 +186,9 @@ func TestService_Delete_FindOneError_NoDelete(t *testing.T) {
 
 	id := uuid.MustParse("33333333-3333-3333-3333-333333333333")
 	acctRepo := &stubAccountRepo{findErr: oops.Code(apperrors.CodeNotFound).Errorf("missing")}
-	txnRepo := &stubTxnRepo{}
+	transactionRepository := &stubTxnRepo{}
 
-	svc := New(acctRepo, txnRepo, noopLogger{})
+	svc := New(acctRepo, transactionRepository, noopLogger{})
 
 	err := svc.Delete(context.Background(), dafi.FilterBy("id", dafi.Equal, id.String())...)
 	require.Error(t, err)
