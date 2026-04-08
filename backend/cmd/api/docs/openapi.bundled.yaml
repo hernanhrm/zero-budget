@@ -399,6 +399,12 @@ paths:
       responses:
         '204':
           description: Account deleted successfully
+        '404':
+          description: Account not found
+        '409':
+          description: |
+            Account cannot be deleted because it has related transactions.
+            Disable the account (set isActive to false) instead.
   /v1/categories:
     get:
       summary: Find all categories

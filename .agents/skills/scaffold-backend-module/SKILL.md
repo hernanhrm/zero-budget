@@ -11,6 +11,12 @@ allowed-tools: [Write, Edit, Bash, Glob, Read]
 
 This skill orchestrates the creation of a new backend feature module. It enforces Hexagonal Architecture, wires the API, and secures the database with RLS.
 
+## Important: Postgres `Update` and partial fields
+
+Every `adapter/postgres` `Update` method that uses `sqlcraft.Update` must chain **`.WithPartialUpdate()`** after `.SQLColumnByDomainField(...)`. That emits `SET column = COALESCE($n, column)` so nullable / unset DTO fields (for example `guregu/null`) keep the existing row value instead of overwriting with SQL `NULL`.
+
+List every updatable column in `.WithColumns` / `.WithValues` in a fixed order; do not build dynamic column slices for partial updates.
+
 ## Important: Client-Provided IDs
 
 All modules in this project use **client-provided UUIDs** for entity IDs. The client is responsible for generating and sending the ID when creating entities. The repository uses `input.ID` directly instead of generating IDs.
@@ -482,20 +488,12 @@ func (r postgres) CreateBulk(ctx context.Context, inputs baseport.List[port.Crea
 }
 
 func (r postgres) Update(ctx context.Context, input port.Update{{Module}}, filters ...dafi.Filter) error {
-	cols := []string{}
-	vals := []any{}
-	if input.Name.Valid {
-		cols = append(cols, "name")
-		vals = append(vals, input.Name.String)
-	}
-	cols = append(cols, "updated_at")
-	vals = append(vals, time.Now())
-
 	query := sqlcraft.Update(tableName).
-		WithColumns(cols...).
-		WithValues(vals...).
+		WithColumns("name", "updated_at").
+		WithValues(input.Name, time.Now()).
 		Where(filters...).
-		SQLColumnByDomainField(sqlColumnByDomainField)
+		SQLColumnByDomainField(sqlColumnByDomainField).
+		WithPartialUpdate()
 
 	result, err := query.ToSQL()
 	if err != nil {

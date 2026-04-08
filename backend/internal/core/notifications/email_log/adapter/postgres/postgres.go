@@ -231,7 +231,8 @@ func (r postgres) Update(ctx context.Context, input port.UpdateEmailLog, filters
 		WithColumns("status", "error_message").
 		WithValues(input.Status, input.ErrorMessage).
 		Where(filters...).
-		SQLColumnByDomainField(sqlColumnByDomainField)
+		SQLColumnByDomainField(sqlColumnByDomainField).
+		WithPartialUpdate()
 
 	result, err := query.ToSQL()
 	if err != nil {

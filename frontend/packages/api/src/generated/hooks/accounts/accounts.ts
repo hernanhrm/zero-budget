@@ -417,12 +417,24 @@ export type deleteV1AccountsIdResponse204 = {
   status: 204
 }
 
+export type deleteV1AccountsIdResponse404 = {
+  data: void
+  status: 404
+}
+
+export type deleteV1AccountsIdResponse409 = {
+  data: void
+  status: 409
+}
+
 export type deleteV1AccountsIdResponseSuccess = (deleteV1AccountsIdResponse204) & {
   headers: Headers;
 };
-;
+export type deleteV1AccountsIdResponseError = (deleteV1AccountsIdResponse404 | deleteV1AccountsIdResponse409) & {
+  headers: Headers;
+};
 
-export type deleteV1AccountsIdResponse = (deleteV1AccountsIdResponseSuccess)
+export type deleteV1AccountsIdResponse = (deleteV1AccountsIdResponseSuccess | deleteV1AccountsIdResponseError)
 
 export const getDeleteV1AccountsIdUrl = (id: string,) => {
 
@@ -452,7 +464,7 @@ export const deleteV1AccountsId = async (id: string, options?: RequestInit): Pro
 
 
 
-export const getDeleteV1AccountsIdMutationOptions = <TError = unknown,
+export const getDeleteV1AccountsIdMutationOptions = <TError = void,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteV1AccountsId>>, TError,{id: string}, TContext>, fetch?: RequestInit}
 ): UseMutationOptions<Awaited<ReturnType<typeof deleteV1AccountsId>>, TError,{id: string}, TContext> => {
 
@@ -481,12 +493,12 @@ const {mutation: mutationOptions, fetch: fetchOptions} = options ?
 
     export type DeleteV1AccountsIdMutationResult = NonNullable<Awaited<ReturnType<typeof deleteV1AccountsId>>>
     
-    export type DeleteV1AccountsIdMutationError = unknown
+    export type DeleteV1AccountsIdMutationError = void
 
     /**
  * @summary Delete account
  */
-export const useDeleteV1AccountsId = <TError = unknown,
+export const useDeleteV1AccountsId = <TError = void,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteV1AccountsId>>, TError,{id: string}, TContext>, fetch?: RequestInit}
  ): UseMutationResult<
         Awaited<ReturnType<typeof deleteV1AccountsId>>,

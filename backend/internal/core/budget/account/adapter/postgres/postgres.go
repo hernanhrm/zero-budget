@@ -246,7 +246,8 @@ func (r postgres) Update(ctx context.Context, input port.UpdateAccount, filters 
 			time.Now(),
 		).
 		Where(filters...).
-		SQLColumnByDomainField(sqlColumnByDomainField)
+		SQLColumnByDomainField(sqlColumnByDomainField).
+		WithPartialUpdate()
 
 	result, err := query.ToSQL()
 	if err != nil {
@@ -263,6 +264,8 @@ func (r postgres) Update(ctx context.Context, input port.UpdateAccount, filters 
 	return nil
 }
 
+const pgErrForeignKeyViolation = "23503"
+
 func (r postgres) Delete(ctx context.Context, filters ...dafi.Filter) error {
 	query := sqlcraft.DeleteFrom(tableName).
 		Where(filters...).
@@ -277,6 +280,13 @@ func (r postgres) Delete(ctx context.Context, filters ...dafi.Filter) error {
 
 	_, err = r.db.Exec(ctx, result.SQL, result.Args...)
 	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) && pgErr.Code == pgErrForeignKeyViolation {
+			return oops.WithContext(ctx).In(apperrors.LayerRepository).
+				Code(apperrors.CodeConflict).
+				Public("This account has transactions. Disable it instead of deleting.").
+				Wrap(err)
+		}
 		return oops.WithContext(ctx).In(apperrors.LayerRepository).Wrap(err)
 	}
 
