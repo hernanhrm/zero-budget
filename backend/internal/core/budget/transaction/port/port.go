@@ -1,11 +1,18 @@
 package port
 
-import basedomain "backend/port"
+import (
+	"context"
+
+	basedomain "backend/port"
+
+	"github.com/google/uuid"
+)
 
 type Repository interface {
 	basedomain.RepositoryCommand[CreateTransaction, UpdateTransaction]
 	basedomain.RepositoryQuery[Transaction]
 	basedomain.RepositoryTx[Repository]
+	CountByAccountID(ctx context.Context, accountID uuid.UUID) (int64, error)
 }
 
 type Service interface {

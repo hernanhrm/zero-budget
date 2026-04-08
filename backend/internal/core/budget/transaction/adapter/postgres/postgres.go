@@ -12,6 +12,7 @@ import (
 	"backend/adapter/database"
 	"backend/infra/sqlcraft"
 
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/samber/oops"
@@ -259,7 +260,8 @@ func (r postgres) Update(ctx context.Context, input port.UpdateTransaction, filt
 			time.Now(),
 		).
 		Where(filters...).
-		SQLColumnByDomainField(sqlColumnByDomainField)
+		SQLColumnByDomainField(sqlColumnByDomainField).
+		WithPartialUpdate()
 
 	result, err := query.ToSQL()
 	if err != nil {
@@ -274,6 +276,20 @@ func (r postgres) Update(ctx context.Context, input port.UpdateTransaction, filt
 	}
 
 	return nil
+}
+
+func (r postgres) CountByAccountID(ctx context.Context, accountID uuid.UUID) (int64, error) {
+	const q = `SELECT COUNT(*) FROM budget.transactions WHERE account_id = $1`
+
+	r.logger.WithContext(ctx).Debug("executing query", "sql", q)
+
+	var n int64
+	err := r.db.QueryRow(ctx, q, accountID).Scan(&n)
+	if err != nil {
+		return 0, oops.WithContext(ctx).In(apperrors.LayerRepository).Wrap(err)
+	}
+
+	return n, nil
 }
 
 func (r postgres) Delete(ctx context.Context, filters ...dafi.Filter) error {

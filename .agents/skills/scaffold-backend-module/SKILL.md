@@ -11,6 +11,12 @@ allowed-tools: [Write, Edit, Bash, Glob, Read]
 
 This skill orchestrates the creation of a new backend feature module. It enforces Hexagonal Architecture, wires the API, and secures the database with RLS.
 
+## Important: Postgres `Update` and partial fields
+
+Every `adapter/postgres` `Update` method that uses `sqlcraft.Update` must chain **`.WithPartialUpdate()`** after `.SQLColumnByDomainField(...)`. That emits `SET column = COALESCE($n, column)` so nullable / unset DTO fields (for example `guregu/null`) keep the existing row value instead of overwriting with SQL `NULL`.
+
+The scaffold template below builds `cols` and `vals` from optional fields, then passes them to `.WithColumns(cols...)` and `.WithValues(vals...)`. In mature modules you may instead list every updatable column in a fixed order; keep `.WithPartialUpdate()` in either style.
+
 ## Important: Client-Provided IDs
 
 All modules in this project use **client-provided UUIDs** for entity IDs. The client is responsible for generating and sending the ID when creating entities. The repository uses `input.ID` directly instead of generating IDs.
@@ -495,7 +501,8 @@ func (r postgres) Update(ctx context.Context, input port.Update{{Module}}, filte
 		WithColumns(cols...).
 		WithValues(vals...).
 		Where(filters...).
-		SQLColumnByDomainField(sqlColumnByDomainField)
+		SQLColumnByDomainField(sqlColumnByDomainField).
+		WithPartialUpdate()
 
 	result, err := query.ToSQL()
 	if err != nil {

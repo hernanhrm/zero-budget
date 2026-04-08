@@ -35,7 +35,15 @@ function normalizeAccountsPayload(parsedBody: unknown): Account[] {
 	return []
 }
 
-export function AccountsContent() {
+export interface AccountsContentProps {
+	onEditAccount: (account: Account) => void
+	onDeleteAccount: (account: Account) => void
+}
+
+export function AccountsContent({
+	onEditAccount,
+	onDeleteAccount,
+}: AccountsContentProps) {
 	const lastAccountsErrorToast = useRef<string | null>(null)
 
 	const { data: res } = useSuspenseQuery({
@@ -52,6 +60,34 @@ export function AccountsContent() {
 	}, [res])
 
 	const rows = useMemo(() => mapAccountsToRows(accounts), [accounts])
+
+	const accountById = useMemo(() => {
+		const m = new Map<string, Account>()
+		for (const a of accounts) {
+			if (a.id) {
+				m.set(a.id, a)
+			}
+		}
+		return m
+	}, [accounts])
+
+	const columnOptions = useMemo(
+		() => ({
+			onEdit: (row: (typeof rows)[number]) => {
+				const acct = accountById.get(row.id)
+				if (acct) {
+					onEditAccount(acct)
+				}
+			},
+			onDelete: (row: (typeof rows)[number]) => {
+				const acct = accountById.get(row.id)
+				if (acct) {
+					onDeleteAccount(acct)
+				}
+			},
+		}),
+		[accountById, onEditAccount, onDeleteAccount],
+	)
 
 	const listError = useMemo((): string | null => {
 		if (res && res.status !== 200) {
@@ -77,7 +113,7 @@ export function AccountsContent() {
 			<MetricCards accounts={accounts} />
 
 			<div className="min-w-0 overflow-x-auto">
-				<AccountsTable rows={rows} />
+				<AccountsTable rows={rows} columnOptions={columnOptions} />
 			</div>
 		</>
 	)

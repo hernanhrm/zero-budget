@@ -229,7 +229,8 @@ func (r postgres) Update(ctx context.Context, input port.UpdateBudget, filters .
 			time.Now(),
 		).
 		Where(filters...).
-		SQLColumnByDomainField(sqlColumnByDomainField)
+		SQLColumnByDomainField(sqlColumnByDomainField).
+		WithPartialUpdate()
 
 	result, err := query.ToSQL()
 	if err != nil {
