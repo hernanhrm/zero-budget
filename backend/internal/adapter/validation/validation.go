@@ -27,6 +27,7 @@ var (
 	Date         = validation.Date
 	Each         = validation.Each
 	When         = validation.When
+	By           = validation.By
 )
 
 // Re-export is validators for common formats.

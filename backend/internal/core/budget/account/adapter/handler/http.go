@@ -1,12 +1,14 @@
 package handler
 
 import (
+	"backend/core/budget/account/accounttype"
 	"backend/core/budget/account/port"
 	"backend/infra/dafi"
 	"backend/infra/httpresponse"
 	basedomain "backend/port"
 	apperrors "backend/port/errors"
 
+	"github.com/guregu/null/v6"
 	"github.com/labstack/echo/v4"
 	"github.com/samber/oops"
 )
@@ -60,6 +62,7 @@ func (h HTTP) Create(c echo.Context) error {
 	if err := c.Bind(&input); err != nil {
 		return oops.WithContext(ctx).In(apperrors.LayerHandler).Code(apperrors.CodeBadRequest).Wrap(err)
 	}
+	input.Type = accounttype.Normalize(input.Type)
 
 	if err := h.svc.Create(ctx, input); err != nil {
 		return oops.WithContext(ctx).In(apperrors.LayerHandler).Wrap(err)
@@ -75,6 +78,9 @@ func (h HTTP) Update(c echo.Context) error {
 	var input port.UpdateAccount
 	if err := c.Bind(&input); err != nil {
 		return oops.WithContext(ctx).In(apperrors.LayerHandler).Code(apperrors.CodeBadRequest).Wrap(err)
+	}
+	if input.Type.Valid {
+		input.Type = null.StringFrom(accounttype.Normalize(input.Type.String))
 	}
 
 	filters := dafi.FilterBy("id", dafi.Equal, id)
