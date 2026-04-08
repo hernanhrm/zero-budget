@@ -327,6 +327,24 @@ components:
           format: date-time
 
     # Account schemas
+    AccountType:
+      type: string
+      description: |
+        Canonical account classification (uppercase). Liability types (e.g. CREDIT_CARD, LOAN) use the same
+        balance field as assets; sign conventions are not enforced by the API.
+      enum:
+        - CHECKING
+        - SAVINGS
+        - CASH
+        - CREDIT_CARD
+        - MONEY_MARKET
+        - INVESTMENT
+        - RETIREMENT
+        - LOAN
+        - MORTGAGE
+        - LINE_OF_CREDIT
+        - OTHER
+
     CreateAccount:
       type: object
       required:
@@ -346,7 +364,7 @@ components:
         name:
           type: string
         type:
-          type: string
+          $ref: '#/components/schemas/AccountType'
         institution:
           type: string
           maxLength: 255
@@ -369,7 +387,7 @@ components:
         name:
           type: string
         type:
-          type: string
+          $ref: '#/components/schemas/AccountType'
         institution:
           type: string
           maxLength: 255
@@ -396,7 +414,7 @@ components:
         name:
           type: string
         type:
-          type: string
+          $ref: '#/components/schemas/AccountType'
         institution:
           type: string
           maxLength: 255

@@ -5,10 +5,11 @@
  * API documentation for Zero Budget application
  * OpenAPI spec version: 1.0.0
  */
+import type { AccountType } from './accountType';
 
 export interface UpdateAccount {
   name?: string;
-  type?: string;
+  type?: AccountType;
   /** @maxLength 255 */
   institution?: string;
   /** @maxLength 64 */

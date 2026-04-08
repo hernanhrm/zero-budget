@@ -7,6 +7,7 @@
  */
 
 export * from './account';
+export * from './accountType';
 export * from './apiRoute';
 export * from './apiRouteMethod';
 export * from './budget';

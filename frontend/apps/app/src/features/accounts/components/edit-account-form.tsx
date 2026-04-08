@@ -21,6 +21,11 @@ import { Switch } from "@workspace/ui/components/switch"
 import { toast } from "@workspace/ui/lib/toast"
 import { Check } from "lucide-react"
 import { useEffect } from "react"
+import {
+	ACCOUNT_TYPE_OPTIONS,
+	accountTypeFromApi,
+	type AccountTypeValue,
+} from "../account-type-options"
 
 function apiProblemDetail(data: unknown): string | undefined {
 	if (data !== null && typeof data === "object" && "detail" in data) {
@@ -28,11 +33,6 @@ function apiProblemDetail(data: unknown): string | undefined {
 		return typeof d === "string" ? d : undefined
 	}
 	return undefined
-}
-
-function typeToForm(t: string | null | undefined): "checking" | "savings" {
-	const u = (t ?? "").toUpperCase()
-	return u === "SAVINGS" ? "savings" : "checking"
 }
 
 export interface EditAccountFormProps {
@@ -55,7 +55,7 @@ export function EditAccountForm({
 	const form = useForm({
 		defaultValues: {
 			accountName: account.name ?? "",
-			accountType: typeToForm(account.type),
+			accountType: accountTypeFromApi(account.type),
 			institution: account.institution ?? "",
 			accountNumber: account.accountNumber ?? "",
 			isActive: account.isActive ?? true,
@@ -73,7 +73,7 @@ export function EditAccountForm({
 				return
 			}
 
-			const type = value.accountType === "checking" ? "CHECKING" : "SAVINGS"
+			const type = value.accountType
 			const institution = value.institution.trim()
 			const accountNumber = value.accountNumber.trim()
 
@@ -114,7 +114,7 @@ export function EditAccountForm({
 		}
 		form.reset({
 			accountName: account.name ?? "",
-			accountType: typeToForm(account.type),
+			accountType: accountTypeFromApi(account.type),
 			institution: account.institution ?? "",
 			accountNumber: account.accountNumber ?? "",
 			isActive: account.isActive ?? true,
@@ -164,7 +164,7 @@ export function EditAccountForm({
 									<Select
 										value={field.state.value}
 										onValueChange={(value) =>
-											field.handleChange(value as "checking" | "savings")
+											field.handleChange(value as AccountTypeValue)
 										}
 									>
 										<SelectTrigger
@@ -174,8 +174,11 @@ export function EditAccountForm({
 											<SelectValue />
 										</SelectTrigger>
 										<SelectContent>
-											<SelectItem value="checking">CHECKING</SelectItem>
-											<SelectItem value="savings">SAVINGS</SelectItem>
+											{ACCOUNT_TYPE_OPTIONS.map((opt) => (
+												<SelectItem key={opt.value} value={opt.value}>
+													{opt.label.toUpperCase()}
+												</SelectItem>
+											))}
 										</SelectContent>
 									</Select>
 								</Field>

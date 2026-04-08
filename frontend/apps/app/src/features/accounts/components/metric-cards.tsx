@@ -1,12 +1,22 @@
 import type { Account } from "@workspace/api"
 import { formatMinorUnits, minorUnitsFromApi } from "@workspace/money"
+import {
+	accountTypeBucket,
+	bankingCashTypes,
+	creditDebtTypes,
+	investmentTypes,
+} from "../account-type-options"
 
-function isCheckingType(type: string | undefined): boolean {
-	return (type ?? "").toUpperCase() === "CHECKING"
-}
-
-function isSavingsType(type: string | undefined): boolean {
-	return (type ?? "").toUpperCase() === "SAVINGS"
+function sumBalances(
+	accounts: Account[],
+	inBucket: (t: string | undefined) => boolean,
+): number {
+	return accounts.reduce((sum, a) => {
+		if (!inBucket(a.type)) {
+			return sum
+		}
+		return sum + (a.currentBalance ?? 0)
+	}, 0)
 }
 
 interface MetricCardsProps {
@@ -18,23 +28,32 @@ export function MetricCards({ accounts }: MetricCardsProps) {
 
 	const displayCurrency = list[0]?.currencyCode ?? "USD"
 
-	const checkingAccounts = list.filter((a) => isCheckingType(a.type))
-	const savingsAccounts = list.filter((a) => isSavingsType(a.type))
-
 	const totalMinor = minorUnitsFromApi(
 		list.reduce((sum, a) => sum + (a.currentBalance ?? 0), 0),
 	)
 
-	const checkingMinor = minorUnitsFromApi(
-		checkingAccounts.reduce((sum, a) => sum + (a.currentBalance ?? 0), 0),
+	const bankingMinor = minorUnitsFromApi(
+		sumBalances(list, (t) => bankingCashTypes.has((t ?? "").toUpperCase())),
+	)
+	const investmentMinor = minorUnitsFromApi(
+		sumBalances(list, (t) => investmentTypes.has((t ?? "").toUpperCase())),
+	)
+	const creditMinor = minorUnitsFromApi(
+		sumBalances(list, (t) => creditDebtTypes.has((t ?? "").toUpperCase())),
 	)
 
-	const savingsMinor = minorUnitsFromApi(
-		savingsAccounts.reduce((sum, a) => sum + (a.currentBalance ?? 0), 0),
-	)
+	const bankingCount = list.filter(
+		(a) => accountTypeBucket(a.type) === "banking",
+	).length
+	const investmentCount = list.filter(
+		(a) => accountTypeBucket(a.type) === "investment",
+	).length
+	const creditCount = list.filter(
+		(a) => accountTypeBucket(a.type) === "credit",
+	).length
 
 	return (
-		<div className="grid w-full gap-5 md:grid-cols-3">
+		<div className="grid w-full gap-5 md:grid-cols-2 xl:grid-cols-4">
 			<div className="flex flex-col gap-4 border border-border p-6">
 				<p className="font-space-grotesk text-[11px] font-bold tracking-[1px] text-muted-foreground">
 					TOTAL BALANCE
@@ -48,26 +67,35 @@ export function MetricCards({ accounts }: MetricCardsProps) {
 			</div>
 			<div className="flex flex-col gap-4 border border-border p-6">
 				<p className="font-space-grotesk text-[11px] font-bold tracking-[1px] text-muted-foreground">
-					CHECKING ACCOUNTS
+					BANKING &amp; CASH
 				</p>
 				<p className="font-space-grotesk text-4xl font-bold text-foreground">
-					{formatMinorUnits(checkingMinor, displayCurrency)}
+					{formatMinorUnits(bankingMinor, displayCurrency)}
 				</p>
 				<p className="font-ibm-plex-mono text-[11px] tracking-[1px] text-muted-foreground">
-					{checkingAccounts.length}{" "}
-					{checkingAccounts.length === 1 ? "ACCOUNT" : "ACCOUNTS"}
+					{bankingCount} {bankingCount === 1 ? "ACCOUNT" : "ACCOUNTS"}
 				</p>
 			</div>
 			<div className="flex flex-col gap-4 border border-border p-6">
 				<p className="font-space-grotesk text-[11px] font-bold tracking-[1px] text-muted-foreground">
-					SAVINGS ACCOUNTS
+					INVESTMENTS
 				</p>
-				<p className="font-space-grotesk text-4xl font-bold text-primary">
-					{formatMinorUnits(savingsMinor, displayCurrency)}
+				<p className="font-space-grotesk text-4xl font-bold text-foreground">
+					{formatMinorUnits(investmentMinor, displayCurrency)}
 				</p>
 				<p className="font-ibm-plex-mono text-[11px] tracking-[1px] text-muted-foreground">
-					{savingsAccounts.length}{" "}
-					{savingsAccounts.length === 1 ? "ACCOUNT" : "ACCOUNTS"}
+					{investmentCount} {investmentCount === 1 ? "ACCOUNT" : "ACCOUNTS"}
+				</p>
+			</div>
+			<div className="flex flex-col gap-4 border border-border p-6">
+				<p className="font-space-grotesk text-[11px] font-bold tracking-[1px] text-muted-foreground">
+					CREDIT &amp; DEBT
+				</p>
+				<p className="font-space-grotesk text-4xl font-bold text-primary">
+					{formatMinorUnits(creditMinor, displayCurrency)}
+				</p>
+				<p className="font-ibm-plex-mono text-[11px] tracking-[1px] text-muted-foreground">
+					{creditCount} {creditCount === 1 ? "ACCOUNT" : "ACCOUNTS"}
 				</p>
 			</div>
 		</div>

@@ -1,14 +1,15 @@
 import type { ColumnDef } from "@tanstack/react-table"
+import { Button } from "@workspace/ui/components/button"
 import {
 	TableCellAmountValue,
 	TableCellMonoValue,
 	TableCellStatusBadge,
 	TableCellValueStack,
 } from "@workspace/ui/components/table-cell-values"
-import { Button } from "@workspace/ui/components/button"
 import { TableColumnHeader } from "@workspace/ui/components/table-column-header"
 import { Pencil, Trash2 } from "lucide-react"
 import type { AccountRow } from "../account-row"
+import { formatAccountTypeLabel } from "../account-type-options"
 
 type AccountColumnMeta = {
 	headerClassName?: string
@@ -44,7 +45,9 @@ export function createAccountsColumns(
 			} satisfies AccountColumnMeta,
 			header: () => <TableColumnHeader>TYPE</TableColumnHeader>,
 			cell: ({ row }) => (
-				<TableCellMonoValue>{row.original.type}</TableCellMonoValue>
+				<TableCellMonoValue>
+					{formatAccountTypeLabel(row.original.type)}
+				</TableCellMonoValue>
 			),
 		},
 		{

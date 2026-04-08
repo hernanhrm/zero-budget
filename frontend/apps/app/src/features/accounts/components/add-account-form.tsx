@@ -19,6 +19,11 @@ import {
 import { toast } from "@workspace/ui/lib/toast"
 import { Check } from "lucide-react"
 import { useEffect } from "react"
+import {
+	ACCOUNT_TYPE_OPTIONS,
+	DEFAULT_ACCOUNT_TYPE,
+	type AccountTypeValue,
+} from "../account-type-options"
 
 export interface AddAccountFormProps {
 	open: boolean
@@ -40,7 +45,7 @@ export function AddAccountForm({
 	const form = useForm({
 		defaultValues: {
 			accountName: "",
-			accountType: "checking" as "checking" | "savings",
+			accountType: DEFAULT_ACCOUNT_TYPE,
 			institution: "",
 			startingBalance: "0.00",
 			accountNumber: "",
@@ -60,7 +65,7 @@ export function AddAccountForm({
 				return
 			}
 
-			const type = value.accountType === "checking" ? "CHECKING" : "SAVINGS"
+			const type = value.accountType
 			const currencyCode = "USD"
 
 			const institution = value.institution.trim()
@@ -154,7 +159,7 @@ export function AddAccountForm({
 									<Select
 										value={field.state.value}
 										onValueChange={(value) =>
-											field.handleChange(value as "checking" | "savings")
+											field.handleChange(value as AccountTypeValue)
 										}
 									>
 										<SelectTrigger
@@ -164,8 +169,11 @@ export function AddAccountForm({
 											<SelectValue />
 										</SelectTrigger>
 										<SelectContent>
-											<SelectItem value="checking">CHECKING</SelectItem>
-											<SelectItem value="savings">SAVINGS</SelectItem>
+											{ACCOUNT_TYPE_OPTIONS.map((opt) => (
+												<SelectItem key={opt.value} value={opt.value}>
+													{opt.label.toUpperCase()}
+												</SelectItem>
+											))}
 										</SelectContent>
 									</Select>
 								</Field>
