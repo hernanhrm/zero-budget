@@ -23,6 +23,9 @@ if (process.env.NODE_ENV === "production") {
 
 const baseURL = process.env.BETTER_AUTH_URL;
 const cookieSecure = baseURL?.startsWith("https://") ?? false;
+// SPA and identity on different hosts (e.g. app.example.com + identity.example.com):
+// browsers treat session cookies as cross-site; Lax is not sent on credentialed fetch.
+const sessionSameSite = cookieSecure ? ("none" as const) : ("lax" as const);
 
 export const auth = betterAuth({
   secret: process.env.BETTER_AUTH_SECRET,
@@ -40,7 +43,7 @@ export const auth = betterAuth({
   advanced: {
     cookiePrefix: "zero-budget",
     defaultCookieAttributes: {
-      sameSite: "lax",
+      sameSite: sessionSameSite,
       path: "/",
       secure: cookieSecure,
     },
