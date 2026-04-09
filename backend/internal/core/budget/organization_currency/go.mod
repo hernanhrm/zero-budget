@@ -7,6 +7,7 @@ toolchain go1.24.12
 require (
 	backend/core/budget/currency v0.0.0
 	backend/core/budget/transaction v0.0.0
+	backend/infra/money v0.0.0
 	github.com/google/uuid v1.6.0
 	github.com/guregu/null/v6 v6.0.0
 	github.com/jackc/pgx/v5 v5.8.0
@@ -19,6 +20,8 @@ require (
 replace backend/core/budget/currency => ../currency
 
 replace backend/core/budget/transaction => ../transaction
+
+replace backend/infra/money => ../../../../pkg/money
 
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect

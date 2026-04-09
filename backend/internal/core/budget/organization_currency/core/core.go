@@ -2,19 +2,16 @@ package core
 
 import (
 	"context"
-	"math"
 
 	currencypkg "backend/core/budget/currency/port"
 	"backend/core/budget/organization_currency/port"
 	txnport "backend/core/budget/transaction/port"
 	"backend/infra/dafi"
+	"backend/infra/money"
 	basedomain "backend/port"
 	apperrors "backend/port/errors"
-	"github.com/guregu/null/v6"
 	"github.com/samber/oops"
 )
-
-const rateEpsilon = 1e-9
 
 var allowedOrganizationCurrencyRelations = map[string]struct{}{
 	port.RelationCurrencies: {},
@@ -140,12 +137,12 @@ func distinctCurrencyCodes(ocs []port.OrganizationCurrency) []string {
 
 func validateCreateRate(input port.CreateOrganizationCurrency) error {
 	if input.IsBase {
-		if math.Abs(input.Rate-1) > rateEpsilon {
+		if !input.Rate.IsOne() {
 			return oops.Code(apperrors.CodeValidation).Errorf("base currency rate must be 1")
 		}
 		return nil
 	}
-	if input.Rate <= 0 || math.IsNaN(input.Rate) || math.IsInf(input.Rate, 0) {
+	if !input.Rate.IsPositive() {
 		return oops.Code(apperrors.CodeValidation).Errorf("rate must be a positive number")
 	}
 	return nil
@@ -212,21 +209,21 @@ func (s service) Update(ctx context.Context, input port.UpdateOrganizationCurren
 	}
 
 	if patched.IsBase.Valid && patched.IsBase.Bool && !current.IsBase {
-		patched.Rate = null.FloatFrom(1)
+		patched.Rate = money.NullExchangeRateFrom(money.ExchangeRateOne())
 	}
 
 	if patched.Rate.Valid {
-		r := patched.Rate.Float64
+		r := patched.Rate.Rate
 		willBeBase := current.IsBase
 		if patched.IsBase.Valid {
 			willBeBase = patched.IsBase.Bool
 		}
 		if willBeBase {
-			if math.Abs(r-1) > rateEpsilon {
+			if !r.IsOne() {
 				return oops.WithContext(ctx).In(apperrors.LayerService).Code(apperrors.CodeValidation).
 					Errorf("base currency rate must be 1")
 			}
-		} else if r <= 0 || math.IsNaN(r) || math.IsInf(r, 0) {
+		} else if !r.IsPositive() {
 			return oops.WithContext(ctx).In(apperrors.LayerService).Code(apperrors.CodeValidation).
 				Errorf("rate must be a positive number")
 		}

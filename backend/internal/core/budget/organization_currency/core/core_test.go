@@ -9,6 +9,7 @@ import (
 	"backend/core/budget/organization_currency/port"
 	transactionport "backend/core/budget/transaction/port"
 	"backend/infra/dafi"
+	"backend/infra/money"
 	basedomain "backend/port"
 	apperrors "backend/port/errors"
 	"github.com/google/uuid"
@@ -133,6 +134,13 @@ func (s *stubTxnRepo) Delete(ctx context.Context, filters ...dafi.Filter) error 
 
 func (s *stubTxnRepo) WithTx(basedomain.Transaction) transactionport.Repository { return s }
 
+func mustExchangeRate(t *testing.T, f float64) money.ExchangeRate {
+	t.Helper()
+	r, err := money.ParseExchangeRate(f)
+	require.NoError(t, err)
+	return r
+}
+
 func TestService_FindAll_invalidRelation(t *testing.T) {
 	org := new(mockOrgRepo)
 	cur := new(mockCurrencyRepo)
@@ -159,7 +167,7 @@ func TestService_FindAll_noRelations_currencyNil(t *testing.T) {
 		OrganizationID: "org1",
 		CurrencyCode:   "USD",
 		IsBase:         true,
-		Rate:           1,
+		Rate:           money.ExchangeRateOne(),
 		CreatedAt:      now,
 		UpdatedAt:      now,
 	}
@@ -187,7 +195,7 @@ func TestService_FindAll_withCurrencies_mapsNested(t *testing.T) {
 		OrganizationID: "org1",
 		CurrencyCode:   "USD",
 		IsBase:         true,
-		Rate:           1,
+		Rate:           money.ExchangeRateOne(),
 		CreatedAt:      now,
 		UpdatedAt:      now,
 	}
@@ -196,7 +204,7 @@ func TestService_FindAll_withCurrencies_mapsNested(t *testing.T) {
 		OrganizationID: "org1",
 		CurrencyCode:   "EUR",
 		IsBase:         false,
-		Rate:           0.92,
+		Rate:           mustExchangeRate(t, 0.92),
 		CreatedAt:      now,
 		UpdatedAt:      now,
 	}
@@ -244,7 +252,7 @@ func TestService_FindOne_withCurrencies(t *testing.T) {
 		OrganizationID: "org1",
 		CurrencyCode:   "USD",
 		IsBase:         true,
-		Rate:           1,
+		Rate:           money.ExchangeRateOne(),
 		CreatedAt:      now,
 		UpdatedAt:      now,
 	}
@@ -280,7 +288,7 @@ func TestService_Update_isBase_change_blocked_when_org_has_transactions(t *testi
 		OrganizationID: "org1",
 		CurrencyCode:   "EUR",
 		IsBase:         false,
-		Rate:           0.92,
+		Rate:           mustExchangeRate(t, 0.92),
 		CreatedAt:      now,
 		UpdatedAt:      now,
 	}
@@ -311,7 +319,7 @@ func TestService_Update_isBase_change_allowed_when_no_transactions(t *testing.T)
 		OrganizationID: "org1",
 		CurrencyCode:   "EUR",
 		IsBase:         false,
-		Rate:           0.92,
+		Rate:           mustExchangeRate(t, 0.92),
 		CreatedAt:      now,
 		UpdatedAt:      now,
 	}
@@ -338,14 +346,16 @@ func TestService_Update_base_row_rate_must_be_one(t *testing.T) {
 		OrganizationID: "org1",
 		CurrencyCode:   "USD",
 		IsBase:         true,
-		Rate:           1,
+		Rate:           money.ExchangeRateOne(),
 		CreatedAt:      now,
 		UpdatedAt:      now,
 	}
 	org.On("FindOne", mock.Anything, mock.Anything).Return(current, nil)
 
-	err := svc.Update(context.Background(), port.UpdateOrganizationCurrency{
-		Rate: null.FloatFrom(2),
+	twoRate, err := money.ParseExchangeRate(2)
+	require.NoError(t, err)
+	err = svc.Update(context.Background(), port.UpdateOrganizationCurrency{
+		Rate: money.NullExchangeRateFrom(twoRate),
 	}, dafi.FilterBy("id", dafi.Equal, id.String())...)
 	require.Error(t, err)
 	org.AssertNotCalled(t, "Update")
