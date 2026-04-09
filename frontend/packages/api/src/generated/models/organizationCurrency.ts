@@ -5,6 +5,7 @@
  * API documentation for Zero Budget application
  * OpenAPI spec version: 1.0.0
  */
+import type { OrganizationCurrencyCurrency } from './organizationCurrencyCurrency';
 
 export interface OrganizationCurrency {
   id?: string;
@@ -13,4 +14,5 @@ export interface OrganizationCurrency {
   isBase?: boolean;
   createdAt?: string;
   updatedAt?: string;
+  currency?: OrganizationCurrencyCurrency | null;
 }

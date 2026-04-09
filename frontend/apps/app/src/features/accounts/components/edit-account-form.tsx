@@ -1,10 +1,14 @@
 import { useForm } from "@tanstack/react-form"
 import { useQueryClient } from "@tanstack/react-query"
-import type { Account } from "@workspace/api"
+import type { Account, OrganizationCurrency } from "@workspace/api"
 import {
 	getGetV1AccountsQueryKey,
 	usePutV1AccountsId,
 } from "@workspace/api/hooks/accounts/accounts"
+import {
+	getGetV1OrganizationCurrenciesQueryKey,
+	useGetV1OrganizationCurrencies,
+} from "@workspace/api/hooks/organization-currencies/organization-currencies"
 import { Button } from "@workspace/ui/components/button"
 import { DialogClose, DialogFooter } from "@workspace/ui/components/dialog"
 import { Field, FieldError, FieldGroup } from "@workspace/ui/components/field"
@@ -52,6 +56,22 @@ export function EditAccountForm({
 		fetch: { credentials: "include" },
 	})
 
+	const orgId = account.organizationId
+	const orgCurrenciesQuery = useGetV1OrganizationCurrencies(
+		{ relations: "currencies" },
+		{
+			query: {
+				enabled: open && Boolean(orgId),
+				queryKey: getGetV1OrganizationCurrenciesQueryKey({
+					relations: "currencies",
+				}),
+			},
+			fetch: { credentials: "include" },
+		},
+	)
+	const orgCurrencies = orgCurrenciesQuery.data?.data ?? []
+	const currenciesReady = orgCurrenciesQuery.isSuccess
+
 	const form = useForm({
 		defaultValues: {
 			accountName: account.name ?? "",
@@ -59,6 +79,7 @@ export function EditAccountForm({
 			institution: account.institution ?? "",
 			accountNumber: account.accountNumber ?? "",
 			isActive: account.isActive ?? true,
+			currency: account.currencyCode ?? "",
 		},
 		onSubmit: async ({ value }) => {
 			const id = account.id
@@ -78,6 +99,12 @@ export function EditAccountForm({
 			const accountNumber = value.accountNumber.trim()
 
 			try {
+				const currencyCode = value.currency?.trim() ?? ""
+				if (currencyCode.length !== 3) {
+					toast.error("Select a currency for this account.")
+					return
+				}
+
 				const result = await putAccount.mutateAsync({
 					id,
 					data: {
@@ -86,6 +113,7 @@ export function EditAccountForm({
 						institution,
 						accountNumber,
 						isActive: value.isActive,
+						currencyCode,
 					},
 				})
 
@@ -118,8 +146,23 @@ export function EditAccountForm({
 			institution: account.institution ?? "",
 			accountNumber: account.accountNumber ?? "",
 			isActive: account.isActive ?? true,
+			currency: account.currencyCode ?? "",
 		})
 	}, [open, account, form.reset])
+
+	const orgOptions: OrganizationCurrency[] = (() => {
+		const list = [...orgCurrencies]
+		const code = account.currencyCode
+		if (code && !list.some((c) => c.currencyCode === code)) {
+			const synthetic: OrganizationCurrency = {
+				currencyCode: code,
+				isBase: false,
+				currency: null,
+			}
+			list.unshift(synthetic)
+		}
+		return list
+	})()
 
 	return (
 		<form
@@ -222,6 +265,51 @@ export function EditAccountForm({
 						)}
 					</form.Field>
 
+					<form.Field name="currency">
+						{(field) => (
+							<Field>
+								<FormFieldLabel>CURRENCY</FormFieldLabel>
+								<Select
+									value={field.state.value}
+									onValueChange={(value) => field.handleChange(value)}
+									disabled={
+										orgCurrenciesQuery.isLoading ||
+										orgOptions.length === 0 ||
+										(currenciesReady && orgCurrencies.length > 0 && !field.state.value)
+									}
+								>
+									<SelectTrigger
+										size="default"
+										className="h-10 w-full rounded-none px-4"
+									>
+										<SelectValue
+											placeholder={
+												orgCurrenciesQuery.isLoading
+													? "Loading currencies…"
+													: orgOptions.length === 0
+														? "No currencies for this organization"
+														: "Select currency"
+											}
+										/>
+									</SelectTrigger>
+									<SelectContent>
+										{orgOptions.map((c) => {
+											const itemCode = c.currencyCode ?? ""
+											const name = c.currency?.name ?? itemCode
+											const symbol = c.currency?.symbol ?? ""
+											const base = c.isBase ? " — base" : ""
+											return (
+												<SelectItem key={itemCode} value={itemCode}>
+													{`${itemCode} — ${name}${symbol ? ` (${symbol})` : ""}${base}`}
+												</SelectItem>
+											)
+										})}
+									</SelectContent>
+								</Select>
+							</Field>
+						)}
+					</form.Field>
+
 					<form.Field name="isActive">
 						{(field) => (
 							<Field className="flex flex-row items-center justify-between gap-4 rounded-none border border-border px-4 py-3">
@@ -257,12 +345,19 @@ export function EditAccountForm({
 				<form.Subscribe
 					selector={(state) => ({
 						isSubmitting: state.isSubmitting,
+						currency: state.values.currency,
 					})}
 				>
-					{({ isSubmitting }) => (
+					{({ isSubmitting, currency }) => (
 						<Button
 							type="submit"
-							disabled={isSubmitting || putAccount.isPending}
+							disabled={
+								isSubmitting ||
+								putAccount.isPending ||
+								orgCurrenciesQuery.isLoading ||
+								orgOptions.length === 0 ||
+								!currency
+							}
 							className="gap-2 rounded-none"
 						>
 							<Check className="size-3.5" />

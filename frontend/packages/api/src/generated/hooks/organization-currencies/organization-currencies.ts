@@ -21,6 +21,7 @@ import type {
 
 import type {
   CreateOrganizationCurrency,
+  GetV1OrganizationCurrenciesIdParams,
   GetV1OrganizationCurrenciesParams,
   OrganizationCurrency,
   UpdateOrganizationCurrency
@@ -243,17 +244,26 @@ export type getV1OrganizationCurrenciesIdResponseError = (getV1OrganizationCurre
 
 export type getV1OrganizationCurrenciesIdResponse = (getV1OrganizationCurrenciesIdResponseSuccess | getV1OrganizationCurrenciesIdResponseError)
 
-export const getGetV1OrganizationCurrenciesIdUrl = (id: string,) => {
+export const getGetV1OrganizationCurrenciesIdUrl = (id: string,
+    params?: GetV1OrganizationCurrenciesIdParams,) => {
+  const normalizedParams = new URLSearchParams();
 
+  Object.entries(params || {}).forEach(([key, value]) => {
+    
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : value.toString())
+    }
+  });
 
-  
+  const stringifiedParams = normalizedParams.toString();
 
-  return `/v1/organization-currencies/${id}`
+  return stringifiedParams.length > 0 ? `/v1/organization-currencies/${id}?${stringifiedParams}` : `/v1/organization-currencies/${id}`
 }
 
-export const getV1OrganizationCurrenciesId = async (id: string, options?: RequestInit): Promise<getV1OrganizationCurrenciesIdResponse> => {
+export const getV1OrganizationCurrenciesId = async (id: string,
+    params?: GetV1OrganizationCurrenciesIdParams, options?: RequestInit): Promise<getV1OrganizationCurrenciesIdResponse> => {
   
-  const res = await fetch(getGetV1OrganizationCurrenciesIdUrl(id),
+  const res = await fetch(getGetV1OrganizationCurrenciesIdUrl(id,params),
   {      
     ...options,
     method: 'GET'
@@ -272,23 +282,25 @@ export const getV1OrganizationCurrenciesId = async (id: string, options?: Reques
 
 
 
-export const getGetV1OrganizationCurrenciesIdQueryKey = (id: string,) => {
+export const getGetV1OrganizationCurrenciesIdQueryKey = (id: string,
+    params?: GetV1OrganizationCurrenciesIdParams,) => {
     return [
-    `/v1/organization-currencies/${id}`
+    `/v1/organization-currencies/${id}`, ...(params ? [params] : [])
     ] as const;
     }
 
     
-export const getGetV1OrganizationCurrenciesIdQueryOptions = <TData = Awaited<ReturnType<typeof getV1OrganizationCurrenciesId>>, TError = void>(id: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getV1OrganizationCurrenciesId>>, TError, TData>, fetch?: RequestInit}
+export const getGetV1OrganizationCurrenciesIdQueryOptions = <TData = Awaited<ReturnType<typeof getV1OrganizationCurrenciesId>>, TError = void>(id: string,
+    params?: GetV1OrganizationCurrenciesIdParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getV1OrganizationCurrenciesId>>, TError, TData>, fetch?: RequestInit}
 ) => {
 
 const {query: queryOptions, fetch: fetchOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetV1OrganizationCurrenciesIdQueryKey(id);
+  const queryKey =  queryOptions?.queryKey ?? getGetV1OrganizationCurrenciesIdQueryKey(id,params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getV1OrganizationCurrenciesId>>> = ({ signal }) => getV1OrganizationCurrenciesId(id, { signal, ...fetchOptions });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getV1OrganizationCurrenciesId>>> = ({ signal }) => getV1OrganizationCurrenciesId(id,params, { signal, ...fetchOptions });
 
       
 
@@ -306,11 +318,12 @@ export type GetV1OrganizationCurrenciesIdQueryError = void
  */
 
 export function useGetV1OrganizationCurrenciesId<TData = Awaited<ReturnType<typeof getV1OrganizationCurrenciesId>>, TError = void>(
- id: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getV1OrganizationCurrenciesId>>, TError, TData>, fetch?: RequestInit}
+ id: string,
+    params?: GetV1OrganizationCurrenciesIdParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getV1OrganizationCurrenciesId>>, TError, TData>, fetch?: RequestInit}
   
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
-  const queryOptions = getGetV1OrganizationCurrenciesIdQueryOptions(id,options)
+  const queryOptions = getGetV1OrganizationCurrenciesIdQueryOptions(id,params,options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 
