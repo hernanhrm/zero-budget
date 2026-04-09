@@ -3,6 +3,7 @@ package port
 import (
 	"time"
 
+	"backend/infra/money"
 	"github.com/google/uuid"
 )
 
@@ -23,7 +24,9 @@ type OrganizationCurrency struct {
 	OrganizationID string    `json:"organizationId"`
 	CurrencyCode   string    `json:"currencyCode"`
 	IsBase         bool      `json:"isBase"`
-	CreatedAt      time.Time `json:"createdAt"`
-	UpdatedAt      time.Time `json:"updatedAt"`
-	Currency       *OrganizationCurrencyCurrency `json:"currency,omitempty"`
+	// Rate is units of this currency per one unit of the organization base currency. Base rows are always 1.
+	Rate money.ExchangeRate `json:"rate"`
+	CreatedAt time.Time                     `json:"createdAt"`
+	UpdatedAt time.Time                     `json:"updatedAt"`
+	Currency  *OrganizationCurrencyCurrency `json:"currency,omitempty"`
 }

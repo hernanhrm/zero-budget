@@ -7,22 +7,22 @@ import (
 	"syscall"
 
 	"api/router"
+	"backend/adapter/database"
+	"backend/adapter/di"
+	"backend/adapter/localconfig"
+	"backend/adapter/logger"
+	"backend/adapter/server"
 	"backend/core/budget/account"
 	"backend/core/budget/budget"
 	"backend/core/budget/category"
 	"backend/core/budget/currency"
 	"backend/core/budget/organization_currency"
 	"backend/core/budget/transaction"
+	"backend/core/notifications/email_dispatcher"
 	"backend/core/notifications/email_log"
 	"backend/core/notifications/email_template"
-	"backend/core/notifications/email_dispatcher"
 	"backend/core/notifications/eventbus"
 	eventbusPort "backend/core/notifications/eventbus/port"
-	"backend/adapter/database"
-	"backend/adapter/di"
-	"backend/adapter/localconfig"
-	"backend/adapter/logger"
-	"backend/adapter/server"
 )
 
 func main() {
@@ -54,11 +54,11 @@ func main() {
 
 	// Register feature modules
 	currency.Module(injector)
+	transaction.Module(injector)
 	organization_currency.Module(injector)
 	account.Module(injector)
 	category.Module(injector)
 	budget.Module(injector)
-	transaction.Module(injector)
 	email_log.Module(injector)
 	email_template.Module(injector)
 	eventbus.Module(injector)

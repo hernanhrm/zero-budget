@@ -15,4 +15,6 @@ export interface CreateOrganizationCurrency {
    */
   currencyCode: string;
   isBase: boolean;
+  /** Units of this currency per one unit of the organization base currency. Must be 1 when isBase is true. */
+  rate: number;
 }

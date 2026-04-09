@@ -5,9 +5,11 @@ import (
 
 	currencypkg "backend/core/budget/currency/port"
 	"backend/core/budget/organization_currency/port"
+	txnport "backend/core/budget/transaction/port"
+	"backend/infra/dafi"
+	"backend/infra/money"
 	basedomain "backend/port"
 	apperrors "backend/port/errors"
-	"backend/infra/dafi"
 	"github.com/samber/oops"
 )
 
@@ -18,13 +20,15 @@ var allowedOrganizationCurrencyRelations = map[string]struct{}{
 type service struct {
 	repo         port.Repository
 	currencyRepo currencypkg.Repository
+	txnRepo      txnport.Repository
 	logger       basedomain.Logger
 }
 
-func New(repo port.Repository, currencyRepo currencypkg.Repository, logger basedomain.Logger) port.Service {
+func New(repo port.Repository, currencyRepo currencypkg.Repository, txnRepo txnport.Repository, logger basedomain.Logger) port.Service {
 	return service{
 		repo:         repo,
 		currencyRepo: currencyRepo,
+		txnRepo:      txnRepo,
 		logger:       logger.With("component", "organization_currency.service"),
 	}
 }
@@ -33,6 +37,7 @@ func (s service) WithTx(tx basedomain.Transaction) port.Service {
 	return service{
 		repo:         s.repo.WithTx(tx),
 		currencyRepo: s.currencyRepo,
+		txnRepo:      s.txnRepo,
 		logger:       s.logger,
 	}
 }
@@ -130,9 +135,26 @@ func distinctCurrencyCodes(ocs []port.OrganizationCurrency) []string {
 	return out
 }
 
+func validateCreateRate(input port.CreateOrganizationCurrency) error {
+	if input.IsBase {
+		if !input.Rate.IsOne() {
+			return oops.Code(apperrors.CodeValidation).Errorf("base currency rate must be 1")
+		}
+		return nil
+	}
+	if !input.Rate.IsPositive() {
+		return oops.Code(apperrors.CodeValidation).Errorf("rate must be a positive number")
+	}
+	return nil
+}
+
 func (s service) Create(ctx context.Context, input port.CreateOrganizationCurrency) error {
 	if err := input.Validate(ctx); err != nil {
 		return oops.WithContext(ctx).In(apperrors.LayerService).Code(apperrors.CodeValidation).Wrap(err)
+	}
+
+	if err := validateCreateRate(input); err != nil {
+		return oops.WithContext(ctx).In(apperrors.LayerService).Wrap(err)
 	}
 
 	if err := s.repo.Create(ctx, input); err != nil {
@@ -145,6 +167,15 @@ func (s service) Create(ctx context.Context, input port.CreateOrganizationCurren
 }
 
 func (s service) CreateBulk(ctx context.Context, inputs basedomain.List[port.CreateOrganizationCurrency]) error {
+	for _, in := range inputs {
+		if err := in.Validate(ctx); err != nil {
+			return oops.WithContext(ctx).In(apperrors.LayerService).Code(apperrors.CodeValidation).Wrap(err)
+		}
+		if err := validateCreateRate(in); err != nil {
+			return oops.WithContext(ctx).In(apperrors.LayerService).Wrap(err)
+		}
+	}
+
 	if err := s.repo.CreateBulk(ctx, inputs); err != nil {
 		return oops.WithContext(ctx).In(apperrors.LayerService).Wrap(err)
 	}
@@ -159,7 +190,46 @@ func (s service) Update(ctx context.Context, input port.UpdateOrganizationCurren
 		return oops.WithContext(ctx).In(apperrors.LayerService).Code(apperrors.CodeValidation).Wrap(err)
 	}
 
-	if err := s.repo.Update(ctx, input, filters...); err != nil {
+	current, err := s.repo.FindOne(ctx, dafi.Criteria{Filters: filters})
+	if err != nil {
+		return oops.WithContext(ctx).In(apperrors.LayerService).Wrap(err)
+	}
+
+	patched := input
+
+	if patched.IsBase.Valid && patched.IsBase.Bool != current.IsBase {
+		hasTx, err := s.txnRepo.ExistsForOrganization(ctx, current.OrganizationID)
+		if err != nil {
+			return oops.WithContext(ctx).In(apperrors.LayerService).Wrap(err)
+		}
+		if hasTx {
+			return oops.WithContext(ctx).In(apperrors.LayerService).Code(apperrors.CodeConflict).
+				Errorf("cannot change base currency while the organization has transactions")
+		}
+	}
+
+	if patched.IsBase.Valid && patched.IsBase.Bool && !current.IsBase {
+		patched.Rate = money.NullExchangeRateFrom(money.ExchangeRateOne())
+	}
+
+	if patched.Rate.Valid {
+		r := patched.Rate.Rate
+		willBeBase := current.IsBase
+		if patched.IsBase.Valid {
+			willBeBase = patched.IsBase.Bool
+		}
+		if willBeBase {
+			if !r.IsOne() {
+				return oops.WithContext(ctx).In(apperrors.LayerService).Code(apperrors.CodeValidation).
+					Errorf("base currency rate must be 1")
+			}
+		} else if !r.IsPositive() {
+			return oops.WithContext(ctx).In(apperrors.LayerService).Code(apperrors.CodeValidation).
+				Errorf("rate must be a positive number")
+		}
+	}
+
+	if err := s.repo.Update(ctx, patched, filters...); err != nil {
 		return oops.WithContext(ctx).In(apperrors.LayerService).Wrap(err)
 	}
 

@@ -7,9 +7,14 @@ import (
 
 	currencypkg "backend/core/budget/currency/port"
 	"backend/core/budget/organization_currency/port"
-	basedomain "backend/port"
+	transactionport "backend/core/budget/transaction/port"
 	"backend/infra/dafi"
+	"backend/infra/money"
+	basedomain "backend/port"
+	apperrors "backend/port/errors"
 	"github.com/google/uuid"
+	"github.com/guregu/null/v6"
+	"github.com/samber/oops"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
@@ -70,10 +75,77 @@ func (m *mockCurrencyRepo) FindAll(ctx context.Context, criteria dafi.Criteria) 
 	return args.Get(0).(basedomain.List[currencypkg.Currency]), args.Error(1)
 }
 
+type stubTxnRepo struct {
+	orgHasTransactions bool
+	existsErr          error
+}
+
+func (s *stubTxnRepo) ExistsForOrganization(ctx context.Context, organizationID string) (bool, error) {
+	_ = ctx
+	_ = organizationID
+	if s.existsErr != nil {
+		return false, s.existsErr
+	}
+	return s.orgHasTransactions, nil
+}
+
+func (s *stubTxnRepo) CountByAccountID(ctx context.Context, accountID uuid.UUID) (int64, error) {
+	_ = ctx
+	_ = accountID
+	return 0, nil
+}
+
+func (s *stubTxnRepo) FindOne(ctx context.Context, criteria dafi.Criteria) (transactionport.Transaction, error) {
+	_ = ctx
+	_ = criteria
+	return transactionport.Transaction{}, nil
+}
+
+func (s *stubTxnRepo) FindAll(ctx context.Context, criteria dafi.Criteria) (basedomain.List[transactionport.Transaction], error) {
+	_ = ctx
+	_ = criteria
+	return nil, nil
+}
+
+func (s *stubTxnRepo) Create(ctx context.Context, input transactionport.CreateTransaction) error {
+	_ = ctx
+	_ = input
+	return nil
+}
+
+func (s *stubTxnRepo) CreateBulk(ctx context.Context, inputs basedomain.List[transactionport.CreateTransaction]) error {
+	_ = ctx
+	_ = inputs
+	return nil
+}
+
+func (s *stubTxnRepo) Update(ctx context.Context, input transactionport.UpdateTransaction, filters ...dafi.Filter) error {
+	_ = ctx
+	_ = input
+	_ = filters
+	return nil
+}
+
+func (s *stubTxnRepo) Delete(ctx context.Context, filters ...dafi.Filter) error {
+	_ = ctx
+	_ = filters
+	return nil
+}
+
+func (s *stubTxnRepo) WithTx(basedomain.Transaction) transactionport.Repository { return s }
+
+func mustExchangeRate(t *testing.T, f float64) money.ExchangeRate {
+	t.Helper()
+	r, err := money.ParseExchangeRate(f)
+	require.NoError(t, err)
+	return r
+}
+
 func TestService_FindAll_invalidRelation(t *testing.T) {
 	org := new(mockOrgRepo)
 	cur := new(mockCurrencyRepo)
-	svc := New(org, cur, noopLogger{})
+	txn := &stubTxnRepo{}
+	svc := New(org, cur, txn, noopLogger{})
 
 	_, err := svc.FindAll(context.Background(), dafi.Criteria{
 		Relations: []string{"unknown"},
@@ -86,7 +158,8 @@ func TestService_FindAll_invalidRelation(t *testing.T) {
 func TestService_FindAll_noRelations_currencyNil(t *testing.T) {
 	org := new(mockOrgRepo)
 	cur := new(mockCurrencyRepo)
-	svc := New(org, cur, noopLogger{})
+	txn := &stubTxnRepo{}
+	svc := New(org, cur, txn, noopLogger{})
 
 	now := time.Now()
 	row := port.OrganizationCurrency{
@@ -94,6 +167,7 @@ func TestService_FindAll_noRelations_currencyNil(t *testing.T) {
 		OrganizationID: "org1",
 		CurrencyCode:   "USD",
 		IsBase:         true,
+		Rate:           money.ExchangeRateOne(),
 		CreatedAt:      now,
 		UpdatedAt:      now,
 	}
@@ -112,7 +186,8 @@ func TestService_FindAll_noRelations_currencyNil(t *testing.T) {
 func TestService_FindAll_withCurrencies_mapsNested(t *testing.T) {
 	org := new(mockOrgRepo)
 	cur := new(mockCurrencyRepo)
-	svc := New(org, cur, noopLogger{})
+	txn := &stubTxnRepo{}
+	svc := New(org, cur, txn, noopLogger{})
 
 	now := time.Now()
 	usd := port.OrganizationCurrency{
@@ -120,6 +195,7 @@ func TestService_FindAll_withCurrencies_mapsNested(t *testing.T) {
 		OrganizationID: "org1",
 		CurrencyCode:   "USD",
 		IsBase:         true,
+		Rate:           money.ExchangeRateOne(),
 		CreatedAt:      now,
 		UpdatedAt:      now,
 	}
@@ -128,6 +204,7 @@ func TestService_FindAll_withCurrencies_mapsNested(t *testing.T) {
 		OrganizationID: "org1",
 		CurrencyCode:   "EUR",
 		IsBase:         false,
+		Rate:           mustExchangeRate(t, 0.92),
 		CreatedAt:      now,
 		UpdatedAt:      now,
 	}
@@ -166,7 +243,8 @@ func TestService_FindAll_withCurrencies_mapsNested(t *testing.T) {
 func TestService_FindOne_withCurrencies(t *testing.T) {
 	org := new(mockOrgRepo)
 	cur := new(mockCurrencyRepo)
-	svc := New(org, cur, noopLogger{})
+	txn := &stubTxnRepo{}
+	svc := New(org, cur, txn, noopLogger{})
 
 	now := time.Now()
 	row := port.OrganizationCurrency{
@@ -174,6 +252,7 @@ func TestService_FindOne_withCurrencies(t *testing.T) {
 		OrganizationID: "org1",
 		CurrencyCode:   "USD",
 		IsBase:         true,
+		Rate:           money.ExchangeRateOne(),
 		CreatedAt:      now,
 		UpdatedAt:      now,
 	}
@@ -194,6 +273,92 @@ func TestService_FindOne_withCurrencies(t *testing.T) {
 	assert.Equal(t, "$", out.Currency.Symbol)
 	org.AssertExpectations(t)
 	cur.AssertExpectations(t)
+}
+
+func TestService_Update_isBase_change_blocked_when_org_has_transactions(t *testing.T) {
+	org := new(mockOrgRepo)
+	cur := new(mockCurrencyRepo)
+	txn := &stubTxnRepo{orgHasTransactions: true}
+	svc := New(org, cur, txn, noopLogger{})
+
+	now := time.Now()
+	id := uuid.MustParse("11111111-1111-1111-1111-111111111111")
+	current := port.OrganizationCurrency{
+		ID:             id,
+		OrganizationID: "org1",
+		CurrencyCode:   "EUR",
+		IsBase:         false,
+		Rate:           mustExchangeRate(t, 0.92),
+		CreatedAt:      now,
+		UpdatedAt:      now,
+	}
+	org.On("FindOne", mock.Anything, mock.Anything).Return(current, nil)
+
+	err := svc.Update(context.Background(), port.UpdateOrganizationCurrency{
+		IsBase: null.BoolFrom(true),
+	}, dafi.FilterBy("id", dafi.Equal, id.String())...)
+	require.Error(t, err)
+	org.AssertNotCalled(t, "Update")
+
+	oopsErr, ok := oops.AsOops(err)
+	require.True(t, ok)
+	assert.Equal(t, apperrors.CodeConflict, oopsErr.Code())
+	org.AssertExpectations(t)
+}
+
+func TestService_Update_isBase_change_allowed_when_no_transactions(t *testing.T) {
+	org := new(mockOrgRepo)
+	cur := new(mockCurrencyRepo)
+	txn := &stubTxnRepo{}
+	svc := New(org, cur, txn, noopLogger{})
+
+	now := time.Now()
+	id := uuid.MustParse("11111111-1111-1111-1111-111111111111")
+	current := port.OrganizationCurrency{
+		ID:             id,
+		OrganizationID: "org1",
+		CurrencyCode:   "EUR",
+		IsBase:         false,
+		Rate:           mustExchangeRate(t, 0.92),
+		CreatedAt:      now,
+		UpdatedAt:      now,
+	}
+	org.On("FindOne", mock.Anything, mock.Anything).Return(current, nil)
+	org.On("Update", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+
+	err := svc.Update(context.Background(), port.UpdateOrganizationCurrency{
+		IsBase: null.BoolFrom(true),
+	}, dafi.FilterBy("id", dafi.Equal, id.String())...)
+	require.NoError(t, err)
+	org.AssertExpectations(t)
+}
+
+func TestService_Update_base_row_rate_must_be_one(t *testing.T) {
+	org := new(mockOrgRepo)
+	cur := new(mockCurrencyRepo)
+	txn := &stubTxnRepo{}
+	svc := New(org, cur, txn, noopLogger{})
+
+	now := time.Now()
+	id := uuid.MustParse("11111111-1111-1111-1111-111111111111")
+	current := port.OrganizationCurrency{
+		ID:             id,
+		OrganizationID: "org1",
+		CurrencyCode:   "USD",
+		IsBase:         true,
+		Rate:           money.ExchangeRateOne(),
+		CreatedAt:      now,
+		UpdatedAt:      now,
+	}
+	org.On("FindOne", mock.Anything, mock.Anything).Return(current, nil)
+
+	twoRate, err := money.ParseExchangeRate(2)
+	require.NoError(t, err)
+	err = svc.Update(context.Background(), port.UpdateOrganizationCurrency{
+		Rate: money.NullExchangeRateFrom(twoRate),
+	}, dafi.FilterBy("id", dafi.Equal, id.String())...)
+	require.Error(t, err)
+	org.AssertNotCalled(t, "Update")
 }
 
 type noopLogger struct{}

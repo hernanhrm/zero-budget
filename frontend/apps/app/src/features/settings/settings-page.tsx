@@ -5,6 +5,8 @@ import {
 	TabsList,
 	TabsTrigger,
 } from "@workspace/ui/components/tabs"
+import { getActiveOrganizationId } from "#/lib/session-org"
+import { Route } from "#/routes/__root"
 import { CurrencyTab } from "./components/currency-tab"
 import { DangerZoneTab } from "./components/danger-zone-tab"
 import { NotificationsTab } from "./components/notifications-tab"
@@ -12,6 +14,9 @@ import { ProfileTab } from "./components/profile-tab"
 import { SecurityTab } from "./components/security-tab"
 
 export function SettingsPage() {
+	const { session } = Route.useRouteContext()
+	const organizationId = getActiveOrganizationId(session)
+
 	return (
 		<div className="flex h-full flex-col overflow-auto p-10">
 			<Tabs defaultValue="profile" className="flex-col gap-0">
@@ -63,7 +68,7 @@ export function SettingsPage() {
 					<SecurityTab />
 				</TabsContent>
 				<TabsContent value="currency" className="mt-8">
-					<CurrencyTab />
+					<CurrencyTab organizationId={organizationId} />
 				</TabsContent>
 				<TabsContent value="notifications" className="mt-8">
 					<NotificationsTab />

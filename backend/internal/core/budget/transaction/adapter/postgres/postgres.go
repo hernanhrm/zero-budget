@@ -5,12 +5,12 @@ import (
 	"errors"
 	"time"
 
+	"backend/adapter/database"
 	"backend/core/budget/transaction/port"
+	"backend/infra/dafi"
+	"backend/infra/sqlcraft"
 	basedomain "backend/port"
 	apperrors "backend/port/errors"
-	"backend/infra/dafi"
-	"backend/adapter/database"
-	"backend/infra/sqlcraft"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -43,19 +43,19 @@ var columns = []string{
 }
 
 var sqlColumnByDomainField = map[string]string{
-	"id":                       "id",
-	"organizationId":           "organization_id",
-	"accountId":                "account_id",
-	"categoryId":               "category_id",
-	"subcategoryId":            "subcategory_id",
-	"budgetId":                 "budget_id",
-	"type":                     "type",
-	"amount":                   "amount",
-	"description":              "description",
-	"externalReferenceNumber":  "external_reference_number",
-	"date":                     "date",
-	"createdAt":                "created_at",
-	"updatedAt":                "updated_at",
+	"id":                      "id",
+	"organizationId":          "organization_id",
+	"accountId":               "account_id",
+	"categoryId":              "category_id",
+	"subcategoryId":           "subcategory_id",
+	"budgetId":                "budget_id",
+	"type":                    "type",
+	"amount":                  "amount",
+	"description":             "description",
+	"externalReferenceNumber": "external_reference_number",
+	"date":                    "date",
+	"createdAt":               "created_at",
+	"updatedAt":               "updated_at",
 }
 
 type postgres struct {
@@ -290,6 +290,20 @@ func (r postgres) CountByAccountID(ctx context.Context, accountID uuid.UUID) (in
 	}
 
 	return n, nil
+}
+
+func (r postgres) ExistsForOrganization(ctx context.Context, organizationID string) (bool, error) {
+	const q = `SELECT EXISTS (SELECT 1 FROM budget.transactions WHERE organization_id = $1 LIMIT 1)`
+
+	r.logger.WithContext(ctx).Debug("executing query", "sql", q)
+
+	var exists bool
+	err := r.db.QueryRow(ctx, q, organizationID).Scan(&exists)
+	if err != nil {
+		return false, oops.WithContext(ctx).In(apperrors.LayerRepository).Wrap(err)
+	}
+
+	return exists, nil
 }
 
 func (r postgres) Delete(ctx context.Context, filters ...dafi.Filter) error {

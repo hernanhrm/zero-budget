@@ -8,6 +8,8 @@ export interface DataTableSectionHeaderProps
 	count?: number
 	/** When set, replaces the default mono count */
 	countSlot?: React.ReactNode
+	/** Right-aligned actions (e.g. primary button) */
+	endSlot?: React.ReactNode
 }
 
 function DataTableSectionHeader({
@@ -15,6 +17,7 @@ function DataTableSectionHeader({
 	title,
 	count,
 	countSlot,
+	endSlot,
 	...props
 }: DataTableSectionHeaderProps) {
 	const showDefaultCount = countSlot === undefined && typeof count === "number"
@@ -23,13 +26,13 @@ function DataTableSectionHeader({
 		<div
 			data-slot="data-table-section-header"
 			className={cn(
-				"flex h-14 items-center justify-between border-b border-border bg-card px-6",
+				"flex h-14 items-center justify-between gap-4 border-b border-border bg-card px-6",
 				className,
 			)}
 			{...props}
 		>
-			<div className="flex items-center gap-3">
-				<div className="h-5 w-1 bg-primary" />
+			<div className="flex min-w-0 items-center gap-3">
+				<div className="h-5 w-1 shrink-0 bg-primary" />
 				<span className="font-space-grotesk text-sm font-bold tracking-[1px] text-foreground">
 					{title}
 				</span>
@@ -40,6 +43,7 @@ function DataTableSectionHeader({
 					</span>
 				) : null}
 			</div>
+			{endSlot}
 		</div>
 	)
 }
