@@ -24,7 +24,7 @@ import {
 import { Switch } from "@workspace/ui/components/switch"
 import { toast } from "@workspace/ui/lib/toast"
 import { Check } from "lucide-react"
-import { useEffect } from "react"
+import { useEffect, useMemo } from "react"
 
 function apiProblemDetail(data: unknown): string | undefined {
 	if (data !== null && typeof data === "object" && "detail" in data) {
@@ -69,7 +69,11 @@ export function EditAccountForm({
 			fetch: { credentials: "include" },
 		},
 	)
-	const orgCurrencies = orgCurrenciesQuery.data?.data ?? []
+	const orgCurrencies = useMemo(() => {
+		const raw = orgCurrenciesQuery.data?.data
+		return Array.isArray(raw) ? raw : []
+	}, [orgCurrenciesQuery.data])
+
 	const currenciesReady = orgCurrenciesQuery.isSuccess
 
 	const form = useForm({

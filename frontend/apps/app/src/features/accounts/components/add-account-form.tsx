@@ -22,7 +22,7 @@ import {
 } from "@workspace/ui/components/select"
 import { toast } from "@workspace/ui/lib/toast"
 import { Check } from "lucide-react"
-import { useEffect, useLayoutEffect } from "react"
+import { useEffect, useLayoutEffect, useMemo } from "react"
 
 export interface AddAccountFormProps {
 	open: boolean
@@ -54,7 +54,11 @@ export function AddAccountForm({
 		},
 	)
 
-	const orgCurrencies = orgCurrenciesQuery.data?.data ?? []
+	const orgCurrencies = useMemo(() => {
+		const raw = orgCurrenciesQuery.data?.data
+		return Array.isArray(raw) ? raw : []
+	}, [orgCurrenciesQuery.data])
+
 	const currenciesReady = orgCurrenciesQuery.isSuccess
 	const noOrgCurrencies = currenciesReady && orgCurrencies.length === 0
 
@@ -140,18 +144,17 @@ export function AddAccountForm({
 		if (!open || !orgCurrenciesQuery.isSuccess) {
 			return
 		}
-		const list = orgCurrenciesQuery.data?.data ?? []
-		if (list.length === 0) {
+		if (orgCurrencies.length === 0) {
 			return
 		}
 		const code =
-			list.find((c) => c.isBase)?.currencyCode ??
-			list[0]?.currencyCode ??
+			orgCurrencies.find((c) => c.isBase)?.currencyCode ??
+			orgCurrencies[0]?.currencyCode ??
 			""
 		if (code) {
 			form.setFieldValue("currency", code)
 		}
-	}, [open, orgCurrenciesQuery.isSuccess, orgCurrenciesQuery.data, form.setFieldValue])
+	}, [open, orgCurrenciesQuery.isSuccess, orgCurrencies, form.setFieldValue])
 
 	return (
 		<form
