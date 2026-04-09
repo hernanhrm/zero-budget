@@ -10,42 +10,17 @@ import {
 	useGetV1OrganizationCurrencies,
 	usePutV1OrganizationCurrenciesId,
 } from "@workspace/api/hooks/organization-currencies/organization-currencies"
-import {
-	getGetV1TransactionsQueryKey,
-	useGetV1Transactions,
-} from "@workspace/api/hooks/transactions/transactions"
 import { Button } from "@workspace/ui/components/button"
-import { Input } from "@workspace/ui/components/input"
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@workspace/ui/components/select"
+import { DataTableSectionHeader } from "@workspace/ui/components/data-table-section-header"
 import { toast } from "@workspace/ui/lib/toast"
-import { Trash2 } from "lucide-react"
-import { useCallback, useEffect, useMemo, useState } from "react"
-import {
-	Table,
-	TableBody,
-	TableCell,
-	TableHead,
-	TableHeader,
-	TableRow,
-} from "@workspace/ui/components/table"
+import { Plus } from "lucide-react"
+import { useCallback, useMemo, useState } from "react"
+import { AccountsDataTable } from "#/features/accounts/components/accounts-data-table"
 import { normalizeListPayload } from "#/lib/normalize-list-payload"
 import { AddCurrencyModal } from "./add-currency-modal"
+import { createOrganizationCurrencyColumns } from "./organization-currencies-columns"
 
 const orgCurrencyQueryParams = { relations: "currencies" } as const
-
-function formatRate(rate: number | undefined): string {
-	if (rate === undefined || Number.isNaN(rate)) return "—"
-	return new Intl.NumberFormat(undefined, {
-		maximumFractionDigits: 10,
-		useGrouping: true,
-	}).format(rate)
-}
 
 export interface CurrencyTabProps {
 	organizationId: string | undefined
@@ -54,30 +29,24 @@ export interface CurrencyTabProps {
 export function CurrencyTab({ organizationId }: CurrencyTabProps) {
 	const queryClient = useQueryClient()
 	const [addModalOpen, setAddModalOpen] = useState(false)
-	const [displayFormat, setDisplayFormat] = useState("symbol-first")
 
-	const orgCurrenciesQuery = useGetV1OrganizationCurrencies(orgCurrencyQueryParams, {
-		query: {
-			enabled: Boolean(organizationId),
-			queryKey: getGetV1OrganizationCurrenciesQueryKey(orgCurrencyQueryParams),
+	const orgCurrenciesQuery = useGetV1OrganizationCurrencies(
+		orgCurrencyQueryParams,
+		{
+			query: {
+				enabled: Boolean(organizationId),
+				queryKey: getGetV1OrganizationCurrenciesQueryKey(
+					orgCurrencyQueryParams,
+				),
+			},
+			fetch: { credentials: "include" },
 		},
-		fetch: { credentials: "include" },
-	})
-
-	const txnProbeParams = { limit: 1, offset: 0 } as const
+	)
 
 	const catalogQuery = useGetV1Currencies(undefined, {
 		query: {
 			enabled: Boolean(organizationId),
 			queryKey: getGetV1CurrenciesQueryKey(undefined),
-		},
-		fetch: { credentials: "include" },
-	})
-
-	const transactionsProbe = useGetV1Transactions(txnProbeParams, {
-		query: {
-			enabled: Boolean(organizationId),
-			queryKey: getGetV1TransactionsQueryKey(txnProbeParams),
 		},
 		fetch: { credentials: "include" },
 	})
@@ -110,7 +79,9 @@ export function CurrencyTab({ organizationId }: CurrencyTabProps) {
 
 	const existingCodes = useMemo(() => {
 		return new Set(
-			orgCurrencies.map((c) => (c.currencyCode ?? "").toUpperCase()).filter(Boolean),
+			orgCurrencies
+				.map((c) => (c.currencyCode ?? "").toUpperCase())
+				.filter(Boolean),
 		)
 	}, [orgCurrencies])
 
@@ -120,23 +91,6 @@ export function CurrencyTab({ organizationId }: CurrencyTabProps) {
 			return code.length === 3 && !existingCodes.has(code)
 		})
 	}, [catalog, existingCodes])
-
-	const hasTransactions = useMemo(() => {
-		return normalizeListPayload(transactionsProbe.data?.data).length > 0
-	}, [transactionsProbe.data])
-
-	const baseRow = useMemo(
-		() => orgCurrencies.find((c) => c.isBase),
-		[orgCurrencies],
-	)
-
-	const primaryCurrencyCode = baseRow?.currencyCode ?? ""
-
-	const primaryOptions = useMemo(() => {
-		return [...orgCurrencies].sort((a, b) =>
-			(a.currencyCode ?? "").localeCompare(b.currencyCode ?? ""),
-		)
-	}, [orgCurrencies])
 
 	const lastUpdatedLabel = useMemo(() => {
 		let maxMs = 0
@@ -158,86 +112,74 @@ export function CurrencyTab({ organizationId }: CurrencyTabProps) {
 		})
 	}, [orgCurrencies])
 
-	const handlePrimaryChange = async (nextCode: string) => {
-		if (!organizationId || hasTransactions) {
-			return
-		}
+	const handleRateBlur = useCallback(
+		async (row: OrganizationCurrency, raw: string) => {
+			if (row.isBase) return
+			const id = row.id
+			if (!id) return
 
-		const next = orgCurrencies.find(
-			(c) => (c.currencyCode ?? "").toUpperCase() === nextCode.toUpperCase(),
-		)
-		const currentBase = orgCurrencies.find((c) => c.isBase)
-		if (!next?.id || !currentBase?.id) {
-			toast.error("Could not update primary currency.")
-			return
-		}
-		if (next.id === currentBase.id) return
-
-		try {
-			let r = await putCurrency.mutateAsync({
-				id: currentBase.id,
-				data: { isBase: false },
-			})
-			if (r.status !== 204) {
-				toast.error("Could not update primary currency.")
+			const cleaned = raw.replace(/,/g, "").trim()
+			const n = Number.parseFloat(cleaned === "" ? "NaN" : cleaned)
+			if (!Number.isFinite(n) || n <= 0) {
+				toast.error("Rate must be a positive number.")
 				return
 			}
-			r = await putCurrency.mutateAsync({
-				id: next.id,
-				data: { isBase: true },
-			})
+			if (row.rate !== undefined && Math.abs(n - row.rate) < 1e-12) return
+
+			const r = await putCurrency.mutateAsync({ id, data: { rate: n } })
 			if (r.status !== 204) {
-				toast.error("Could not set new primary currency.")
+				toast.error("Could not update rate.")
 				return
 			}
-			toast.success("Primary currency updated.")
-		} catch {
-			toast.error("Could not update primary currency.")
-		}
-	}
+			toast.success("Rate updated.")
+		},
+		[putCurrency],
+	)
 
-	const handleRateBlur = async (row: OrganizationCurrency, raw: string) => {
-		if (row.isBase) return
-		const id = row.id
-		if (!id) return
+	const handleDelete = useCallback(
+		async (row: OrganizationCurrency) => {
+			if (row.isBase) {
+				toast.error(
+					"Remove another currency first, or change the base currency from the API.",
+				)
+				return
+			}
+			const id = row.id
+			if (!id) return
 
-		const cleaned = raw.replace(/,/g, "").trim()
-		const n = Number.parseFloat(cleaned === "" ? "NaN" : cleaned)
-		if (!Number.isFinite(n) || n <= 0) {
-			toast.error("Rate must be a positive number.")
-			return
-		}
-		if (row.rate !== undefined && Math.abs(n - row.rate) < 1e-12) return
+			const r = await deleteCurrency.mutateAsync({ id })
+			if (r.status !== 204) {
+				toast.error("Could not remove currency.")
+				return
+			}
+			toast.success("Currency removed.")
+		},
+		[deleteCurrency],
+	)
 
-		const r = await putCurrency.mutateAsync({ id, data: { rate: n } })
-		if (r.status !== 204) {
-			toast.error("Could not update rate.")
-			return
-		}
-		toast.success("Rate updated.")
-	}
+	const columnOptions = useMemo(
+		() => ({
+			onRateCommit: (row: OrganizationCurrency, raw: string) => {
+				void handleRateBlur(row, raw)
+			},
+			onDelete: (row: OrganizationCurrency) => {
+				void handleDelete(row)
+			},
+			rateUpdatePending: putCurrency.isPending,
+			deletePending: deleteCurrency.isPending,
+		}),
+		[
+			handleDelete,
+			handleRateBlur,
+			putCurrency.isPending,
+			deleteCurrency.isPending,
+		],
+	)
 
-	const handleDelete = async (row: OrganizationCurrency) => {
-		if (row.isBase) {
-			toast.error("Remove another currency first, or change the primary currency.")
-			return
-		}
-		const id = row.id
-		if (!id) return
-
-		const r = await deleteCurrency.mutateAsync({ id })
-		if (r.status !== 204) {
-			toast.error("Could not remove currency.")
-			return
-		}
-		toast.success("Currency removed.")
-	}
-
-	const displayFormats = [
-		{ value: "symbol-first", label: "$1,234.56" },
-		{ value: "code-first", label: "USD 1,234.56" },
-		{ value: "symbol-last", label: "1,234.56$" },
-	]
+	const columns = useMemo(
+		() => createOrganizationCurrencyColumns(columnOptions),
+		[columnOptions],
+	)
 
 	const loading =
 		Boolean(organizationId) &&
@@ -252,155 +194,40 @@ export function CurrencyTab({ organizationId }: CurrencyTabProps) {
 	}
 
 	return (
-		<div className="flex flex-col gap-8">
-			<div className="flex gap-6">
-				<div className="flex flex-1 flex-col gap-2">
-					<span className="font-space-grotesk text-[11px] font-bold tracking-[1px] text-muted-foreground">
-						PRIMARY CURRENCY
-					</span>
-					<Select
-						value={primaryCurrencyCode}
-						onValueChange={(v) => void handlePrimaryChange(v)}
-						disabled={
-							hasTransactions ||
-							primaryOptions.length === 0 ||
-							putCurrency.isPending
-						}
-					>
-						<SelectTrigger className="h-11 w-full px-4 font-space-grotesk text-sm">
-							<SelectValue placeholder="No currencies yet" />
-						</SelectTrigger>
-						<SelectContent>
-							{primaryOptions.map((c) => {
-								const code = c.currencyCode ?? ""
-								const name = c.currency?.name ?? code
-								return (
-									<SelectItem key={code} value={code}>
-										{`${code} — ${name}`}
-									</SelectItem>
-								)
-							})}
-						</SelectContent>
-					</Select>
-					{hasTransactions ? (
-						<span className="font-space-grotesk text-[11px] text-muted-foreground">
-							Primary currency is locked because this organization has
-							transactions.
-						</span>
-					) : null}
-				</div>
-
-				<div className="flex flex-1 flex-col gap-2">
-					<span className="font-space-grotesk text-[11px] font-bold tracking-[1px] text-muted-foreground">
-						DISPLAY FORMAT
-					</span>
-					<Select value={displayFormat} onValueChange={setDisplayFormat}>
-						<SelectTrigger className="h-11 w-full px-4 font-space-grotesk text-sm">
-							<SelectValue />
-						</SelectTrigger>
-						<SelectContent>
-							{displayFormats.map((f) => (
-								<SelectItem key={f.value} value={f.value}>
-									{f.label}
-								</SelectItem>
-							))}
-						</SelectContent>
-					</Select>
-				</div>
-			</div>
-
-			<div className="flex flex-col gap-4">
-				<div className="flex items-center justify-between">
-					<span className="font-space-grotesk text-sm font-bold tracking-[1px] text-foreground">
-						ORGANIZATION CURRENCIES
-					</span>
-					<Button
-						variant="outline"
-						size="sm"
-						onClick={() => setAddModalOpen(true)}
-						disabled={availableCatalog.length === 0 || loading}
-						className="border-primary font-space-grotesk text-[10px] font-bold tracking-[1px] text-primary hover:bg-primary/10 hover:text-primary"
-					>
-						<span className="text-sm">+</span>
-						ADD CURRENCY
-					</Button>
-				</div>
-
+		<div className="flex flex-col gap-6">
+			<div className="w-full border border-border">
+				<DataTableSectionHeader
+					title="ORGANIZATION CURRENCIES"
+					count={orgCurrencies.length}
+					endSlot={
+						<Button
+							type="button"
+							onClick={() => setAddModalOpen(true)}
+							disabled={availableCatalog.length === 0 || loading}
+						>
+							<Plus className="size-4" strokeWidth={2.5} />
+							ADD CURRENCY
+						</Button>
+					}
+				/>
 				{loading ? (
-					<p className="font-space-grotesk text-sm text-muted-foreground">
+					<p className="px-6 py-8 font-space-grotesk text-sm text-muted-foreground">
 						Loading currencies…
 					</p>
 				) : orgCurrencies.length === 0 ? (
-					<p className="font-space-grotesk text-sm text-muted-foreground">
+					<p className="px-6 py-8 font-space-grotesk text-sm text-muted-foreground">
 						No currencies yet. Add your base currency to get started.
 					</p>
 				) : (
-					<Table>
-						<TableHeader>
-							<TableRow className="border-b border-border bg-muted/50 hover:bg-muted/50">
-								<TableHead className="font-space-grotesk text-[11px] font-bold tracking-[1px]">
-									CURRENCY
-								</TableHead>
-								<TableHead className="w-[100px] font-space-grotesk text-[11px] font-bold tracking-[1px]">
-									CODE
-								</TableHead>
-								<TableHead className="min-w-[140px] font-space-grotesk text-[11px] font-bold tracking-[1px]">
-									RATE (PER 1 BASE)
-								</TableHead>
-								<TableHead className="w-[100px] font-space-grotesk text-[11px] font-bold tracking-[1px]">
-									BASE
-								</TableHead>
-								<TableHead className="w-10" />
-							</TableRow>
-						</TableHeader>
-						<TableBody>
-							{orgCurrencies.map((row) => (
-								<TableRow key={row.id ?? row.currencyCode}>
-									<TableCell className="font-space-grotesk text-[13px] font-semibold text-foreground">
-										{row.currency?.name ?? row.currencyCode ?? "—"}
-									</TableCell>
-									<TableCell className="font-ibm-plex-mono text-xs text-muted-foreground">
-										{row.currencyCode ?? "—"}
-									</TableCell>
-									<TableCell>
-										{row.isBase ? (
-											<span className="font-ibm-plex-mono text-[13px] text-foreground">
-												{formatRate(1)}
-											</span>
-										) : (
-											<RateCell
-												initial={row.rate}
-												onCommit={(raw) => void handleRateBlur(row, raw)}
-												disabled={putCurrency.isPending}
-											/>
-										)}
-									</TableCell>
-									<TableCell className="font-space-grotesk text-[11px] font-bold tracking-[1px] text-muted-foreground">
-										{row.isBase ? "YES" : "—"}
-									</TableCell>
-									<TableCell>
-										<Button
-											variant="ghost"
-											size="icon-sm"
-											disabled={row.isBase || deleteCurrency.isPending}
-											onClick={() => void handleDelete(row)}
-											className="text-muted-foreground hover:text-destructive"
-										>
-											<Trash2 />
-										</Button>
-									</TableCell>
-								</TableRow>
-							))}
-						</TableBody>
-					</Table>
+					<AccountsDataTable columns={columns} data={orgCurrencies} />
 				)}
-
-				{lastUpdatedLabel ? (
-					<span className="font-ibm-plex-mono text-[10px] tracking-[1px] text-muted-foreground">
-						{`LAST UPDATED: ${lastUpdatedLabel.toUpperCase()}`}
-					</span>
-				) : null}
 			</div>
+
+			{lastUpdatedLabel ? (
+				<span className="font-ibm-plex-mono text-[10px] tracking-[1px] text-muted-foreground">
+					{`LAST UPDATED: ${lastUpdatedLabel.toUpperCase()}`}
+				</span>
+			) : null}
 
 			<AddCurrencyModal
 				open={addModalOpen}
@@ -411,31 +238,5 @@ export function CurrencyTab({ organizationId }: CurrencyTabProps) {
 				onSuccess={invalidateOrgCurrencies}
 			/>
 		</div>
-	)
-}
-
-function RateCell(props: {
-	initial: number | undefined
-	onCommit: (raw: string) => void
-	disabled: boolean
-}) {
-	const [value, setValue] = useState(() =>
-		props.initial !== undefined ? formatRate(props.initial) : "",
-	)
-
-	useEffect(() => {
-		setValue(props.initial !== undefined ? formatRate(props.initial) : "")
-	}, [props.initial])
-
-	return (
-		<Input
-			className="h-9 max-w-[180px] font-ibm-plex-mono text-[13px]"
-			value={value}
-			onChange={(e) => setValue(e.target.value)}
-			onBlur={() => props.onCommit(value)}
-			disabled={props.disabled}
-			type="text"
-			inputMode="decimal"
-		/>
 	)
 }
