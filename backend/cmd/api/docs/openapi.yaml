@@ -307,6 +307,22 @@ components:
         isBase:
           type: boolean
 
+    OrganizationCurrencyCurrency:
+      type: object
+      description: Nested currency details when relations=currencies is requested.
+      properties:
+        code:
+          type: string
+          minLength: 3
+          maxLength: 3
+        name:
+          type: string
+        symbol:
+          type: string
+        decimalPlaces:
+          type: integer
+          format: int32
+
     OrganizationCurrency:
       type: object
       properties:
@@ -325,6 +341,10 @@ components:
         updatedAt:
           type: string
           format: date-time
+        currency:
+          nullable: true
+          allOf:
+            - $ref: '#/components/schemas/OrganizationCurrencyCurrency'
 
     # Account schemas
     CreateAccount:

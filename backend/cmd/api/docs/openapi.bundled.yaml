@@ -219,6 +219,15 @@ paths:
       tags:
         - Organization Currencies
       parameters:
+        - name: relations
+          in: query
+          required: false
+          description: |
+            Comma-separated relation names to embed in each item. Use `currencies` to include nested
+            currency name, symbol, and decimal places (null when omitted).
+          schema:
+            type: string
+            example: currencies
         - name: limit
           in: query
           schema:
@@ -263,6 +272,14 @@ paths:
           schema:
             type: string
             format: uuid
+        - name: relations
+          in: query
+          required: false
+          description: |
+            Comma-separated relation names. Use `currencies` to include nested currency details.
+          schema:
+            type: string
+            example: currencies
       responses:
         '200':
           description: Organization currency found
@@ -921,6 +938,21 @@ components:
       properties:
         isBase:
           type: boolean
+    OrganizationCurrencyCurrency:
+      type: object
+      description: Nested currency details when relations=currencies is requested.
+      properties:
+        code:
+          type: string
+          minLength: 3
+          maxLength: 3
+        name:
+          type: string
+        symbol:
+          type: string
+        decimalPlaces:
+          type: integer
+          format: int32
     OrganizationCurrency:
       type: object
       properties:
@@ -939,6 +971,10 @@ components:
         updatedAt:
           type: string
           format: date-time
+        currency:
+          nullable: true
+          allOf:
+            - $ref: '#/components/schemas/OrganizationCurrencyCurrency'
     CreateAccount:
       type: object
       required:

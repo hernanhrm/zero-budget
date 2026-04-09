@@ -7,6 +7,12 @@
  */
 
 export type GetV1OrganizationCurrenciesParams = {
+/**
+ * Comma-separated relation names to embed in each item. Use `currencies` to include nested
+currency name, symbol, and decimal places (null when omitted).
+
+ */
+relations?: string;
 limit?: number;
 offset?: number;
 };

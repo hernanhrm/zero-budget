@@ -4,6 +4,10 @@ import {
 	getGetV1AccountsQueryKey,
 	usePostV1Accounts,
 } from "@workspace/api/hooks/accounts/accounts"
+import {
+	getGetV1OrganizationCurrenciesQueryKey,
+	useGetV1OrganizationCurrencies,
+} from "@workspace/api/hooks/organization-currencies/organization-currencies"
 import { Button } from "@workspace/ui/components/button"
 import { DialogClose, DialogFooter } from "@workspace/ui/components/dialog"
 import { Field, FieldError, FieldGroup } from "@workspace/ui/components/field"
@@ -18,7 +22,7 @@ import {
 } from "@workspace/ui/components/select"
 import { toast } from "@workspace/ui/lib/toast"
 import { Check } from "lucide-react"
-import { useEffect } from "react"
+import { useEffect, useLayoutEffect, useMemo } from "react"
 
 export interface AddAccountFormProps {
 	open: boolean
@@ -37,6 +41,27 @@ export function AddAccountForm({
 		fetch: { credentials: "include" },
 	})
 
+	const orgCurrenciesQuery = useGetV1OrganizationCurrencies(
+		{ relations: "currencies" },
+		{
+			query: {
+				enabled: open && Boolean(organizationId),
+				queryKey: getGetV1OrganizationCurrenciesQueryKey({
+					relations: "currencies",
+				}),
+			},
+			fetch: { credentials: "include" },
+		},
+	)
+
+	const orgCurrencies = useMemo(() => {
+		const raw = orgCurrenciesQuery.data?.data
+		return Array.isArray(raw) ? raw : []
+	}, [orgCurrenciesQuery.data])
+
+	const currenciesReady = orgCurrenciesQuery.isSuccess
+	const noOrgCurrencies = currenciesReady && orgCurrencies.length === 0
+
 	const form = useForm({
 		defaultValues: {
 			accountName: "",
@@ -44,7 +69,7 @@ export function AddAccountForm({
 			institution: "",
 			startingBalance: "0.00",
 			accountNumber: "",
-			currency: "usd",
+			currency: "",
 		},
 		onSubmit: async ({ value }) => {
 			if (!organizationId) {
@@ -61,7 +86,11 @@ export function AddAccountForm({
 			}
 
 			const type = value.accountType === "checking" ? "CHECKING" : "SAVINGS"
-			const currencyCode = "USD"
+			const currencyCode = value.currency?.trim() ?? ""
+			if (currencyCode.length !== 3) {
+				toast.error("Select a currency for this account.")
+				return
+			}
 
 			const institution = value.institution.trim()
 			const accountNumber = value.accountNumber.trim()
@@ -110,6 +139,22 @@ export function AddAccountForm({
 			form.reset()
 		}
 	}, [open, form.reset])
+
+	useLayoutEffect(() => {
+		if (!open || !orgCurrenciesQuery.isSuccess) {
+			return
+		}
+		if (orgCurrencies.length === 0) {
+			return
+		}
+		const code =
+			orgCurrencies.find((c) => c.isBase)?.currencyCode ??
+			orgCurrencies[0]?.currencyCode ??
+			""
+		if (code) {
+			form.setFieldValue("currency", code)
+		}
+	}, [open, orgCurrenciesQuery.isSuccess, orgCurrencies, form.setFieldValue])
 
 	return (
 		<form
@@ -201,35 +246,49 @@ export function AddAccountForm({
 						</form.Field>
 					</div>
 
-					<form.Field name="startingBalance">
-						{(field) => {
-							const isInvalid =
-								field.state.meta.isTouched && field.state.meta.errors.length > 0
+					<form.Subscribe
+						selector={(state) => ({ currencyCode: state.values.currency })}
+					>
+						{({ currencyCode }) => {
+							const sym =
+								orgCurrencies.find((c) => c.currencyCode === currencyCode)
+									?.currency?.symbol ?? "$"
 							return (
-								<Field data-invalid={isInvalid || undefined}>
-									<FormFieldLabel htmlFor={field.name}>
-										STARTING BALANCE
-									</FormFieldLabel>
-									<div className="flex h-12 items-center gap-3 border border-ring px-4">
-										<span className="font-space-grotesk text-2xl font-bold text-primary">
-											$
-										</span>
-										<Input
-											id={field.name}
-											name={field.name}
-											className="h-auto flex-1 border-0 bg-transparent p-0 font-ibm-plex-mono text-2xl font-bold text-foreground shadow-none focus-visible:ring-0"
-											value={field.state.value}
-											onBlur={field.handleBlur}
-											onChange={(e) => field.handleChange(e.target.value)}
-											inputMode="decimal"
-											aria-invalid={isInvalid || undefined}
-										/>
-									</div>
-									{isInvalid && <FieldError errors={field.state.meta.errors} />}
-								</Field>
+								<form.Field name="startingBalance">
+									{(field) => {
+										const isInvalid =
+											field.state.meta.isTouched &&
+											field.state.meta.errors.length > 0
+										return (
+											<Field data-invalid={isInvalid || undefined}>
+												<FormFieldLabel htmlFor={field.name}>
+													STARTING BALANCE
+												</FormFieldLabel>
+												<div className="flex h-12 items-center gap-3 border border-ring px-4">
+													<span className="font-space-grotesk text-2xl font-bold text-primary">
+														{sym}
+													</span>
+													<Input
+														id={field.name}
+														name={field.name}
+														className="h-auto flex-1 border-0 bg-transparent p-0 font-ibm-plex-mono text-2xl font-bold text-foreground shadow-none focus-visible:ring-0"
+														value={field.state.value}
+														onBlur={field.handleBlur}
+														onChange={(e) => field.handleChange(e.target.value)}
+														inputMode="decimal"
+														aria-invalid={isInvalid || undefined}
+													/>
+												</div>
+												{isInvalid && (
+													<FieldError errors={field.state.meta.errors} />
+												)}
+											</Field>
+										)
+									}}
+								</form.Field>
 							)
 						}}
-					</form.Field>
+					</form.Subscribe>
 
 					<form.Field name="accountNumber">
 						{(field) => (
@@ -258,15 +317,39 @@ export function AddAccountForm({
 								<Select
 									value={field.state.value}
 									onValueChange={(value) => field.handleChange(value)}
+									disabled={
+										orgCurrenciesQuery.isLoading ||
+										noOrgCurrencies ||
+										orgCurrencies.length === 0 ||
+										(currenciesReady && !field.state.value)
+									}
 								>
 									<SelectTrigger
 										size="default"
 										className="h-10 w-full rounded-none px-4"
 									>
-										<SelectValue />
+										<SelectValue
+											placeholder={
+												orgCurrenciesQuery.isLoading
+													? "Loading currencies…"
+													: noOrgCurrencies
+														? "No currencies for this organization"
+														: "Select currency"
+											}
+										/>
 									</SelectTrigger>
 									<SelectContent>
-										<SelectItem value="usd">USD — US DOLLAR ($)</SelectItem>
+										{orgCurrencies.map((c) => {
+											const code = c.currencyCode ?? ""
+											const name = c.currency?.name ?? code
+											const symbol = c.currency?.symbol ?? ""
+											const base = c.isBase ? " — base" : ""
+											return (
+												<SelectItem key={code} value={code}>
+													{`${code} — ${name}${symbol ? ` (${symbol})` : ""}${base}`}
+												</SelectItem>
+											)
+										})}
 									</SelectContent>
 								</Select>
 							</Field>
@@ -288,13 +371,20 @@ export function AddAccountForm({
 				<form.Subscribe
 					selector={(state) => ({
 						isSubmitting: state.isSubmitting,
+						currency: state.values.currency,
 					})}
 				>
-					{({ isSubmitting }) => (
+					{({ isSubmitting, currency }) => (
 						<Button
 							type="submit"
 							disabled={
-								isSubmitting || postAccount.isPending || !organizationId
+								isSubmitting ||
+								postAccount.isPending ||
+								!organizationId ||
+								orgCurrenciesQuery.isLoading ||
+								noOrgCurrencies ||
+								orgCurrencies.length === 0 ||
+								!currency
 							}
 							className="gap-2 rounded-none"
 						>
