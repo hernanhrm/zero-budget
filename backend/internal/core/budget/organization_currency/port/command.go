@@ -13,6 +13,7 @@ type CreateOrganizationCurrency struct {
 	OrganizationID string    `json:"organizationId"`
 	CurrencyCode   string    `json:"currencyCode"`
 	IsBase         bool      `json:"isBase"`
+	Rate           float64   `json:"rate"`
 }
 
 func (c CreateOrganizationCurrency) Validate(ctx context.Context) error {
@@ -23,7 +24,8 @@ func (c CreateOrganizationCurrency) Validate(ctx context.Context) error {
 }
 
 type UpdateOrganizationCurrency struct {
-	IsBase null.Bool `json:"isBase"`
+	IsBase null.Bool  `json:"isBase"`
+	Rate   null.Float `json:"rate"`
 }
 
 func (u UpdateOrganizationCurrency) Validate(ctx context.Context) error {

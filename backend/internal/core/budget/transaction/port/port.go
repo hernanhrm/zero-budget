@@ -13,6 +13,7 @@ type Repository interface {
 	basedomain.RepositoryQuery[Transaction]
 	basedomain.RepositoryTx[Repository]
 	CountByAccountID(ctx context.Context, accountID uuid.UUID) (int64, error)
+	ExistsForOrganization(ctx context.Context, organizationID string) (bool, error)
 }
 
 type Service interface {

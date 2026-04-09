@@ -5,12 +5,12 @@ import (
 	"errors"
 	"time"
 
+	"backend/adapter/database"
 	"backend/core/budget/organization_currency/port"
+	"backend/infra/dafi"
+	"backend/infra/sqlcraft"
 	basedomain "backend/port"
 	apperrors "backend/port/errors"
-	"backend/infra/dafi"
-	"backend/adapter/database"
-	"backend/infra/sqlcraft"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
@@ -30,6 +30,7 @@ var columns = []string{
 	"organization_id",
 	"currency_code",
 	"is_base",
+	"rate",
 	"created_at",
 	"updated_at",
 }
@@ -39,6 +40,7 @@ var sqlColumnByDomainField = map[string]string{
 	"organizationId": "organization_id",
 	"currencyCode":   "currency_code",
 	"isBase":         "is_base",
+	"rate":           "rate",
 	"createdAt":      "created_at",
 	"updatedAt":      "updated_at",
 }
@@ -84,6 +86,7 @@ func (r postgres) FindOne(ctx context.Context, criteria dafi.Criteria) (port.Org
 		&oc.OrganizationID,
 		&oc.CurrencyCode,
 		&oc.IsBase,
+		&oc.Rate,
 		&oc.CreatedAt,
 		&oc.UpdatedAt,
 	)
@@ -127,6 +130,7 @@ func (r postgres) FindAll(ctx context.Context, criteria dafi.Criteria) (basedoma
 			&oc.OrganizationID,
 			&oc.CurrencyCode,
 			&oc.IsBase,
+			&oc.Rate,
 			&oc.CreatedAt,
 			&oc.UpdatedAt,
 		)
@@ -149,6 +153,7 @@ func (r postgres) Create(ctx context.Context, input port.CreateOrganizationCurre
 			input.OrganizationID,
 			input.CurrencyCode,
 			input.IsBase,
+			input.Rate,
 			now,
 			now,
 		)
@@ -182,6 +187,7 @@ func (r postgres) CreateBulk(ctx context.Context, inputs basedomain.List[port.Cr
 			input.OrganizationID,
 			input.CurrencyCode,
 			input.IsBase,
+			input.Rate,
 			now,
 			now,
 		)
@@ -204,9 +210,10 @@ func (r postgres) CreateBulk(ctx context.Context, inputs basedomain.List[port.Cr
 
 func (r postgres) Update(ctx context.Context, input port.UpdateOrganizationCurrency, filters ...dafi.Filter) error {
 	query := sqlcraft.Update(tableName).
-		WithColumns("is_base", "updated_at").
+		WithColumns("is_base", "rate", "updated_at").
 		WithValues(
 			input.IsBase,
+			input.Rate,
 			time.Now(),
 		).
 		Where(filters...).

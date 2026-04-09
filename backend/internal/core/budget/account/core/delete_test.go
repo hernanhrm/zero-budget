@@ -7,10 +7,10 @@ import (
 
 	"backend/core/budget/account/port"
 	transactionport "backend/core/budget/transaction/port"
-	basedomain "backend/port"
-	apperrors "backend/port/errors"
 	"backend/infra/dafi"
 	"backend/infra/money"
+	basedomain "backend/port"
+	apperrors "backend/port/errors"
 
 	"github.com/google/uuid"
 	"github.com/samber/oops"
@@ -20,11 +20,11 @@ import (
 
 type noopLogger struct{}
 
-func (noopLogger) Debug(string, ...any)                     {}
-func (noopLogger) Info(string, ...any)                      {}
-func (noopLogger) Warn(string, ...any)                      {}
-func (noopLogger) Error(string, ...any)                     {}
-func (noopLogger) With(...any) basedomain.Logger             { return noopLogger{} }
+func (noopLogger) Debug(string, ...any)                          {}
+func (noopLogger) Info(string, ...any)                           {}
+func (noopLogger) Warn(string, ...any)                           {}
+func (noopLogger) Error(string, ...any)                          {}
+func (noopLogger) With(...any) basedomain.Logger                 { return noopLogger{} }
 func (noopLogger) WithContext(context.Context) basedomain.Logger { return noopLogger{} }
 
 type stubAccountRepo struct {
@@ -83,6 +83,12 @@ func (s *stubTxnRepo) CountByAccountID(ctx context.Context, accountID uuid.UUID)
 	_ = ctx
 	_ = accountID
 	return s.count, s.countErr
+}
+
+func (s *stubTxnRepo) ExistsForOrganization(ctx context.Context, organizationID string) (bool, error) {
+	_ = ctx
+	_ = organizationID
+	return false, nil
 }
 
 func (s *stubTxnRepo) FindOne(ctx context.Context, criteria dafi.Criteria) (transactionport.Transaction, error) {

@@ -12,6 +12,8 @@ export interface OrganizationCurrency {
   organizationId?: string;
   currencyCode?: string;
   isBase?: boolean;
+  /** Units of this currency per one unit of the organization base currency. */
+  rate?: number;
   createdAt?: string;
   updatedAt?: string;
   currency?: OrganizationCurrencyCurrency | null;

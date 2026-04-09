@@ -288,6 +288,7 @@ components:
         - organizationId
         - currencyCode
         - isBase
+        - rate
       properties:
         id:
           type: string
@@ -300,12 +301,19 @@ components:
           maxLength: 3
         isBase:
           type: boolean
+        rate:
+          type: number
+          format: double
+          description: Units of this currency per one unit of the organization base currency. Must be 1 when isBase is true.
 
     UpdateOrganizationCurrency:
       type: object
       properties:
         isBase:
           type: boolean
+        rate:
+          type: number
+          format: double
 
     OrganizationCurrencyCurrency:
       type: object
@@ -335,6 +343,10 @@ components:
           type: string
         isBase:
           type: boolean
+        rate:
+          type: number
+          format: double
+          description: Units of this currency per one unit of the organization base currency.
         createdAt:
           type: string
           format: date-time

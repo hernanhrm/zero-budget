@@ -8,4 +8,5 @@
 
 export interface UpdateOrganizationCurrency {
   isBase?: boolean;
+  rate?: number;
 }
