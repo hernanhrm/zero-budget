@@ -1,4 +1,3 @@
-import { appendFileSync } from "node:fs";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { serve } from "@hono/node-server";
@@ -7,43 +6,6 @@ import { auth } from "./auth.js";
 import { db } from "./db.js";
 import { invitations } from "./schema.js";
 import { publishOrganizationInvitationCreated } from "./lib/events.js";
-
-// #region agent log
-const AGENT_DEBUG_LOG =
-  "/Users/hernanreyes/Documents/dev/github.com/hernanhrm/zero-budget/.cursor/debug-741baa.log";
-
-function agentDebugLog(entry: {
-  hypothesisId: string;
-  location: string;
-  message: string;
-  data: Record<string, unknown>;
-  runId?: string;
-}) {
-  const line =
-    JSON.stringify({
-      sessionId: "741baa",
-      timestamp: Date.now(),
-      runId: entry.runId ?? "pre-fix",
-      ...entry,
-    }) + "\n";
-  try {
-    appendFileSync(AGENT_DEBUG_LOG, line);
-  } catch {
-    /* Fly.io / read-only fs */
-  }
-  console.error("AGENT_DEBUG_SESSION", line.trim());
-}
-
-function betterAuthHostHint(): string | null {
-  const raw = process.env.BETTER_AUTH_URL;
-  if (!raw?.trim()) return null;
-  try {
-    return new URL(raw.trim()).host;
-  } catch {
-    return "invalid-url";
-  }
-}
-// #endregion
 
 function parseCommaOrigins(value: string | undefined): string[] {
   if (!value?.trim()) {
@@ -80,76 +42,8 @@ app.use("/api/auth/*", corsConfig);
 
 app.use("/api/invitations/*", corsConfig);
 
-app.on(["POST", "GET"], "/api/auth/*", async (c) => {
-  const req = c.req.raw;
-  const url = new URL(req.url);
-  const pathname = url.pathname;
-  const cookieHeader = req.headers.get("cookie") ?? "";
-  const origin = req.headers.get("origin");
-  const host = req.headers.get("host");
-
-  const isGetSessionProbe =
-    req.method === "GET" &&
-    (pathname.includes("get-session") || pathname.endsWith("/session"));
-
-  const isSignInPost =
-    req.method === "POST" &&
-    (pathname.includes("sign-in") || pathname.includes("sign_in"));
-
-  // #region agent log
-  let preHandlerSessionNull: boolean | undefined;
-  if (isGetSessionProbe) {
-    const session = await auth.api.getSession({ headers: req.headers });
-    preHandlerSessionNull = session == null;
-  }
-
-  if (isGetSessionProbe || isSignInPost) {
-    agentDebugLog({
-      hypothesisId: isGetSessionProbe ? "H1-samesite-cookie" : "H5-sign-in",
-      location: "identity/index.ts:api/auth",
-      message: isGetSessionProbe ? "before_handler_get_session" : "before_handler_sign_in",
-      data: {
-        pathname,
-        method: req.method,
-        hasAnyCookie: cookieHeader.length > 0,
-        cookieMentionsPrefix: cookieHeader.includes("zero-budget"),
-        origin,
-        host,
-        requestHost: host,
-        betterAuthHostEnv: betterAuthHostHint(),
-        preHandlerGetSessionNull: preHandlerSessionNull,
-        cookiePolicyExpectedSameSite: (
-          process.env.BETTER_AUTH_URL ?? ""
-        ).startsWith("https://")
-          ? "none"
-          : "lax",
-      },
-    });
-  }
-  // #endregion
-
-  const res = await auth.handler(req);
-
-  // #region agent log
-  if (isSignInPost) {
-    const setCookie = res.headers.get("set-cookie");
-    agentDebugLog({
-      hypothesisId: "H5-set-cookie",
-      location: "identity/index.ts:api/auth",
-      message: "after_handler_sign_in",
-      data: {
-        pathname,
-        status: res.status,
-        setCookiePresent: setCookie != null && setCookie.length > 0,
-        origin,
-        host,
-        betterAuthHostEnv: betterAuthHostHint(),
-      },
-    });
-  }
-  // #endregion
-
-  return res;
+app.on(["POST", "GET"], "/api/auth/*", (c) => {
+  return auth.handler(c.req.raw);
 });
 
 app.post("/api/invitations/:invitation-id/resend", async (c) => {
